@@ -62,9 +62,9 @@ const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <AuthProvider>
-          <Web3Provider>
-            <TooltipProvider>
+        <TooltipProvider>
+          <AuthProvider>
+            <Web3Provider>
               <Toaster />
               <Sonner />
               <Routes>
@@ -114,9 +114,9 @@ const App: React.FC = () => {
                 
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </TooltipProvider>
-          </Web3Provider>
-        </AuthProvider>
+            </Web3Provider>
+          </AuthProvider>
+        </TooltipProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );

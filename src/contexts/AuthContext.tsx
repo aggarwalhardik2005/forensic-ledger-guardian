@@ -23,7 +23,7 @@ const mockUsers = [
     name: 'Judge Smith',
     role: Role.Court,
     roleTitle: 'Court Judge',
-    address: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F' // Added mock address
+    address: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F'
   },
   {
     id: '2',
@@ -32,7 +32,7 @@ const mockUsers = [
     name: 'Officer Johnson',
     role: Role.Officer,
     roleTitle: 'Police Officer',
-    address: '0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2' // Added mock address
+    address: '0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2'
   },
   {
     id: '3',
@@ -41,7 +41,7 @@ const mockUsers = [
     name: 'Dr. Anderson',
     role: Role.Forensic,
     roleTitle: 'Forensic Investigator',
-    address: '0x5B38Da6a701c568545dCfcB03FcB875f56beddC4' // Added mock address
+    address: '0x5B38Da6a701c568545dCfcB03FcB875f56beddC4'
   },
   {
     id: '4',
@@ -50,7 +50,7 @@ const mockUsers = [
     name: 'Attorney Davis',
     role: Role.Lawyer,
     roleTitle: 'Defense Attorney',
-    address: '0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db' // Added mock address
+    address: '0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db'
   }
 ];
 
@@ -64,13 +64,13 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(() => {
     // Check if user is stored in localStorage
     const storedUser = localStorage.getItem('forensicLedgerUser');
     return storedUser ? JSON.parse(storedUser) : null;
   });
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const login = async (email: string, password: string): Promise<boolean> => {
     // In a real app, this would be an API call

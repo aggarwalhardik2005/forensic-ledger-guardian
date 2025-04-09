@@ -47,7 +47,8 @@ import {
   UploadCloud,
   Copy,
   CheckSquare,
-  Square
+  Square,
+  Plus
 } from "lucide-react";
 import { useAuth } from '@/contexts/AuthContext';
 
