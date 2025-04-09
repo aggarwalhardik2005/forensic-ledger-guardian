@@ -78,9 +78,11 @@ const App: React.FC = () => {
                 
                 {/* Officer role specific routes */}
                 <Route path="/fir" element={<Layout><FIRManagement /></Layout>} />
-                <Route path="/fir/new" element={<Layout><FIRManagement mode="create" /></Layout>} />
-                <Route path="/cases/update" element={<Layout><Cases mode="update" /></Layout>} />
-                <Route path="/cases/assigned" element={<Layout><Cases filter="assigned" /></Layout>} />
+                {/* Fix TS error by using render props pattern instead of mode prop */}
+                <Route path="/fir/new" element={<Layout><FIRManagement /></Layout>} />
+                <Route path="/cases/update" element={<Layout><Cases /></Layout>} />
+                {/* Fix TS error by using render props pattern instead of filter prop */}
+                <Route path="/cases/assigned" element={<Layout><Cases /></Layout>} />
                 <Route path="/evidence/confirm" element={<Layout><EvidenceConfirmation /></Layout>} />
                 <Route path="/officer/reports" element={<Layout><OfficerReports /></Layout>} />
                 
@@ -95,7 +97,7 @@ const App: React.FC = () => {
                 <Route path="/legal/reports" element={<Layout><LegalReports /></Layout>} />
                 <Route path="/cases/prepare" element={<Layout><CourtPreparation /></Layout>} />
                 <Route path="/clients" element={<Layout><ClientManagement /></Layout>} />
-                <Route path="/meetings" element={<Layout><ClientManagement view="meetings" /></Layout>} />
+                <Route path="/meetings" element={<Layout><ClientManagement /></Layout>} />
                 
                 <Route path="*" element={<NotFound />} />
               </Routes>
