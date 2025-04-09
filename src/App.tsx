@@ -13,16 +13,23 @@ import Evidence from "./pages/Evidence";
 import Upload from "./pages/Upload";
 import Verify from "./pages/Verify";
 import Help from "./pages/Help";
+import FAQ from "./pages/help/Faq";
 import NotFound from "./pages/NotFound";
 import { Web3Provider } from "./contexts/Web3Context";
 import { AuthProvider } from "./contexts/AuthContext";
+import Settings from "./pages/Settings";
+import Activity from "./pages/Activity";
+
+// FIR pages
+import FIR from "./pages/fir/Fir";
 
 // Court role specific pages
-import UserManagement from "./pages/court/UserManagement";
+import UserManagement from "./pages/users/Manage";
 import RoleManagement from "./pages/court/RoleManagement";
 import SystemConfiguration from "./pages/court/SystemConfiguration";
 import AuditLogs from "./pages/court/AuditLogs";
 import ReportsAnalytics from "./pages/court/ReportsAnalytics";
+import CreateCase from "./pages/cases/CreateCase";
 
 // Officer role specific pages
 import FIRManagement from "./pages/officer/FIRManagement";
@@ -68,6 +75,13 @@ const App: React.FC = () => {
                 <Route path="/upload" element={<Layout><Upload /></Layout>} />
                 <Route path="/verify" element={<Layout><Verify /></Layout>} />
                 <Route path="/help" element={<Layout><Help /></Layout>} />
+                <Route path="/help/faq" element={<Layout><FAQ /></Layout>} />
+                <Route path="/settings" element={<Layout><Settings /></Layout>} />
+                <Route path="/activity" element={<Layout><Activity /></Layout>} />
+                
+                {/* FIR routes */}
+                <Route path="/fir" element={<Layout><FIR /></Layout>} />
+                <Route path="/fir/new" element={<Layout><FIRManagement mode="create" /></Layout>} />
                 
                 {/* Court role specific routes */}
                 <Route path="/users/manage" element={<Layout><UserManagement /></Layout>} />
@@ -75,13 +89,12 @@ const App: React.FC = () => {
                 <Route path="/settings/security" element={<Layout><SystemConfiguration /></Layout>} />
                 <Route path="/activity" element={<Layout><AuditLogs /></Layout>} />
                 <Route path="/reports" element={<Layout><ReportsAnalytics /></Layout>} />
+                <Route path="/cases/create" element={<Layout><CreateCase /></Layout>} />
                 
                 {/* Officer role specific routes */}
-                <Route path="/fir" element={<Layout><FIRManagement /></Layout>} />
-                {/* Fix TS error by using render props pattern instead of mode prop */}
+                <Route path="/fir" element={<Layout><FIR /></Layout>} />
                 <Route path="/fir/new" element={<Layout><FIRManagement /></Layout>} />
                 <Route path="/cases/update" element={<Layout><Cases /></Layout>} />
-                {/* Fix TS error by using render props pattern instead of filter prop */}
                 <Route path="/cases/assigned" element={<Layout><Cases /></Layout>} />
                 <Route path="/evidence/confirm" element={<Layout><EvidenceConfirmation /></Layout>} />
                 <Route path="/officer/reports" element={<Layout><OfficerReports /></Layout>} />
@@ -97,7 +110,7 @@ const App: React.FC = () => {
                 <Route path="/legal/reports" element={<Layout><LegalReports /></Layout>} />
                 <Route path="/cases/prepare" element={<Layout><CourtPreparation /></Layout>} />
                 <Route path="/clients" element={<Layout><ClientManagement /></Layout>} />
-                <Route path="/meetings" element={<Layout><ClientManagement /></Layout>} />
+                <Route path="/meetings" element={<Layout><ClientManagement view="meetings" /></Layout>} />
                 
                 <Route path="*" element={<NotFound />} />
               </Routes>

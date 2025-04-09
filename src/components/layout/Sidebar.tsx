@@ -24,7 +24,10 @@ import {
   HelpCircle,
   ChevronRight,
   ChevronLeft,
-  Menu
+  Menu,
+  UserCog,
+  Search,
+  Clock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -51,12 +54,13 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, toggleCollapsed }) => {
         return [
           { to: "/dashboard", icon: <LayoutDashboard />, label: "Dashboard" },
           { to: "/cases", icon: <FolderKanban />, label: "Cases" },
+          { to: "/cases/create", icon: <FileText />, label: "Create Case" },
           { to: "/evidence", icon: <FileDigit />, label: "Evidence" },
           { to: "/upload", icon: <Upload />, label: "Upload" },
           { to: "/verify", icon: <FileCheck />, label: "Verify" },
           { to: "/users/manage", icon: <Users />, label: "Users" },
+          { to: "/users/roles", icon: <UserCog />, label: "Roles" },
           { to: "/settings/security", icon: <Settings />, label: "Security" },
-          { to: "/users/roles", icon: <User />, label: "Roles" },
           { to: "/activity", icon: <Activity />, label: "Audit Logs" },
           { to: "/reports", icon: <BarChart2 />, label: "Reports" }
         ];
@@ -64,7 +68,8 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, toggleCollapsed }) => {
         return [
           { to: "/dashboard", icon: <LayoutDashboard />, label: "Dashboard" },
           { to: "/fir", icon: <FileText />, label: "FIRs" },
-          { to: "/cases", icon: <FolderKanban />, label: "Cases" },
+          { to: "/fir/new", icon: <FileText />, label: "Create FIR" },
+          { to: "/cases", icon: <FolderKanban />, label: "All Cases" },
           { to: "/cases/assigned", icon: <FolderKanban />, label: "My Cases" },
           { to: "/evidence", icon: <FileDigit />, label: "Evidence" },
           { to: "/upload", icon: <Upload />, label: "Upload" },
@@ -76,7 +81,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, toggleCollapsed }) => {
           { to: "/dashboard", icon: <LayoutDashboard />, label: "Dashboard" },
           { to: "/cases/assigned", icon: <FolderKanban />, label: "Assigned Cases" },
           { to: "/evidence", icon: <FileDigit />, label: "Evidence" },
-          { to: "/evidence/analysis", icon: <FileDigit />, label: "Evidence Analysis" },
+          { to: "/evidence/analysis", icon: <Search />, label: "Evidence Analysis" },
           { to: "/upload", icon: <Upload />, label: "Upload" },
           { to: "/evidence/verify", icon: <ShieldAlert />, label: "Technical Verification" },
           { to: "/forensic/reports", icon: <BarChart2 />, label: "Reports" }
@@ -85,11 +90,13 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, toggleCollapsed }) => {
         return [
           { to: "/dashboard", icon: <LayoutDashboard />, label: "Dashboard" },
           { to: "/cases/assigned", icon: <FolderKanban />, label: "My Cases" },
+          { to: "/cases/prepare", icon: <Gavel />, label: "Court Preparation" },
           { to: "/evidence", icon: <FileDigit />, label: "Evidence" },
           { to: "/legal/documentation", icon: <ScrollText />, label: "Legal Docs" },
-          { to: "/verify/custody", icon: <Gavel />, label: "Chain of Custody" },
+          { to: "/verify/custody", icon: <Clock />, label: "Chain of Custody" },
           { to: "/upload", icon: <Upload />, label: "Upload" },
           { to: "/clients", icon: <User />, label: "Clients" },
+          { to: "/meetings", icon: <Users />, label: "Meetings" },
           { to: "/legal/reports", icon: <BarChart2 />, label: "Reports" }
         ];
       default:
@@ -102,6 +109,12 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, toggleCollapsed }) => {
         ];
     }
   };
+
+  // Always show these links at the bottom regardless of role
+  const bottomLinks = [
+    { to: "/settings", icon: <Settings />, label: "Settings" },
+    { to: "/help", icon: <HelpCircle />, label: "Help" }
+  ];
 
   const navLinks = getNavLinks();
 
@@ -163,22 +176,31 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, toggleCollapsed }) => {
       </div>
 
       <div className="p-2 border-t border-forensic-200">
-        <TooltipProvider delayDuration={0}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link 
-                to="/help"
-                className="flex items-center rounded-md px-3 py-2.5 gap-3 text-sm font-medium text-forensic-600 hover:bg-forensic-50 hover:text-forensic-800 transition-colors"
-              >
-                <HelpCircle className="h-5 w-5" />
-                {!collapsed && <span>Help</span>}
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent side="right" className={cn("bg-forensic-800 text-white", !collapsed && "hidden")}>
-              Help
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <nav className="space-y-1">
+          {bottomLinks.map((link) => (
+            <TooltipProvider key={link.to} delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    to={link.to}
+                    className={cn(
+                      "flex items-center rounded-md px-3 py-2.5 gap-3 text-sm font-medium transition-colors",
+                      isActive(link.to)
+                        ? "bg-forensic-100 text-forensic-accent"
+                        : "text-forensic-600 hover:bg-forensic-50 hover:text-forensic-800"
+                    )}
+                  >
+                    <span className="flex-shrink-0">{React.cloneElement(link.icon, { className: "h-5 w-5" })}</span>
+                    {!collapsed && <span>{link.label}</span>}
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right" className={cn("bg-forensic-800 text-white", !collapsed && "hidden")}>
+                  {link.label}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ))}
+        </nav>
       </div>
     </aside>
   );
