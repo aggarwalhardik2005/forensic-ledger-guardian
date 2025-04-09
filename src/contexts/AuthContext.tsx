@@ -11,6 +11,7 @@ export interface User {
   email: string;
   role: Role;
   roleTitle: string;
+  address?: string; // Added address property as optional
 }
 
 // Mock users for development
@@ -21,7 +22,8 @@ const mockUsers = [
     password: 'court123',
     name: 'Judge Smith',
     role: Role.Court,
-    roleTitle: 'Court Judge'
+    roleTitle: 'Court Judge',
+    address: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F' // Added mock address
   },
   {
     id: '2',
@@ -29,7 +31,8 @@ const mockUsers = [
     password: 'officer123',
     name: 'Officer Johnson',
     role: Role.Officer,
-    roleTitle: 'Police Officer'
+    roleTitle: 'Police Officer',
+    address: '0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2' // Added mock address
   },
   {
     id: '3',
@@ -37,7 +40,8 @@ const mockUsers = [
     password: 'forensic123',
     name: 'Dr. Anderson',
     role: Role.Forensic,
-    roleTitle: 'Forensic Investigator'
+    roleTitle: 'Forensic Investigator',
+    address: '0x5B38Da6a701c568545dCfcB03FcB875f56beddC4' // Added mock address
   },
   {
     id: '4',
@@ -45,7 +49,8 @@ const mockUsers = [
     password: 'lawyer123',
     name: 'Attorney Davis',
     role: Role.Lawyer,
-    roleTitle: 'Defense Attorney'
+    roleTitle: 'Defense Attorney',
+    address: '0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db' // Added mock address
   }
 ];
 

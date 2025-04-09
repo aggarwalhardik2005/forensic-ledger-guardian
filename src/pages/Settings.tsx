@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -190,7 +189,7 @@ const Settings = () => {
               <div className="p-4 border border-forensic-200 rounded-md bg-forensic-50">
                 <p className="font-medium text-forensic-800 mb-1">Connected Wallet</p>
                 <p className="text-sm text-forensic-600 font-mono">
-                  {user?.address ? user.address : '0x0000000000000000000000000000000000000000'}
+                  {user?.address || '0x0000000000000000000000000000000000000000'}
                 </p>
               </div>
               
