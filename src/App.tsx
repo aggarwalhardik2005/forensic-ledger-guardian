@@ -15,11 +15,18 @@ import Verify from "./pages/Verify";
 import NotFound from "./pages/NotFound";
 import { Web3Provider } from "./contexts/Web3Context";
 
-// Create a new QueryClient instance
-const queryClient = new QueryClient();
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+      refetchOnWindowFocus: false
+    },
+  },
+});
 
-const App = () => (
-  <React.StrictMode>
+const App: React.FC = () => {
+  return (
     <QueryClientProvider client={queryClient}>
       <Web3Provider>
         <TooltipProvider>
@@ -39,7 +46,7 @@ const App = () => (
         </TooltipProvider>
       </Web3Provider>
     </QueryClientProvider>
-  </React.StrictMode>
-);
+  );
+};
 
 export default App;
