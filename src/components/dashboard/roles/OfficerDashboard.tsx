@@ -12,7 +12,7 @@ import {
   FileCheck, 
   ArrowUpRight, 
   UserRound,
-  Handcuffs
+  Gavel // Replacing Handcuffs with Gavel which is a better representation for legal/case updates
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import RecentActivityList from '../RecentActivityList';
@@ -109,7 +109,7 @@ const OfficerDashboard = () => {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center">
-              <Handcuffs className="h-5 w-5 mr-2 text-forensic-accent" />
+              <Gavel className="h-5 w-5 mr-2 text-forensic-accent" />
               Case Updates
             </CardTitle>
             <CardDescription>Update case and suspect information</CardDescription>
