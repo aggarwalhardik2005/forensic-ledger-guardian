@@ -6,35 +6,32 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Wallet, Lock } from "lucide-react";
+import { useAuth } from '@/contexts/AuthContext';
+import { useWeb3 } from '@/contexts/Web3Context';
 import { useToast } from '@/hooks/use-toast';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
+  const { connectWallet } = useWeb3();
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Mock login handler
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      // This would be a real authentication API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Simulate successful login
-      toast({
-        title: "Logged in successfully",
-        description: "Welcome to ForensicLedger Guardian",
-      });
-      
-      navigate('/dashboard');
+      const success = await login(email, password);
+      if (success) {
+        navigate('/dashboard');
+      }
     } catch (error) {
       toast({
         title: "Login failed",
-        description: "Invalid email or password",
+        description: "An unexpected error occurred",
         variant: "destructive",
       });
     } finally {
@@ -46,11 +43,8 @@ const LoginForm = () => {
     setIsLoading(true);
     
     try {
-      // This would be actual Web3 wallet connection logic
-      toast({
-        title: "Web3 wallet not available",
-        description: "This is a demo application. MetaMask integration would be implemented in production.",
-      });
+      await connectWallet();
+      // The Web3Context will handle redirecting if needed
     } catch (error) {
       toast({
         title: "Connection failed",
@@ -73,6 +67,15 @@ const LoginForm = () => {
           <CardDescription>
             Enter your credentials to access your account
           </CardDescription>
+          
+          {/* Demo accounts info */}
+          <div className="mt-2 p-2 bg-forensic-50 rounded text-xs">
+            <p className="font-semibold text-forensic-600 mb-1">Demo Accounts:</p>
+            <p className="text-forensic-500">court@example.com / court123</p>
+            <p className="text-forensic-500">officer@example.com / officer123</p>
+            <p className="text-forensic-500">forensic@example.com / forensic123</p>
+            <p className="text-forensic-500">lawyer@example.com / lawyer123</p>
+          </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin}>

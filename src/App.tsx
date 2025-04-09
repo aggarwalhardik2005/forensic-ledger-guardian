@@ -14,6 +14,7 @@ import Upload from "./pages/Upload";
 import Verify from "./pages/Verify";
 import NotFound from "./pages/NotFound";
 import { Web3Provider } from "./contexts/Web3Context";
+import { AuthProvider } from "./contexts/AuthContext";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -28,23 +29,25 @@ const queryClient = new QueryClient({
 const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <Web3Provider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
-              <Route path="/cases" element={<Layout><Cases /></Layout>} />
-              <Route path="/evidence" element={<Layout><Evidence /></Layout>} />
-              <Route path="/upload" element={<Layout><Upload /></Layout>} />
-              <Route path="/verify" element={<Layout><Verify /></Layout>} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </Web3Provider>
+      <BrowserRouter>
+        <AuthProvider>
+          <Web3Provider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
+                <Route path="/cases" element={<Layout><Cases /></Layout>} />
+                <Route path="/evidence" element={<Layout><Evidence /></Layout>} />
+                <Route path="/upload" element={<Layout><Upload /></Layout>} />
+                <Route path="/verify" element={<Layout><Verify /></Layout>} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </TooltipProvider>
+          </Web3Provider>
+        </AuthProvider>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 };

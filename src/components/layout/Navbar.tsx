@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
   Shield, 
@@ -11,21 +11,21 @@ import {
   FileCheck, 
   Menu, 
   X, 
-  LogOut 
+  LogOut,
+  User
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState({ role: "Forensic" });
+  const { user, logout } = useAuth();
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
   
-  // Mock logout function
   const handleLogout = () => {
-    console.log("User logged out");
-    // Would handle authentication state here
+    logout();
   };
 
   return (
@@ -59,14 +59,27 @@ const Navbar = () => {
               <FileCheck className="h-4 w-4" />
               <span>Verify</span>
             </Link>
-            <Button 
-              variant="ghost"
-              className="text-white hover:text-forensic-danger flex items-center space-x-1"
-              onClick={handleLogout}
-            >
-              <LogOut className="h-4 w-4" />
-              <span>Logout</span>
-            </Button>
+
+            {user ? (
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2 border-r pr-3 border-forensic-600">
+                  <User className="h-4 w-4 text-forensic-accent" />
+                  <span className="text-sm">{user.name}</span>
+                </div>
+                <Button 
+                  variant="ghost"
+                  className="text-white hover:text-forensic-danger flex items-center space-x-1"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Logout</span>
+                </Button>
+              </div>
+            ) : (
+              <Link to="/" className="text-forensic-accent hover:text-forensic-accent/80 transition-colors">
+                Login
+              </Link>
+            )}
           </div>
           
           {/* Mobile menu button */}
@@ -121,13 +134,25 @@ const Navbar = () => {
                 <FileCheck className="h-5 w-5" />
                 <span>Verify</span>
               </Link>
-              <button 
-                onClick={handleLogout}
-                className="flex items-center space-x-2 px-4 py-2 text-left hover:bg-forensic-700 rounded-md text-forensic-danger"
-              >
-                <LogOut className="h-5 w-5" />
-                <span>Logout</span>
-              </button>
+              
+              {user && (
+                <>
+                  <div className="px-4 py-2 border-t border-forensic-700 flex items-center space-x-2">
+                    <User className="h-5 w-5 text-forensic-accent" />
+                    <span>{user.name}</span>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      handleLogout();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="flex items-center space-x-2 px-4 py-2 text-left hover:bg-forensic-700 rounded-md text-forensic-danger"
+                  >
+                    <LogOut className="h-5 w-5" />
+                    <span>Logout</span>
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}

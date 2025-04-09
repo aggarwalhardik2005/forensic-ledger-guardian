@@ -1,9 +1,17 @@
 
 import React from 'react';
-import DashboardComponent from '@/components/dashboard/Dashboard';
+import { Navigate } from 'react-router-dom';
+import RoleDashboard from '@/components/dashboard/RoleDashboard';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Dashboard = () => {
-  return <DashboardComponent />;
+  const { isLoggedIn } = useAuth();
+  
+  if (!isLoggedIn) {
+    return <Navigate to="/" />;
+  }
+  
+  return <RoleDashboard />;
 };
 
 export default Dashboard;
