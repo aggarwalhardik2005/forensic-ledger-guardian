@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Shield, Home, FolderClosed, FileDigit, Upload, CheckCircle, HelpCircle, Settings, BarChart3, Users, FileLock2, Activity, FileText, Scale, BookOpen, AlignLeft } from 'lucide-react';
@@ -192,8 +191,6 @@ const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
             </div>
           </div>
         </div>
-        
-        {/* Mobile toggle button - shown on navbar */}
       </>
     );
   }

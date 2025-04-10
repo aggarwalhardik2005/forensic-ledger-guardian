@@ -48,7 +48,7 @@ const RoleDashboard = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-2 xs:gap-0">
         <h1 className="text-2xl font-bold text-forensic-800">
           Welcome, {user.name}
         </h1>
