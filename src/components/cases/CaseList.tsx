@@ -113,11 +113,13 @@ const CaseList: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="flex items-center space-x-2 mb-4">
-            <Input 
-              placeholder="Search cases..." 
-              className="max-w-md"
-              prefix={<Search className="h-4 w-4 text-forensic-400" />}
-            />
+            <div className="relative max-w-md w-full">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-forensic-400" />
+              <Input 
+                placeholder="Search cases..." 
+                className="pl-8"
+              />
+            </div>
             <Button variant="outline" size="icon" className="h-10 w-10">
               <Filter className="h-4 w-4" />
             </Button>
