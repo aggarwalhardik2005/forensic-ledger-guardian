@@ -81,8 +81,14 @@ const CourtDashboard = () => {
                   </div>
                   <div className="space-x-2">
                     <Badge className="bg-forensic-warning text-forensic-900">Pending Approval</Badge>
-                    <Button size="sm" className="bg-forensic-court hover:bg-forensic-court/90">
-                      Review
+                    <Button 
+                      size="sm" 
+                      className="bg-forensic-court hover:bg-forensic-court/90"
+                      asChild
+                    >
+                      <Link to="/cases/approval">
+                        Review
+                      </Link>
                     </Button>
                   </div>
                 </div>

@@ -30,6 +30,9 @@ import SystemConfiguration from "./pages/court/SystemConfiguration";
 import AuditLogs from "./pages/court/AuditLogs";
 import ReportsAnalytics from "./pages/court/ReportsAnalytics";
 import CreateCase from "./pages/cases/CreateCase";
+import CasesApproval from "./pages/cases/CasesApproval";
+import CaseDetail from "./pages/cases/CaseDetail";
+import AddUser from "./pages/users/AddUser";
 
 // Officer role specific pages
 import FIRManagement from "./pages/officer/FIRManagement";
@@ -71,6 +74,7 @@ const App: React.FC = () => {
                 <Route path="/" element={<Index />} />
                 <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
                 <Route path="/cases" element={<Layout><Cases /></Layout>} />
+                <Route path="/cases/:caseId" element={<Layout><CaseDetail /></Layout>} />
                 <Route path="/evidence" element={<Layout><Evidence /></Layout>} />
                 <Route path="/upload" element={<Layout><Upload /></Layout>} />
                 <Route path="/verify" element={<Layout><Verify /></Layout>} />
@@ -85,11 +89,13 @@ const App: React.FC = () => {
                 
                 {/* Court role specific routes */}
                 <Route path="/users/manage" element={<Layout><UserManagement /></Layout>} />
+                <Route path="/users/add" element={<Layout><AddUser /></Layout>} />
                 <Route path="/users/roles" element={<Layout><RoleManagement /></Layout>} />
                 <Route path="/settings/security" element={<Layout><SystemConfiguration /></Layout>} />
                 <Route path="/activity" element={<Layout><AuditLogs /></Layout>} />
                 <Route path="/reports" element={<Layout><ReportsAnalytics /></Layout>} />
                 <Route path="/cases/create" element={<Layout><CreateCase /></Layout>} />
+                <Route path="/cases/approval" element={<Layout><CasesApproval /></Layout>} />
                 
                 {/* Officer role specific routes */}
                 <Route path="/fir" element={<Layout><FIR /></Layout>} />

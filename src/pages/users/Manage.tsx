@@ -10,11 +10,22 @@ import {
   MoreVertical,
   ShieldCheck,
   ShieldOff,
-  UserX
+  UserX,
+  User,
+  FileText,
+  UserCog
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Role } from "@/services/web3Service";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +33,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 // Mock user data
 const userData = [
@@ -90,13 +103,171 @@ const userData = [
   },
 ];
 
+interface EditUserDialogProps {
+  user: any;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSave: (updatedUser: any) => void;
+}
+
+const EditUserDialog = ({ user, open, onOpenChange, onSave }: EditUserDialogProps) => {
+  const [name, setName] = useState(user.name);
+  const [email, setEmail] = useState(user.email);
+  const [selectedRole, setSelectedRole] = useState(user.role.toString());
+
+  const handleSave = () => {
+    onSave({
+      ...user,
+      name,
+      email,
+      role: parseInt(selectedRole)
+    });
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Edit User</DialogTitle>
+          <DialogDescription>
+            Update user information and save changes.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <label htmlFor="name" className="text-sm font-medium">Name</label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter user name"
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="email" className="text-sm font-medium">Email</label>
+            <Input
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter user email"
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="role" className="text-sm font-medium">Role</label>
+            <Select value={selectedRole} onValueChange={setSelectedRole}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={Role.Court.toString()}>Court Judge</SelectItem>
+                <SelectItem value={Role.Officer.toString()}>Police Officer</SelectItem>
+                <SelectItem value={Role.Forensic.toString()}>Forensic Investigator</SelectItem>
+                <SelectItem value={Role.Lawyer.toString()}>Defense Attorney</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button onClick={handleSave}>Save Changes</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+interface ChangeRoleDialogProps {
+  user: any;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSave: (userId: string, roleId: number) => void;
+}
+
+const ChangeRoleDialog = ({ user, open, onOpenChange, onSave }: ChangeRoleDialogProps) => {
+  const [selectedRole, setSelectedRole] = useState(user.role.toString());
+
+  const handleSave = () => {
+    onSave(user.id, parseInt(selectedRole));
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Change User Role</DialogTitle>
+          <DialogDescription>
+            Update the role for {user.name}.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <label htmlFor="role" className="text-sm font-medium">Select New Role</label>
+            <Select value={selectedRole} onValueChange={setSelectedRole}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={Role.Court.toString()}>Court Judge</SelectItem>
+                <SelectItem value={Role.Officer.toString()}>Police Officer</SelectItem>
+                <SelectItem value={Role.Forensic.toString()}>Forensic Investigator</SelectItem>
+                <SelectItem value={Role.Lawyer.toString()}>Defense Attorney</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button onClick={handleSave}>Change Role</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+interface ConfirmDialogProps {
+  title: string;
+  description: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: () => void;
+}
+
+const ConfirmDialog = ({ title, description, open, onOpenChange, onConfirm }: ConfirmDialogProps) => {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="destructive" onClick={onConfirm}>Confirm</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 const UserManagement = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [users, setUsers] = useState(userData);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [changeRoleDialogOpen, setChangeRoleDialogOpen] = useState(false);
+  const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
+  const [toggleStatusDialogOpen, setToggleStatusDialogOpen] = useState(false);
+  
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Filter users based on search and filters
-  const filteredUsers = userData
+  const filteredUsers = users
     .filter(user => {
       // Search query filter
       if (searchQuery) {
@@ -143,11 +314,81 @@ const UserManagement = () => {
     }
   };
 
+  const handleEditUser = (updatedUser: any) => {
+    setUsers(users.map(user => user.id === updatedUser.id ? updatedUser : user));
+    toast({
+      title: "User Updated",
+      description: `${updatedUser.name}'s information has been updated.`,
+    });
+  };
+
+  const handleChangeRole = (userId: string, newRoleId: number) => {
+    const updatedUsers = users.map(user => {
+      if (user.id === userId) {
+        return { ...user, role: newRoleId };
+      }
+      return user;
+    });
+    
+    setUsers(updatedUsers);
+    toast({
+      title: "Role Changed",
+      description: `User's role has been updated.`,
+    });
+  };
+
+  const handleToggleStatus = () => {
+    if (!selectedUser) return;
+    
+    const newStatus = selectedUser.status === 'active' ? 'inactive' : 'active';
+    const actionText = newStatus === 'active' ? 'activated' : 'deactivated';
+    
+    const updatedUsers = users.map(user => {
+      if (user.id === selectedUser.id) {
+        return { ...user, status: newStatus };
+      }
+      return user;
+    });
+    
+    setUsers(updatedUsers);
+    setToggleStatusDialogOpen(false);
+    
+    toast({
+      title: `User ${actionText.charAt(0).toUpperCase() + actionText.slice(1)}`,
+      description: `${selectedUser.name}'s account has been ${actionText}.`,
+    });
+  };
+
+  const handleRemoveUser = () => {
+    if (!selectedUser) return;
+    
+    const updatedUsers = users.filter(user => user.id !== selectedUser.id);
+    setUsers(updatedUsers);
+    setRemoveDialogOpen(false);
+    
+    toast({
+      title: "User Removed",
+      description: `${selectedUser.name}'s access has been revoked.`,
+      variant: "destructive"
+    });
+  };
+
+  const handleViewCases = (user: any) => {
+    toast({
+      title: "View Cases",
+      description: `Viewing cases assigned to ${user.name}.`
+    });
+    navigate('/cases');
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-forensic-800">User Management</h1>
-        <Button className="bg-forensic-court hover:bg-forensic-court/90 flex items-center gap-2">
+        <Button 
+          className="bg-forensic-court hover:bg-forensic-court/90 flex items-center gap-2"
+          onClick={() => navigate('/users/add')}
+        >
           <UserPlus className="h-4 w-4" />
           <span>Add User</span>
         </Button>
@@ -240,24 +481,35 @@ const UserManagement = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56">
-                          <DropdownMenuItem className="cursor-pointer">
+                          <DropdownMenuItem className="cursor-pointer" onClick={() => {
+                            setSelectedUser(user);
+                            setEditDialogOpen(true);
+                          }}>
                             <Button variant="ghost" className="flex items-center w-full justify-start px-0">
+                              <User className="h-4 w-4 mr-2" />
                               Edit User
                             </Button>
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="cursor-pointer">
+                          <DropdownMenuItem className="cursor-pointer" onClick={() => handleViewCases(user)}>
                             <Button variant="ghost" className="flex items-center w-full justify-start px-0">
+                              <FileText className="h-4 w-4 mr-2" />
                               View Cases
                             </Button>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem className="cursor-pointer">
+                          <DropdownMenuItem className="cursor-pointer" onClick={() => {
+                            setSelectedUser(user);
+                            setChangeRoleDialogOpen(true);
+                          }}>
                             <Button variant="ghost" className="flex items-center w-full justify-start px-0 text-forensic-court">
-                              <ShieldCheck className="h-4 w-4 mr-2" />
+                              <UserCog className="h-4 w-4 mr-2" />
                               Change Role
                             </Button>
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="cursor-pointer">
+                          <DropdownMenuItem className="cursor-pointer" onClick={() => {
+                            setSelectedUser(user);
+                            setToggleStatusDialogOpen(true);
+                          }}>
                             <Button variant="ghost" className="flex items-center w-full justify-start px-0 text-forensic-warning">
                               {user.status === 'active' ? (
                                 <>
@@ -273,7 +525,10 @@ const UserManagement = () => {
                             </Button>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem className="cursor-pointer">
+                          <DropdownMenuItem className="cursor-pointer" onClick={() => {
+                            setSelectedUser(user);
+                            setRemoveDialogOpen(true);
+                          }}>
                             <Button variant="ghost" className="flex items-center w-full justify-start px-0 text-forensic-danger">
                               <UserX className="h-4 w-4 mr-2" />
                               Remove Access
@@ -289,6 +544,41 @@ const UserManagement = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Dialogs */}
+      {selectedUser && (
+        <>
+          <EditUserDialog 
+            user={selectedUser} 
+            open={editDialogOpen} 
+            onOpenChange={setEditDialogOpen}
+            onSave={handleEditUser}
+          />
+          
+          <ChangeRoleDialog
+            user={selectedUser}
+            open={changeRoleDialogOpen}
+            onOpenChange={setChangeRoleDialogOpen}
+            onSave={handleChangeRole}
+          />
+          
+          <ConfirmDialog
+            title="Remove User Access"
+            description={`Are you sure you want to revoke ${selectedUser.name}'s access to the system? This action cannot be undone.`}
+            open={removeDialogOpen}
+            onOpenChange={setRemoveDialogOpen}
+            onConfirm={handleRemoveUser}
+          />
+          
+          <ConfirmDialog
+            title={selectedUser.status === 'active' ? "Deactivate User" : "Activate User"}
+            description={`Are you sure you want to ${selectedUser.status === 'active' ? 'deactivate' : 'activate'} ${selectedUser.name}'s account?`}
+            open={toggleStatusDialogOpen}
+            onOpenChange={setToggleStatusDialogOpen}
+            onConfirm={handleToggleStatus}
+          />
+        </>
+      )}
     </div>
   );
 };

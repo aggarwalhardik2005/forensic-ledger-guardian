@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 import { 
   Save, 
   FileText, 
@@ -18,6 +20,96 @@ import {
 } from "lucide-react";
 
 const CreateCase = () => {
+  // State for form fields
+  const [activeTab, setActiveTab] = useState('basic');
+  const [caseTitle, setCaseTitle] = useState('');
+  const [caseType, setCaseType] = useState('criminal');
+  const [priority, setPriority] = useState('medium');
+  const [jurisdiction, setJurisdiction] = useState('district');
+  const [description, setDescription] = useState('');
+  
+  // Complainant information
+  const [complainantName, setComplainantName] = useState('');
+  const [complainantContact, setComplainantContact] = useState('');
+  const [complainantAddress, setComplainantAddress] = useState('');
+  
+  // Suspect information
+  const [suspectName, setSuspectName] = useState('');
+  const [suspectContact, setSuspectContact] = useState('');
+  const [suspectAddress, setSuspectAddress] = useState('');
+  const [suspectDescription, setSuspectDescription] = useState('');
+  
+  // Assignments
+  const [leadOfficer, setLeadOfficer] = useState('john.smith');
+  const [assistingOfficers, setAssistingOfficers] = useState<string>('');
+  const [leadForensic, setLeadForensic] = useState('emily.chen');
+  const [assistingForensics, setAssistingForensics] = useState<string>('');
+  const [forensicSpecialities, setForensicSpecialities] = useState<string>('');
+  const [prosecutor, setProsecutor] = useState('sarah.lee');
+  const [defenseAttorney, setDefenseAttorney] = useState<string>('');
+  const [judge, setJudge] = useState('michael.wong');
+  
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const handleReset = () => {
+    setCaseTitle('');
+    setDescription('');
+    setPriority('medium');
+    setCaseType('criminal');
+    setJurisdiction('district');
+    
+    toast({
+      title: "Form Reset",
+      description: "All form fields have been cleared."
+    });
+  };
+
+  const handleNextTab = (current: string) => {
+    switch (current) {
+      case 'basic':
+        setActiveTab('parties');
+        break;
+      case 'parties':
+        setActiveTab('assignments');
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handlePreviousTab = (current: string) => {
+    switch (current) {
+      case 'parties':
+        setActiveTab('basic');
+        break;
+      case 'assignments':
+        setActiveTab('parties');
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleSubmit = () => {
+    // Validation
+    if (!caseTitle) {
+      toast({
+        title: "Missing Information",
+        description: "Please provide a case title before creating the case.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    toast({
+      title: "Case Created",
+      description: `Case "${caseTitle}" has been successfully created.`
+    });
+    
+    navigate('/cases');
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -35,7 +127,7 @@ const CreateCase = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="basic" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid grid-cols-3 mb-6">
               <TabsTrigger value="basic" className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
@@ -70,7 +162,7 @@ const CreateCase = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="caseType">Case Type</Label>
-                    <Select defaultValue="criminal">
+                    <Select value={caseType} onValueChange={setCaseType}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select case type" />
                       </SelectTrigger>
@@ -87,7 +179,7 @@ const CreateCase = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="priority">Priority</Label>
-                    <Select defaultValue="medium">
+                    <Select value={priority} onValueChange={setPriority}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select priority" />
                       </SelectTrigger>
@@ -100,7 +192,7 @@ const CreateCase = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="jurisdiction">Jurisdiction</Label>
-                    <Select defaultValue="district">
+                    <Select value={jurisdiction} onValueChange={setJurisdiction}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select jurisdiction" />
                       </SelectTrigger>
@@ -115,17 +207,31 @@ const CreateCase = () => {
                 
                 <div className="space-y-2">
                   <Label htmlFor="caseTitle">Case Title</Label>
-                  <Input id="caseTitle" placeholder="Enter case title" />
+                  <Input 
+                    id="caseTitle" 
+                    placeholder="Enter case title" 
+                    value={caseTitle}
+                    onChange={(e) => setCaseTitle(e.target.value)}
+                  />
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="caseDescription">Case Description</Label>
-                  <Textarea id="caseDescription" placeholder="Enter detailed case description" className="min-h-32" />
+                  <Textarea 
+                    id="caseDescription" 
+                    placeholder="Enter detailed case description" 
+                    className="min-h-32"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  />
                 </div>
                 
                 <div className="flex justify-end gap-2">
-                  <Button variant="outline">Reset</Button>
-                  <Button className="bg-forensic-accent hover:bg-forensic-accent/90 flex items-center gap-2">
+                  <Button variant="outline" onClick={handleReset}>Reset</Button>
+                  <Button 
+                    className="bg-forensic-accent hover:bg-forensic-accent/90 flex items-center gap-2"
+                    onClick={() => handleNextTab('basic')}
+                  >
                     <ChevronRight className="h-4 w-4" />
                     Next: Involved Parties
                   </Button>
@@ -146,17 +252,32 @@ const CreateCase = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="complainantName">Name</Label>
-                        <Input id="complainantName" placeholder="Full name" />
+                        <Input 
+                          id="complainantName" 
+                          placeholder="Full name"
+                          value={complainantName}
+                          onChange={(e) => setComplainantName(e.target.value)}
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="complainantContact">Contact</Label>
-                        <Input id="complainantContact" placeholder="Phone number" />
+                        <Input 
+                          id="complainantContact" 
+                          placeholder="Phone number"
+                          value={complainantContact}
+                          onChange={(e) => setComplainantContact(e.target.value)}
+                        />
                       </div>
                     </div>
                     
                     <div className="space-y-2">
                       <Label htmlFor="complainantAddress">Address</Label>
-                      <Textarea id="complainantAddress" placeholder="Full address" />
+                      <Textarea 
+                        id="complainantAddress" 
+                        placeholder="Full address"
+                        value={complainantAddress}
+                        onChange={(e) => setComplainantAddress(e.target.value)}
+                      />
                     </div>
                   </CardContent>
                 </Card>
@@ -172,32 +293,59 @@ const CreateCase = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="suspectName">Name</Label>
-                        <Input id="suspectName" placeholder="Full name" />
+                        <Input 
+                          id="suspectName" 
+                          placeholder="Full name"
+                          value={suspectName}
+                          onChange={(e) => setSuspectName(e.target.value)}
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="suspectContact">Contact (if known)</Label>
-                        <Input id="suspectContact" placeholder="Phone number" />
+                        <Input 
+                          id="suspectContact" 
+                          placeholder="Phone number"
+                          value={suspectContact}
+                          onChange={(e) => setSuspectContact(e.target.value)}
+                        />
                       </div>
                     </div>
                     
                     <div className="space-y-2">
                       <Label htmlFor="suspectAddress">Address (if known)</Label>
-                      <Textarea id="suspectAddress" placeholder="Full address" />
+                      <Textarea 
+                        id="suspectAddress" 
+                        placeholder="Full address"
+                        value={suspectAddress}
+                        onChange={(e) => setSuspectAddress(e.target.value)}
+                      />
                     </div>
                     
                     <div className="space-y-2">
                       <Label htmlFor="suspectDescription">Description</Label>
-                      <Textarea id="suspectDescription" placeholder="Physical description and identifying features" />
+                      <Textarea 
+                        id="suspectDescription" 
+                        placeholder="Physical description and identifying features"
+                        value={suspectDescription}
+                        onChange={(e) => setSuspectDescription(e.target.value)}
+                      />
                     </div>
                   </CardContent>
                 </Card>
                 
                 <div className="flex justify-between gap-2">
-                  <Button variant="outline" className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center gap-2"
+                    onClick={() => handlePreviousTab('parties')}
+                  >
                     <ChevronRight className="h-4 w-4 rotate-180" />
                     Back: Basic Details
                   </Button>
-                  <Button className="bg-forensic-accent hover:bg-forensic-accent/90 flex items-center gap-2">
+                  <Button 
+                    className="bg-forensic-accent hover:bg-forensic-accent/90 flex items-center gap-2"
+                    onClick={() => handleNextTab('parties')}
+                  >
                     <ChevronRight className="h-4 w-4" />
                     Next: Role Assignments
                   </Button>
@@ -218,7 +366,7 @@ const CreateCase = () => {
                     <CardContent className="space-y-2">
                       <div className="space-y-2">
                         <Label htmlFor="leadOfficer">Lead Officer</Label>
-                        <Select defaultValue="john.smith">
+                        <Select value={leadOfficer} onValueChange={setLeadOfficer}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select officer" />
                           </SelectTrigger>
@@ -232,7 +380,7 @@ const CreateCase = () => {
                       
                       <div className="space-y-2">
                         <Label htmlFor="assistingOfficers">Assisting Officers</Label>
-                        <Select>
+                        <Select value={assistingOfficers} onValueChange={setAssistingOfficers}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select officers" />
                           </SelectTrigger>
@@ -256,7 +404,7 @@ const CreateCase = () => {
                     <CardContent className="space-y-2">
                       <div className="space-y-2">
                         <Label htmlFor="leadForensic">Lead Forensic Expert</Label>
-                        <Select defaultValue="emily.chen">
+                        <Select value={leadForensic} onValueChange={setLeadForensic}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select forensic expert" />
                           </SelectTrigger>
@@ -270,7 +418,7 @@ const CreateCase = () => {
                       
                       <div className="space-y-2">
                         <Label htmlFor="assistingForensics">Assisting Forensic Experts</Label>
-                        <Select>
+                        <Select value={assistingForensics} onValueChange={setAssistingForensics}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select forensic experts" />
                           </SelectTrigger>
@@ -284,7 +432,7 @@ const CreateCase = () => {
                       
                       <div className="space-y-2">
                         <Label htmlFor="forensicSpecialities">Required Specialities</Label>
-                        <Select>
+                        <Select value={forensicSpecialities} onValueChange={setForensicSpecialities}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select specialities" />
                           </SelectTrigger>
@@ -311,7 +459,7 @@ const CreateCase = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="prosecutor">Prosecution Lead</Label>
-                        <Select defaultValue="sarah.lee">
+                        <Select value={prosecutor} onValueChange={setProsecutor}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select prosecutor" />
                           </SelectTrigger>
@@ -325,7 +473,7 @@ const CreateCase = () => {
                       
                       <div className="space-y-2">
                         <Label htmlFor="defenseAttorney">Defense Attorney (if known)</Label>
-                        <Select>
+                        <Select value={defenseAttorney} onValueChange={setDefenseAttorney}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select defense attorney" />
                           </SelectTrigger>
@@ -350,7 +498,7 @@ const CreateCase = () => {
                   <CardContent>
                     <div className="space-y-2">
                       <Label htmlFor="judge">Assigned Judge</Label>
-                      <Select defaultValue="michael.wong">
+                      <Select value={judge} onValueChange={setJudge}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select judge" />
                         </SelectTrigger>
@@ -365,11 +513,18 @@ const CreateCase = () => {
                 </Card>
                 
                 <div className="flex justify-between gap-2">
-                  <Button variant="outline" className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center gap-2"
+                    onClick={() => handlePreviousTab('assignments')}
+                  >
                     <ChevronRight className="h-4 w-4 rotate-180" />
                     Back: Involved Parties
                   </Button>
-                  <Button className="bg-forensic-court hover:bg-forensic-court/90 flex items-center gap-2">
+                  <Button 
+                    className="bg-forensic-court hover:bg-forensic-court/90 flex items-center gap-2"
+                    onClick={handleSubmit}
+                  >
                     <Save className="h-4 w-4 mr-1" />
                     Create Case
                   </Button>
