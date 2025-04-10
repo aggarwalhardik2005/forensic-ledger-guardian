@@ -36,42 +36,141 @@ import {
 } from "lucide-react";
 import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from "@/components/ui/badge";
+import { useToast } from '@/hooks/use-toast';
 
 const TechnicalVerification = () => {
+  const { toast } = useToast();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("hash");
   const [verificationStatus, setVerificationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [verificationMessage, setVerificationMessage] = useState('');
+  const [hashValue, setHashValue] = useState('');
+  const [caseId, setCaseId] = useState('');
+  const [evidenceId, setEvidenceId] = useState('');
   
   const handleFileUpload = () => {
     // Simulating verification process
     setVerificationStatus('loading');
     
+    toast({
+      title: "File Received",
+      description: activeTab === 'hash' 
+        ? "Calculating file hash for verification..." 
+        : "Analyzing file for chain of custody verification..."
+    });
+    
     setTimeout(() => {
       if (activeTab === 'hash') {
         setVerificationStatus('success');
         setVerificationMessage('Evidence hash has been verified successfully. The hash matches the blockchain record.');
+        toast({
+          title: "Hash Verified",
+          description: "The evidence hash has been successfully verified."
+        });
       } else {
         setVerificationStatus('success');
         setVerificationMessage('Chain of custody verified. This evidence has a complete and unbroken chain of custody with 6 recorded transfers.');
+        toast({
+          title: "Chain of Custody Verified",
+          description: "Complete and unbroken chain of custody confirmed."
+        });
       }
     }, 2000);
   };
   
   const handleManualVerify = () => {
+    // Input validation
+    if (!hashValue && activeTab === 'hash') {
+      toast({
+        title: "Missing Hash Value",
+        description: "Please enter a hash value for verification.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!caseId) {
+      toast({
+        title: "Missing Case ID",
+        description: "Please enter a Case ID for verification.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     // Simulating verification process
     setVerificationStatus('loading');
+    
+    toast({
+      title: "Verification In Progress",
+      description: "Checking blockchain records..."
+    });
     
     setTimeout(() => {
       const randomSuccess = Math.random() > 0.3;
       if (randomSuccess) {
         setVerificationStatus('success');
         setVerificationMessage('Evidence hash has been verified successfully. The hash matches the blockchain record.');
+        toast({
+          title: "Verification Successful",
+          description: "The provided hash matches the blockchain record."
+        });
       } else {
         setVerificationStatus('error');
         setVerificationMessage('Hash verification failed. The provided hash does not match the blockchain record.');
+        toast({
+          title: "Verification Failed",
+          description: "The provided hash does not match the blockchain record.",
+          variant: "destructive"
+        });
       }
     }, 2000);
+  };
+  
+  const handleLookupCustody = () => {
+    if (!evidenceId || !caseId) {
+      toast({
+        title: "Missing Information",
+        description: "Please provide both Evidence ID and Case ID.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setVerificationStatus('loading');
+    
+    toast({
+      title: "Looking Up Chain of Custody",
+      description: `Retrieving custody records for ${evidenceId}`
+    });
+    
+    setTimeout(() => {
+      setVerificationStatus('success');
+      setVerificationMessage('Chain of custody verified. This evidence has a complete and unbroken chain of custody with 6 recorded transfers.');
+      toast({
+        title: "Chain of Custody Retrieved",
+        description: "Full custody history retrieved from blockchain."
+      });
+    }, 2000);
+  };
+  
+  const handleCloseVerification = () => {
+    setVerificationStatus('idle');
+    setVerificationMessage('');
+  };
+  
+  const handleExportReport = () => {
+    toast({
+      title: "Report Exported",
+      description: "Chain of custody report has been exported to PDF.",
+    });
+  };
+  
+  const handleViewFullHistory = () => {
+    toast({
+      title: "Full History",
+      description: "Showing complete history of all custody transfers.",
+    });
   };
   
   return (
@@ -103,7 +202,10 @@ const TechnicalVerification = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="border-2 border-dashed border-forensic-200 rounded-lg p-6 text-center">
+                <div 
+                  className="border-2 border-dashed border-forensic-200 rounded-lg p-6 text-center cursor-pointer hover:border-forensic-accent/40 transition-colors"
+                  onClick={handleFileUpload}
+                >
                   <FileDigit className="h-10 w-10 text-forensic-300 mx-auto mb-2" />
                   <h4 className="text-sm font-medium mb-1">Drop evidence file here or click to browse</h4>
                   <p className="text-xs text-forensic-500 mb-2">
@@ -137,17 +239,33 @@ const TechnicalVerification = () => {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Evidence Hash</label>
-                  <Input placeholder="Enter SHA-256 hash value" className="font-mono text-sm" />
+                  <Input 
+                    placeholder="Enter SHA-256 hash value" 
+                    className="font-mono text-sm"
+                    value={hashValue}
+                    onChange={(e) => setHashValue(e.target.value)}
+                  />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Case ID</label>
-                  <Input placeholder="e.g., FF-2023-089" />
+                  <Input 
+                    placeholder="e.g., FF-2023-089" 
+                    value={caseId}
+                    onChange={(e) => setCaseId(e.target.value)}
+                  />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Evidence ID (Optional)</label>
-                  <Input placeholder="e.g., EV-2023-421" />
+                  <Input 
+                    placeholder="e.g., EV-2023-421"
+                    value={evidenceId}
+                    onChange={(e) => setEvidenceId(e.target.value)}
+                  />
                 </div>
-                <Button className="w-full bg-forensic-accent hover:bg-forensic-accent/90" onClick={handleManualVerify}>
+                <Button 
+                  className="w-full bg-forensic-accent hover:bg-forensic-accent/90" 
+                  onClick={handleManualVerify}
+                >
                   Verify Hash
                 </Button>
               </CardContent>
@@ -254,7 +372,7 @@ const TechnicalVerification = () => {
                       <Button
                         variant="outline"
                         className="mt-4"
-                        onClick={() => setVerificationStatus('idle')}
+                        onClick={handleCloseVerification}
                       >
                         Close
                       </Button>
@@ -281,15 +399,23 @@ const TechnicalVerification = () => {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Evidence ID</label>
-                  <Input placeholder="e.g., EV-2023-421" />
+                  <Input 
+                    placeholder="e.g., EV-2023-421"
+                    value={evidenceId}
+                    onChange={(e) => setEvidenceId(e.target.value)} 
+                  />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Case ID</label>
-                  <Input placeholder="e.g., FF-2023-089" />
+                  <Input 
+                    placeholder="e.g., FF-2023-089"
+                    value={caseId}
+                    onChange={(e) => setCaseId(e.target.value)}
+                  />
                 </div>
                 <Button 
                   className="w-full bg-forensic-accent hover:bg-forensic-accent/90" 
-                  onClick={handleFileUpload}
+                  onClick={handleLookupCustody}
                 >
                   Lookup Custody Chain
                 </Button>
@@ -307,7 +433,10 @@ const TechnicalVerification = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="border-2 border-dashed border-forensic-200 rounded-lg p-6 text-center">
+                <div 
+                  className="border-2 border-dashed border-forensic-200 rounded-lg p-6 text-center cursor-pointer hover:border-forensic-accent/40 transition-colors"
+                  onClick={handleFileUpload}
+                >
                   <FileDigit className="h-10 w-10 text-forensic-300 mx-auto mb-2" />
                   <h4 className="text-sm font-medium mb-1">Drop evidence file here or click to browse</h4>
                   <p className="text-xs text-forensic-500 mb-2">
@@ -452,11 +581,20 @@ const TechnicalVerification = () => {
                 <div className="w-full flex items-center justify-between">
                   <Badge className="bg-forensic-success">Chain Verified</Badge>
                   <div className="space-x-2">
-                    <Button variant="outline" size="sm" className="flex items-center gap-1">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex items-center gap-1"
+                      onClick={handleViewFullHistory}
+                    >
                       <Clock className="h-4 w-4" />
                       <span>Full History</span>
                     </Button>
-                    <Button size="sm" className="bg-forensic-accent hover:bg-forensic-accent/90">
+                    <Button 
+                      size="sm" 
+                      className="bg-forensic-accent hover:bg-forensic-accent/90"
+                      onClick={handleExportReport}
+                    >
                       Export Report
                     </Button>
                   </div>

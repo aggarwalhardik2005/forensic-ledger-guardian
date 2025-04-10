@@ -39,6 +39,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from "@/components/ui/badge";
 import { Progress } from '@/components/ui/progress';
+import { useToast } from '@/hooks/use-toast';
 
 // Mock evidence data
 const evidenceItems = [
@@ -125,9 +126,65 @@ const evidenceItems = [
 ];
 
 const EvidenceAnalysis = () => {
+  const { toast } = useToast();
   const { user } = useAuth();
   const [selectedEvidence, setSelectedEvidence] = useState(evidenceItems[0]);
+  const [activeTab, setActiveTab] = useState('details');
+  const [analysisRunning, setAnalysisRunning] = useState(false);
   
+  const handleAnalyze = (item: typeof evidenceItems[0]) => {
+    setSelectedEvidence(item);
+    toast({
+      title: "Evidence Selected",
+      description: `Now analyzing: ${item.name}`,
+    });
+  };
+
+  const handleSaveAnalysis = () => {
+    toast({
+      title: "Analysis Saved",
+      description: `Analysis for ${selectedEvidence.name} has been saved successfully.`,
+      variant: "default",
+    });
+  };
+
+  const handleDownload = () => {
+    toast({
+      title: "Download Started",
+      description: `Downloading ${selectedEvidence.name}...`,
+    });
+  };
+
+  const handleShare = () => {
+    toast({
+      title: "Share Dialog",
+      description: "Share options opened. Select users to share with.",
+    });
+  };
+
+  const handleToolClick = (toolName: string) => {
+    toast({
+      title: `${toolName} Tool`,
+      description: `Opening ${toolName} tool for ${selectedEvidence.name}`,
+    });
+    
+    if (toolName === "Hash Verification") {
+      setActiveTab('metadata');
+    }
+  };
+
+  const handleGenerateReport = () => {
+    setAnalysisRunning(true);
+    
+    setTimeout(() => {
+      setAnalysisRunning(false);
+      toast({
+        title: "Report Generated",
+        description: `Forensic analysis report for ${selectedEvidence.name} has been generated.`,
+      });
+    }, 2000);
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <h1 className="text-2xl font-bold text-forensic-800">Evidence Analysis Workspace</h1>
@@ -183,7 +240,7 @@ const EvidenceAnalysis = () => {
                       <Button 
                         size="sm" 
                         className="bg-forensic-accent hover:bg-forensic-accent/90"
-                        onClick={() => setSelectedEvidence(item)}
+                        onClick={() => handleAnalyze(item)}
                       >
                         Analyze
                         <ChevronRight className="ml-1 h-3 w-3" />
@@ -212,11 +269,21 @@ const EvidenceAnalysis = () => {
                 </CardDescription>
               </div>
               <div className="space-x-2">
-                <Button variant="outline" size="sm" className="flex items-center gap-1">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex items-center gap-1"
+                  onClick={handleDownload}
+                >
                   <Download className="h-4 w-4" />
                   <span>Download</span>
                 </Button>
-                <Button variant="outline" size="sm" className="flex items-center gap-1">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex items-center gap-1"
+                  onClick={handleShare}
+                >
                   <Share2 className="h-4 w-4" />
                   <span>Share</span>
                 </Button>
@@ -224,7 +291,7 @@ const EvidenceAnalysis = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="details" className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid grid-cols-4 mb-4">
                 <TabsTrigger value="details">Details</TabsTrigger>
                 <TabsTrigger value="metadata">Metadata</TabsTrigger>
@@ -303,7 +370,15 @@ const EvidenceAnalysis = () => {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h4 className="font-medium">Event Timeline</h4>
-                    <Button variant="outline" size="sm" className="flex items-center gap-1">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex items-center gap-1"
+                      onClick={() => toast({
+                        title: "Filter Applied",
+                        description: "Timeline events have been filtered.",
+                      })}
+                    >
                       <Clock className="h-4 w-4" />
                       <span>Filter Events</span>
                     </Button>
@@ -350,11 +425,21 @@ const EvidenceAnalysis = () => {
               <TabsContent value="report">
                 <div className="space-y-4">
                   <div className="flex justify-end space-x-2">
-                    <Button variant="outline" size="sm" className="flex items-center gap-1">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex items-center gap-1"
+                      onClick={handleGenerateReport}
+                      disabled={analysisRunning}
+                    >
                       <FileText className="h-4 w-4" />
                       <span>Generate Report</span>
                     </Button>
-                    <Button size="sm" className="bg-forensic-accent hover:bg-forensic-accent/90 flex items-center gap-1">
+                    <Button 
+                      size="sm" 
+                      className="bg-forensic-accent hover:bg-forensic-accent/90 flex items-center gap-1"
+                      onClick={handleDownload}
+                    >
                       <Download className="h-4 w-4" />
                       <span>Export</span>
                     </Button>
@@ -368,8 +453,12 @@ const EvidenceAnalysis = () => {
                         <p className="text-sm text-forensic-500 mb-4">
                           Create a detailed forensic analysis report for this evidence item
                         </p>
-                        <Button className="bg-forensic-accent hover:bg-forensic-accent/90">
-                          Generate Report
+                        <Button 
+                          className="bg-forensic-accent hover:bg-forensic-accent/90"
+                          onClick={handleGenerateReport}
+                          disabled={analysisRunning}
+                        >
+                          {analysisRunning ? "Generating..." : "Generate Report"}
                         </Button>
                       </div>
                     </CardContent>
@@ -387,7 +476,10 @@ const EvidenceAnalysis = () => {
                 </Badge>
                 <span className="text-sm text-forensic-600">{selectedEvidence.metadata.analysisStatus}% Complete</span>
               </div>
-              <Button className="bg-forensic-accent hover:bg-forensic-accent/90 flex items-center gap-1">
+              <Button 
+                className="bg-forensic-accent hover:bg-forensic-accent/90 flex items-center gap-1"
+                onClick={handleSaveAnalysis}
+              >
                 <Save className="h-4 w-4" />
                 <span>Save Analysis</span>
               </Button>
@@ -401,27 +493,47 @@ const EvidenceAnalysis = () => {
             <CardTitle className="text-lg">Analysis Tools</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Button className="w-full justify-start" variant="ghost">
+            <Button 
+              className="w-full justify-start" 
+              variant="ghost"
+              onClick={() => handleToolClick('Hash Verification')}
+            >
               <Fingerprint className="h-4 w-4 mr-2" />
               <span>Hash Verification</span>
             </Button>
             
-            <Button className="w-full justify-start" variant="ghost">
+            <Button 
+              className="w-full justify-start" 
+              variant="ghost"
+              onClick={() => handleToolClick('Data Search')}
+            >
               <Search className="h-4 w-4 mr-2" />
               <span>Data Search</span>
             </Button>
             
-            <Button className="w-full justify-start" variant="ghost">
+            <Button 
+              className="w-full justify-start" 
+              variant="ghost"
+              onClick={() => handleToolClick('Metadata Extractor')}
+            >
               <FileText className="h-4 w-4 mr-2" />
               <span>Metadata Extractor</span>
             </Button>
             
-            <Button className="w-full justify-start" variant="ghost">
+            <Button 
+              className="w-full justify-start" 
+              variant="ghost"
+              onClick={() => handleToolClick('Relationship Mapping')}
+            >
               <Network className="h-4 w-4 mr-2" />
               <span>Relationship Mapping</span>
             </Button>
             
-            <Button className="w-full justify-start" variant="ghost">
+            <Button 
+              className="w-full justify-start" 
+              variant="ghost"
+              onClick={() => handleToolClick('Timeline Generator')}
+            >
               <Clock className="h-4 w-4 mr-2" />
               <span>Timeline Generator</span>
             </Button>
