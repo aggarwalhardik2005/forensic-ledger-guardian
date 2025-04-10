@@ -41,11 +41,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <footer className="bg-white border-t border-forensic-200 py-2 px-4 md:py-4 md:px-6">
           <div className="flex flex-col md:flex-row justify-between items-center max-w-7xl mx-auto">
             <div className="flex items-center space-x-2 mb-2 md:mb-0">
-              <Shield className="h-4 w-4 md:h-5 md:w-5 text-forensic-accent" />
-              <span className="font-medium text-xs md:text-sm text-forensic-800">ForensicLedger</span>
+              <div className="flex items-center justify-center w-5 h-5 bg-gradient-to-r from-forensic-accent to-forensic-evidence rounded-md overflow-hidden">
+                <Shield className="h-3 w-3 text-white" />
+              </div>
+              <span className="font-medium text-xs md:text-sm text-forensic-800">ForensicChain</span>
             </div>
             <div className="text-xs text-forensic-500">
-              © {new Date().getFullYear()} ForensicLedger. All rights reserved.
+              © {new Date().getFullYear()} ForensicChain. All rights reserved.
             </div>
           </div>
         </footer>

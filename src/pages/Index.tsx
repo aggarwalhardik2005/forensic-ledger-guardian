@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import LoginForm from '@/components/auth/LoginForm';
@@ -16,10 +16,25 @@ import {
   Users,
   Scale,
   FileSearch,
-  ClipboardCheck
+  ClipboardCheck,
+  Sparkles
 } from "lucide-react";
 
 const Index = () => {
+  // Scroll to section if hash in URL
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash) {
+      const id = hash.replace('#', '');
+      const element = document.getElementById(id);
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-forensic-800 to-forensic-900 overflow-hidden relative">
       {/* Decorative elements */}
@@ -33,11 +48,16 @@ const Index = () => {
         {/* Header */}
         <header className="flex items-center justify-between py-6">
           <div className="flex items-center space-x-2">
-            <Shield className="h-8 w-8 text-forensic-accent" />
-            <span className="font-bold text-xl text-white tracking-tight">ForensicLedger</span>
+            <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-forensic-accent to-forensic-evidence rounded-md overflow-hidden">
+              <Shield className="h-5 w-5 text-white" />
+            </div>
+            <span className="font-bold text-xl text-white tracking-tight">ForensicChain</span>
           </div>
           <nav className="hidden md:flex space-x-8 items-center">
-            <Link to="#features" className="text-forensic-300 hover:text-white transition-colors">Features</Link>
+            <Link to="#features" className="text-forensic-300 hover:text-white transition-colors flex items-center gap-1">
+              <Sparkles className="h-4 w-4" />
+              <span>Features</span>
+            </Link>
             <Link to="#how-it-works" className="text-forensic-300 hover:text-white transition-colors">How It Works</Link>
             <Link to="#security" className="text-forensic-300 hover:text-white transition-colors">Security</Link>
             <Button asChild variant="outline" size="sm" className="border-forensic-accent text-forensic-accent hover:bg-forensic-accent/10">
@@ -118,7 +138,7 @@ const Index = () => {
         </div>
         
         {/* How It Works Section */}
-        <section id="how-it-works" className="py-20">
+        <section id="how-it-works" className="py-20 scroll-mt-16">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-white mb-4">How It Works</h2>
             <p className="text-forensic-300 max-w-2xl mx-auto">
@@ -126,7 +146,8 @@ const Index = () => {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative">
+            {/* Process Step 1 */}
             <div className="relative">
               <div className="bg-forensic-800/60 backdrop-blur-sm p-6 rounded-lg border border-forensic-700 h-full">
                 <div className="absolute -top-4 -left-4 w-10 h-10 bg-gradient-to-br from-forensic-accent to-forensic-evidence rounded-lg flex items-center justify-center font-bold text-white">1</div>
@@ -135,11 +156,13 @@ const Index = () => {
                   Digital evidence is securely collected and uploaded to the platform with cryptographic hashing.
                 </p>
               </div>
-              <div className="hidden lg:block absolute top-1/2 right-0 transform translate-x-1/2 text-forensic-accent">
-                <ChevronRight className="w-8 h-8" />
+              {/* Arrow - visible only on desktop */}
+              <div className="hidden lg:flex absolute top-1/2 -right-4 transform -translate-y-1/2 z-10">
+                <ChevronRight className="w-8 h-8 text-forensic-accent" />
               </div>
             </div>
             
+            {/* Process Step 2 */}
             <div className="relative">
               <div className="bg-forensic-800/60 backdrop-blur-sm p-6 rounded-lg border border-forensic-700 h-full">
                 <div className="absolute -top-4 -left-4 w-10 h-10 bg-gradient-to-br from-forensic-accent to-forensic-evidence rounded-lg flex items-center justify-center font-bold text-white">2</div>
@@ -148,11 +171,13 @@ const Index = () => {
                   Evidence metadata and hash are recorded on the blockchain, creating an immutable timestamp.
                 </p>
               </div>
-              <div className="hidden lg:block absolute top-1/2 right-0 transform translate-x-1/2 text-forensic-accent">
-                <ChevronRight className="w-8 h-8" />
+              {/* Arrow - visible only on desktop */}
+              <div className="hidden lg:flex absolute top-1/2 -right-4 transform -translate-y-1/2 z-10">
+                <ChevronRight className="w-8 h-8 text-forensic-accent" />
               </div>
             </div>
             
+            {/* Process Step 3 */}
             <div className="relative">
               <div className="bg-forensic-800/60 backdrop-blur-sm p-6 rounded-lg border border-forensic-700 h-full">
                 <div className="absolute -top-4 -left-4 w-10 h-10 bg-gradient-to-br from-forensic-accent to-forensic-evidence rounded-lg flex items-center justify-center font-bold text-white">3</div>
@@ -161,11 +186,13 @@ const Index = () => {
                   Authorized forensic experts analyze evidence with every action transparently recorded.
                 </p>
               </div>
-              <div className="hidden lg:block absolute top-1/2 right-0 transform translate-x-1/2 text-forensic-accent">
-                <ChevronRight className="w-8 h-8" />
+              {/* Arrow - visible only on desktop */}
+              <div className="hidden lg:flex absolute top-1/2 -right-4 transform -translate-y-1/2 z-10">
+                <ChevronRight className="w-8 h-8 text-forensic-accent" />
               </div>
             </div>
             
+            {/* Process Step 4 */}
             <div className="relative">
               <div className="bg-forensic-800/60 backdrop-blur-sm p-6 rounded-lg border border-forensic-700 h-full">
                 <div className="absolute -top-4 -left-4 w-10 h-10 bg-gradient-to-br from-forensic-accent to-forensic-evidence rounded-lg flex items-center justify-center font-bold text-white">4</div>
@@ -174,6 +201,17 @@ const Index = () => {
                   Complete chain-of-custody reports are generated for court, verifiable by all parties.
                 </p>
               </div>
+            </div>
+            
+            {/* Mobile step connectors */}
+            <div className="lg:hidden flex justify-center col-span-1 md:col-span-2">
+              <div className="w-0.5 h-8 bg-forensic-700"></div>
+            </div>
+            <div className="lg:hidden flex justify-center col-span-1 md:hidden">
+              <div className="w-0.5 h-8 bg-forensic-700"></div>
+            </div>
+            <div className="lg:hidden flex justify-center col-span-1 md:col-span-2">
+              <div className="w-0.5 h-8 bg-forensic-700"></div>
             </div>
           </div>
           
@@ -188,7 +226,7 @@ const Index = () => {
         </section>
         
         {/* Features Section */}
-        <section id="features" className="py-20">
+        <section id="features" className="py-20 scroll-mt-16">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-white mb-4">Key Features</h2>
             <p className="text-forensic-300 max-w-2xl mx-auto">
@@ -260,7 +298,7 @@ const Index = () => {
         </section>
         
         {/* Role-Based Access Section */}
-        <section id="security" className="py-20">
+        <section id="security" className="py-20 scroll-mt-16">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-white mb-4">Role-Based Access</h2>
             <p className="text-forensic-300 max-w-2xl mx-auto">
@@ -378,7 +416,7 @@ const Index = () => {
             <div className="text-center max-w-3xl mx-auto">
               <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Ready to transform your evidence management?</h2>
               <p className="text-forensic-300 mb-8">
-                Join the growing network of law enforcement agencies, forensic labs, and legal professionals using ForensicLedger.
+                Join the growing network of law enforcement agencies, forensic labs, and legal professionals using ForensicChain.
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <Button asChild size="lg" className="bg-white text-forensic-900 hover:bg-forensic-100">
@@ -401,8 +439,10 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
-                <Shield className="h-6 w-6 text-forensic-accent" />
-                <span className="font-bold text-lg text-white">ForensicLedger</span>
+                <div className="flex items-center justify-center w-6 h-6 bg-gradient-to-r from-forensic-accent to-forensic-evidence rounded-md overflow-hidden">
+                  <Shield className="h-4 w-4 text-white" />
+                </div>
+                <span className="font-bold text-lg text-white">ForensicChain</span>
               </div>
               <p className="text-forensic-400 text-sm">
                 Blockchain-based digital evidence management for law enforcement and legal professionals.
@@ -421,7 +461,7 @@ const Index = () => {
             <div>
               <h4 className="font-semibold text-white mb-4">Contact</h4>
               <ul className="space-y-2">
-                <li className="text-forensic-400 text-sm">support@forensicledger.com</li>
+                <li className="text-forensic-400 text-sm">support@forensicchain.com</li>
                 <li className="text-forensic-400 text-sm">+1 (555) 123-4567</li>
               </ul>
             </div>
@@ -429,7 +469,7 @@ const Index = () => {
           
           <div className="pt-8 border-t border-forensic-800 flex flex-col md:flex-row justify-between items-center">
             <div className="text-sm text-forensic-400 mb-4 md:mb-0">
-              © {new Date().getFullYear()} ForensicLedger. All rights reserved.
+              © {new Date().getFullYear()} ForensicChain. All rights reserved.
             </div>
             <div className="flex space-x-6">
               <Link to="#" className="text-forensic-400 hover:text-forensic-accent">

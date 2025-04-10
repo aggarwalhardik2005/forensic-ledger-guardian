@@ -1,13 +1,16 @@
 
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
   LogOut,
   User,
   Menu,
   Shield,
-  Bell
+  Bell,
+  Sparkles,
+  HelpCircle,
+  Lock
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Role } from "@/services/web3Service";
@@ -21,6 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 interface NavbarProps {
   toggleSidebar: () => void;
@@ -29,11 +33,23 @@ interface NavbarProps {
 const Navbar = ({ toggleSidebar }: NavbarProps) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const isMobile = useIsMobile();
   
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const isHomePage = location.pathname === '/';
+
+  const scrollToSection = (sectionId: string) => {
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+    } else if (!isHomePage) {
+      navigate('/#' + sectionId);
+    }
   };
 
   const getRoleBadgeColor = (role: Role) => {
@@ -67,11 +83,46 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
           {/* Show logo on mobile */}
           {isMobile && (
             <div className="flex items-center">
-              <Shield className="h-5 w-5 text-forensic-accent" />
-              <span className="ml-1 font-semibold text-sm md:text-base">ForensicLedger</span>
+              <div className="flex items-center justify-center w-6 h-6 bg-gradient-to-r from-forensic-accent to-forensic-evidence rounded-md overflow-hidden">
+                <Shield className="h-4 w-4 text-white" />
+              </div>
+              <span className="ml-1 font-semibold text-sm md:text-base">ForensicChain</span>
             </div>
           )}
         </div>
+
+        {/* Navigation links for homepage */}
+        {isHomePage && !isMobile && (
+          <div className="hidden md:flex space-x-6 ml-auto mr-6">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="flex items-center gap-1 text-forensic-600 hover:text-forensic-accent"
+              onClick={() => scrollToSection('features')}
+            >
+              <Sparkles className="h-4 w-4" />
+              <span>Features</span>
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="flex items-center gap-1 text-forensic-600 hover:text-forensic-accent"
+              onClick={() => scrollToSection('how-it-works')}
+            >
+              <HelpCircle className="h-4 w-4" />
+              <span>How It Works</span>
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="flex items-center gap-1 text-forensic-600 hover:text-forensic-accent"
+              onClick={() => scrollToSection('security')}
+            >
+              <Lock className="h-4 w-4" />
+              <span>Security</span>
+            </Button>
+          </div>
+        )}
 
         {user ? (
           <div className="flex items-center gap-1 sm:gap-4">
@@ -96,7 +147,9 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel className="flex items-center gap-2">
-                  <Shield className="h-4 w-4 text-forensic-accent" />
+                  <div className="flex items-center justify-center w-5 h-5 bg-gradient-to-r from-forensic-accent to-forensic-evidence rounded-md overflow-hidden">
+                    <Shield className="h-3 w-3 text-white" />
+                  </div>
                   <span>User Profile</span>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />

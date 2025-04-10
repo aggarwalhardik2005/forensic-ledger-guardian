@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Shield, Home, FolderClosed, FileDigit, Upload, CheckCircle, HelpCircle, Settings, BarChart3, Users, FileLock2, Activity, FileText, Scale, BookOpen, AlignLeft } from 'lucide-react';
@@ -99,8 +100,10 @@ const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
           <div className="flex flex-col h-full">
             <div className="flex items-center justify-between p-4 border-b">
               <div className="flex items-center">
-                <Shield className="h-6 w-6 text-forensic-accent" />
-                <span className="ml-2 font-bold text-lg">ForensicLedger</span>
+                <div className="flex items-center justify-center w-6 h-6 bg-gradient-to-r from-forensic-accent to-forensic-evidence rounded-md overflow-hidden">
+                  <Shield className="h-4 w-4 text-white" />
+                </div>
+                <span className="ml-2 font-bold text-lg">ForensicChain</span>
               </div>
               <Button 
                 variant="ghost" 
@@ -207,8 +210,10 @@ const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
         <div className="flex items-center justify-between p-4 border-b">
           {!collapsed && (
             <div className="flex items-center">
-              <Shield className="h-6 w-6 text-forensic-accent" />
-              <span className="ml-2 font-bold text-lg">ForensicLedger</span>
+              <div className="flex items-center justify-center w-6 h-6 bg-gradient-to-r from-forensic-accent to-forensic-evidence rounded-md overflow-hidden">
+                <Shield className="h-4 w-4 text-white" />
+              </div>
+              <span className="ml-2 font-bold text-lg">ForensicChain</span>
             </div>
           )}
           <Button 
@@ -299,7 +304,7 @@ const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
                     isActive 
                       ? "bg-forensic-accent/10 text-forensic-accent font-medium" 
                       : "text-gray-700 hover:bg-gray-100"
-                  )}
+                    )}
                 >
                   <span className={cn(!collapsed && "mr-3")}>{link.icon}</span>
                   {!collapsed && <span>{link.label}</span>}
