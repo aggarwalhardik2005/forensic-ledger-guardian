@@ -102,6 +102,42 @@ const dummyEvidence: EvidenceItem[] = [
     verified: true,
     hash: "0xb5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9b8a7c6d5e4f3b2a1c0d9e8f7b6c5d4",
     cidEncrypted: "QmTgtbb6vu4G3CMGvD8Z3CMn6Hy8zN7GJHBtPiQJguwwNP"
+  },
+  {
+    id: "EV-104-003",
+    name: "Disk Image - Server02.e01",
+    type: "application",
+    caseId: "FF-2023-104",
+    submittedBy: "David Wilson",
+    submittedDate: "2025-04-02T11:25:00Z",
+    size: 536870912000,
+    verified: true,
+    hash: "0xc6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5",
+    cidEncrypted: "QmS9thfimMBR98NRhxdS6TDa3rGrwNXUYxBGJeY5wQjN68"
+  },
+  {
+    id: "EV-089-003",
+    name: "Email Exchange Backup.pst",
+    type: "application",
+    caseId: "FF-2023-089",
+    submittedBy: "Officer Johnson",
+    submittedDate: "2025-04-01T15:10:00Z",
+    size: 78500000,
+    verified: false,
+    hash: "0xd7c6b5a4e3f2d1c0b9a8d7c6b5a4e3f2d1c0b9a8d7c6b5a4e3f2d1c0b9a8d7c6",
+    cidEncrypted: "QmWmKMUiNGZS2QCiAZVpSZpKXnYAKn6CdBfGPYcK1GvXV4"
+  },
+  {
+    id: "EV-092-002",
+    name: "Database Backup - Financial System.sql",
+    type: "application",
+    caseId: "FF-2023-092",
+    submittedBy: "Alex Rivera",
+    submittedDate: "2025-03-31T09:45:00Z",
+    size: 156800000,
+    verified: false,
+    hash: "0xe8f7d6c5b4a3e2d1c0b9a8e7f6d5c4b3a2e1d0c9b8a7f6e5d4c3b2a1e0d9c8b7",
+    cidEncrypted: "QmZH5toFT4y8MM9JJfM8qksVf3GXQzuom7CLLrFNrXQF2K"
   }
 ];
 
@@ -109,11 +145,43 @@ export const useEvidenceManager = (caseId?: string) => {
   const [evidence, setEvidence] = useState<EvidenceItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [recentActivity, setRecentActivity] = useState<{
+    action: 'upload' | 'verify' | 'view',
+    evidenceId: string,
+    timestamp: string
+  }[]>([]);
 
   // Function to refresh evidence
   const refreshEvidence = () => {
     setRefreshTrigger(prev => prev + 1);
   };
+
+  // Add a function to track activity
+  const trackActivity = (action: 'upload' | 'verify' | 'view', evidenceId: string) => {
+    const newActivity = {
+      action,
+      evidenceId,
+      timestamp: new Date().toISOString()
+    };
+    
+    setRecentActivity(prev => {
+      const updated = [newActivity, ...prev].slice(0, 10); // Keep only 10 most recent activities
+      localStorage.setItem('evidenceActivity', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  // Load recent activity from localStorage
+  useEffect(() => {
+    const storedActivity = localStorage.getItem('evidenceActivity');
+    if (storedActivity) {
+      try {
+        setRecentActivity(JSON.parse(storedActivity));
+      } catch (e) {
+        console.error("Failed to parse activity:", e);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const fetchEvidence = async () => {
@@ -198,6 +266,9 @@ export const useEvidenceManager = (caseId?: string) => {
       // Save back to storage
       localStorage.setItem('evidenceItems', JSON.stringify(evidenceList));
       
+      // Track the upload activity
+      trackActivity('upload', evidenceId);
+      
       // Refresh the evidence list
       refreshEvidence();
       
@@ -234,6 +305,11 @@ export const useEvidenceManager = (caseId?: string) => {
       );
       
       localStorage.setItem('evidenceItems', JSON.stringify(updatedList));
+      
+      // Track the verify activity
+      trackActivity('verify', evidenceId);
+      
+      // Refresh evidence to update the UI
       refreshEvidence();
       
       toast({
@@ -255,11 +331,19 @@ export const useEvidenceManager = (caseId?: string) => {
     }
   };
 
+  // Function to view evidence (for tracking purposes)
+  const viewEvidence = (evidenceId: string) => {
+    trackActivity('view', evidenceId);
+    return evidence.find(item => item.id === evidenceId) || null;
+  };
+
   return {
     evidence,
     loading,
     uploadEvidence,
     verifyEvidence,
-    refreshEvidence
+    viewEvidence,
+    refreshEvidence,
+    recentActivity
   };
 };

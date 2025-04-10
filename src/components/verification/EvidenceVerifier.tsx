@@ -1,24 +1,35 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import { FileCheck, Shield, Upload, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
-import { useNavigate } from 'react-router-dom';
+import { FileCheck, Shield, Upload, CheckCircle, XCircle, AlertTriangle, ExternalLink, Clock } from "lucide-react";
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useEvidenceManager } from '@/hooks/useEvidenceManager';
 import { toast } from '@/hooks/use-toast';
 
 const EvidenceVerifier: React.FC = () => {
   const navigate = useNavigate();
-  const [evidenceId, setEvidenceId] = useState('');
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const evidenceIdFromUrl = searchParams.get('evidenceId');
+  
+  const [evidenceId, setEvidenceId] = useState(evidenceIdFromUrl || '');
   const [verificationHash, setVerificationHash] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState<'idle' | 'verifying' | 'success' | 'failed'>('idle');
   const [verificationProgress, setVerificationProgress] = useState(0);
   const { evidence, verifyEvidence } = useEvidenceManager();
+  
+  // If evidence ID in URL changes, update the input
+  useEffect(() => {
+    if (evidenceIdFromUrl) {
+      setEvidenceId(evidenceIdFromUrl);
+    }
+  }, [evidenceIdFromUrl]);
 
   const handleVerify = async () => {
     if (!evidenceId.trim()) {
@@ -35,18 +46,16 @@ const EvidenceVerifier: React.FC = () => {
     setVerificationProgress(0);
 
     // Simulate verification stages
-    const simulateProgress = () => {
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 10;
-        setVerificationProgress(progress);
-        
-        if (progress >= 100) {
-          clearInterval(interval);
-          completeVerification();
-        }
-      }, 500);
-    };
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 5;
+      setVerificationProgress(progress);
+      
+      if (progress >= 100) {
+        clearInterval(interval);
+        completeVerification();
+      }
+    }, 200);
 
     const completeVerification = async () => {
       // Find evidence in our list
@@ -64,6 +73,13 @@ const EvidenceVerifier: React.FC = () => {
           // Update evidence to verified status
           const success = await verifyEvidence(evidenceId);
           setVerificationStatus(success ? 'success' : 'failed');
+          
+          if (success) {
+            // Reflect the verification in the URL parameters
+            const params = new URLSearchParams(location.search);
+            params.set('status', 'verified');
+            window.history.replaceState(null, '', `${location.pathname}?${params}`);
+          }
         }
       } else {
         setVerificationStatus('failed');
@@ -76,8 +92,6 @@ const EvidenceVerifier: React.FC = () => {
       
       setIsVerifying(false);
     };
-
-    simulateProgress();
   };
 
   const resetForm = () => {
@@ -85,6 +99,13 @@ const EvidenceVerifier: React.FC = () => {
     setVerificationHash('');
     setVerificationStatus('idle');
     setVerificationProgress(0);
+    
+    // Remove query params
+    navigate('/verify', { replace: true });
+  };
+  
+  const viewChainOfCustody = () => {
+    navigate(`/lawyer/chain-of-custody-verification?evidenceId=${evidenceId}`);
   };
 
   return (
@@ -161,6 +182,25 @@ const EvidenceVerifier: React.FC = () => {
               <p className="mt-1 text-sm">
                 The evidence has been successfully verified. The integrity of this evidence is confirmed on the blockchain.
               </p>
+              
+              <div className="flex flex-col xs:flex-row gap-2 mt-4">
+                <Button 
+                  variant="outline" 
+                  className="text-xs h-8"
+                  onClick={viewChainOfCustody}
+                >
+                  <Shield className="h-3.5 w-3.5 mr-1" />
+                  View Chain of Custody
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="text-xs h-8"
+                  onClick={() => window.open(`https://etherscan.io/tx/${evidence.find(e => e.id === evidenceId)?.hash || '0x'}`)}
+                >
+                  <ExternalLink className="h-3.5 w-3.5 mr-1" />
+                  View on Blockchain
+                </Button>
+              </div>
             </div>
           )}
 
@@ -212,7 +252,12 @@ const EvidenceVerifier: React.FC = () => {
             {evidence.filter(item => item.verified).slice(0, 5).map((item) => (
               <div 
                 key={item.id} 
-                className="flex items-center justify-between p-3 border border-forensic-100 rounded-md hover:bg-forensic-50"
+                className="flex items-center justify-between p-3 border border-forensic-100 rounded-md hover:bg-forensic-50 cursor-pointer"
+                onClick={() => {
+                  setEvidenceId(item.id);
+                  setVerificationHash('');
+                  setVerificationStatus('idle');
+                }}
               >
                 <div>
                   <div className="flex items-center">
@@ -223,7 +268,21 @@ const EvidenceVerifier: React.FC = () => {
                     ID: {item.id} | Verified on {new Date(item.submittedDate).toLocaleDateString()}
                   </div>
                 </div>
-                <Badge className="bg-forensic-success">Verified</Badge>
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-forensic-success">Verified</Badge>
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    className="h-7 text-xs p-0 px-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/lawyer/chain-of-custody-verification?evidenceId=${item.id}`);
+                    }}
+                  >
+                    <Clock className="h-3 w-3 mr-1" />
+                    Chain
+                  </Button>
+                </div>
               </div>
             ))}
             
