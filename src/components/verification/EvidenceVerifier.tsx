@@ -1,274 +1,249 @@
 
-import React, { useState, useRef } from 'react';
-import { Button } from "@/components/ui/button";
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { useToast } from "@/hooks/use-toast";
-import { 
-  Upload, 
-  FileCheck, 
-  FileX, 
-  FileQuestion, 
-  CheckCircle2, 
-  XCircle, 
-  Loader2,
-  Shield 
-} from "lucide-react";
-import { cn } from '@/lib/utils';
-import ChainOfCustody from '../chainOfCustody/ChainOfCustody';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import { FileCheck, Shield, Upload, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
+import { useEvidenceManager } from '@/hooks/useEvidenceManager';
+import { toast } from '@/hooks/use-toast';
 
-const EvidenceVerifier = () => {
-  const [file, setFile] = useState<File | null>(null);
-  const [isVerifying, setIsVerifying] = useState<boolean>(false);
-  const [verificationStatus, setVerificationStatus] = useState<'idle' | 'verified' | 'tampered' | 'error'>('idle');
-  const [evidenceDetails, setEvidenceDetails] = useState<any>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
-      setVerificationStatus('idle');
-      setEvidenceDetails(null);
-    }
-  };
-
-  const browseFiles = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
+const EvidenceVerifier: React.FC = () => {
+  const navigate = useNavigate();
+  const [evidenceId, setEvidenceId] = useState('');
+  const [verificationHash, setVerificationHash] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationStatus, setVerificationStatus] = useState<'idle' | 'verifying' | 'success' | 'failed'>('idle');
+  const [verificationProgress, setVerificationProgress] = useState(0);
+  const { evidence, verifyEvidence } = useEvidenceManager();
 
   const handleVerify = async () => {
-    if (!file) return;
-    
+    if (!evidenceId.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter an evidence ID",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsVerifying(true);
-    setVerificationStatus('idle');
-    setEvidenceDetails(null);
-    
-    try {
-      // Simulate verification process - would interact with blockchain
-      await new Promise(resolve => setTimeout(resolve, 2500));
-      
-      // For demonstration, randomly choose between verified and tampered
-      const isVerified = Math.random() > 0.3;
-      
-      if (isVerified) {
-        setVerificationStatus('verified');
-        // Mock evidence details that would come from blockchain
-        setEvidenceDetails({
-          evidenceId: "EV-104-001",
-          caseId: "FF-2023-104",
-          submittedBy: "John Smith",
-          submittedDate: "2025-04-08T10:23:45Z",
-          originalHash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          fileName: file.name,
-          fileSize: file.size
-        });
+    setVerificationStatus('verifying');
+    setVerificationProgress(0);
+
+    // Simulate verification stages
+    const simulateProgress = () => {
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 10;
+        setVerificationProgress(progress);
         
-        toast({
-          title: "Verification successful",
-          description: "Evidence integrity confirmed on blockchain",
-        });
+        if (progress >= 100) {
+          clearInterval(interval);
+          completeVerification();
+        }
+      }, 500);
+    };
+
+    const completeVerification = async () => {
+      // Find evidence in our list
+      const foundEvidence = evidence.find(item => item.id === evidenceId);
+      
+      if (foundEvidence) {
+        if (verificationHash && foundEvidence.hash !== verificationHash) {
+          setVerificationStatus('failed');
+          toast({
+            title: "Verification Failed",
+            description: "The provided hash does not match the evidence record",
+            variant: "destructive"
+          });
+        } else {
+          // Update evidence to verified status
+          const success = await verifyEvidence(evidenceId);
+          setVerificationStatus(success ? 'success' : 'failed');
+        }
       } else {
-        setVerificationStatus('tampered');
+        setVerificationStatus('failed');
         toast({
-          title: "Verification failed",
-          description: "Evidence may have been modified or tampered with",
+          title: "Evidence Not Found",
+          description: "No evidence record found with that ID",
           variant: "destructive"
         });
       }
-    } catch (error) {
-      setVerificationStatus('error');
-      toast({
-        title: "Verification error",
-        description: "Could not verify evidence integrity",
-        variant: "destructive"
-      });
-    } finally {
+      
       setIsVerifying(false);
-    }
+    };
+
+    simulateProgress();
+  };
+
+  const resetForm = () => {
+    setEvidenceId('');
+    setVerificationHash('');
+    setVerificationStatus('idle');
+    setVerificationProgress(0);
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-forensic-800">Evidence Verification</h1>
+        <Button 
+          variant="outline"
+          onClick={() => navigate('/evidence')}
+        >
+          Back to Evidence
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="border-forensic-200 lg:col-span-1">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center">
-              <FileCheck className="mr-2 h-5 w-5 text-forensic-accent" />
-              Verify Evidence File
-            </CardTitle>
-            <CardDescription>
-              Check if evidence matches the blockchain record
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <input
-                type="file"
-                id="fileUpload"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              
-              <div 
-                onClick={browseFiles}
-                className={cn(
-                  "border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors",
-                  "border-forensic-300 hover:border-forensic-accent",
-                  file ? "bg-forensic-50" : "bg-white"
-                )}
-              >
-                <div className="flex flex-col items-center space-y-2">
-                  {file ? (
-                    <>
-                      <FileCheck className="h-8 w-8 text-forensic-accent" />
-                      <div className="text-sm font-medium text-forensic-800">
-                        {file.name}
-                      </div>
-                      <div className="text-xs text-forensic-500">
-                        {(file.size / (1024 * 1024)).toFixed(2)} MB
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <FileQuestion className="h-8 w-8 text-forensic-400" />
-                      <div className="space-y-1">
-                        <p className="text-sm font-medium text-forensic-800">
-                          Select evidence file to verify
-                        </p>
-                        <p className="text-xs text-forensic-500">
-                          Click to browse or drop file here
-                        </p>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-              
-              {file && (
-                <Button
-                  onClick={handleVerify}
-                  disabled={isVerifying}
-                  className="w-full bg-forensic-accent hover:bg-forensic-accent/90"
-                >
-                  {isVerifying ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      <span>Verifying...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Shield className="mr-2 h-4 w-4" />
-                      <span>Verify Integrity</span>
-                    </>
-                  )}
-                </Button>
-              )}
-              
-              {verificationStatus === 'verified' && (
-                <Alert className="bg-green-50 border-green-200 text-green-800">
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
-                  <AlertTitle>Verification Successful</AlertTitle>
-                  <AlertDescription>
-                    This evidence file matches the record on the blockchain.
-                  </AlertDescription>
-                </Alert>
-              )}
-              
-              {verificationStatus === 'tampered' && (
-                <Alert className="bg-red-50 border-red-200 text-red-800">
-                  <XCircle className="h-4 w-4 text-red-500" />
-                  <AlertTitle>Verification Failed</AlertTitle>
-                  <AlertDescription>
-                    This file does not match the original evidence hash recorded on the blockchain.
-                  </AlertDescription>
-                </Alert>
-              )}
-              
-              {verificationStatus === 'error' && (
-                <Alert className="bg-amber-50 border-amber-200 text-amber-800">
-                  <FileX className="h-4 w-4 text-amber-500" />
-                  <AlertTitle>Verification Error</AlertTitle>
-                  <AlertDescription>
-                    Could not verify this file. The evidence may not be registered or there was a connection error.
-                  </AlertDescription>
-                </Alert>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+      <Card className="border border-forensic-200">
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Shield className="mr-2 h-5 w-5 text-forensic-evidence" />
+            Evidence Integrity Verification
+          </CardTitle>
+          <CardDescription>
+            Verify the authenticity and integrity of digital evidence using blockchain verification
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="evidenceId" className="text-sm font-medium text-forensic-700">Evidence ID</label>
+            <Input
+              id="evidenceId"
+              value={evidenceId}
+              onChange={(e) => setEvidenceId(e.target.value)}
+              placeholder="Enter evidence ID (e.g., EV-104-002)"
+              className="border-forensic-200"
+              disabled={isVerifying || verificationStatus === 'success'}
+            />
+          </div>
 
-        <Card className="border-forensic-200 lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center">
-              <Shield className="mr-2 h-5 w-5 text-forensic-accent" />
-              Evidence Details
-            </CardTitle>
-            <CardDescription>
-              {evidenceDetails 
-                ? `Evidence ID: ${evidenceDetails.evidenceId} | Case: ${evidenceDetails.caseId}` 
-                : "Select and verify a file to view details"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {evidenceDetails ? (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <p className="text-sm text-forensic-500">Original File Name</p>
-                    <p className="font-medium text-forensic-800">{evidenceDetails.fileName}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-forensic-500">File Size</p>
-                    <p className="font-medium text-forensic-800">
-                      {(evidenceDetails.fileSize / (1024 * 1024)).toFixed(2)} MB
-                    </p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-forensic-500">Submitted By</p>
-                    <p className="font-medium text-forensic-800">{evidenceDetails.submittedBy}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-forensic-500">Submission Date</p>
-                    <p className="font-medium text-forensic-800">
-                      {new Date(evidenceDetails.submittedDate).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="space-y-1">
-                  <p className="text-sm text-forensic-500">Blockchain Hash</p>
-                  <div className="bg-forensic-50 p-2 rounded border border-forensic-200 font-mono text-xs overflow-x-auto">
-                    {evidenceDetails.originalHash}
-                  </div>
-                </div>
-                
-                <div className="pt-4 border-t border-forensic-200">
-                  <ChainOfCustody 
-                    evidenceId={evidenceDetails.evidenceId}
-                    caseId={evidenceDetails.caseId}
-                  />
-                </div>
+          <div className="space-y-2">
+            <label htmlFor="verificationHash" className="text-sm font-medium text-forensic-700">
+              Verification Hash (Optional)
+            </label>
+            <Input
+              id="verificationHash"
+              value={verificationHash}
+              onChange={(e) => setVerificationHash(e.target.value)}
+              placeholder="Enter hash to compare with stored value"
+              className="border-forensic-200 font-mono text-sm"
+              disabled={isVerifying || verificationStatus === 'success'}
+            />
+            <p className="text-xs text-forensic-500">
+              If left blank, the system will verify against the hash stored in the blockchain
+            </p>
+          </div>
+
+          {verificationStatus === 'verifying' && (
+            <div className="space-y-2 mt-4">
+              <div className="flex justify-between text-sm">
+                <span>Verification in progress</span>
+                <span>{verificationProgress}%</span>
               </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-12 text-center text-forensic-400">
-                <FileQuestion className="h-16 w-16 mb-4 text-forensic-300" />
-                <p className="text-lg font-medium text-forensic-600">No Evidence Selected</p>
-                <p className="text-sm text-forensic-500 mt-1">
-                  Upload and verify an evidence file to view its blockchain details
-                </p>
+              <Progress value={verificationProgress} className="h-2" />
+              <div className="text-xs text-forensic-500">
+                Checking evidence integrity and authenticity on blockchain
+              </div>
+            </div>
+          )}
+
+          {verificationStatus === 'success' && (
+            <div className="mt-4 p-4 bg-forensic-success/10 border border-forensic-success/30 rounded-md">
+              <div className="flex items-center">
+                <CheckCircle className="h-5 w-5 text-forensic-success mr-2" />
+                <h3 className="font-medium text-forensic-success">Verification Successful</h3>
+              </div>
+              <p className="mt-1 text-sm">
+                The evidence has been successfully verified. The integrity of this evidence is confirmed on the blockchain.
+              </p>
+            </div>
+          )}
+
+          {verificationStatus === 'failed' && (
+            <div className="mt-4 p-4 bg-forensic-danger/10 border border-forensic-danger/30 rounded-md">
+              <div className="flex items-center">
+                <XCircle className="h-5 w-5 text-forensic-danger mr-2" />
+                <h3 className="font-medium text-forensic-danger">Verification Failed</h3>
+              </div>
+              <p className="mt-1 text-sm">
+                The evidence could not be verified. This may indicate tampering or that the evidence does not exist in the system.
+              </p>
+            </div>
+          )}
+        </CardContent>
+        <CardFooter className="flex justify-between border-t border-forensic-100 bg-forensic-50 p-4">
+          {verificationStatus === 'idle' || verificationStatus === 'failed' ? (
+            <Button 
+              onClick={handleVerify}
+              disabled={isVerifying || !evidenceId.trim()} 
+              className="bg-forensic-evidence hover:bg-forensic-evidence/90"
+            >
+              <FileCheck className="mr-2 h-4 w-4" />
+              Verify Evidence
+            </Button>
+          ) : (
+            <Button 
+              variant="outline" 
+              onClick={resetForm}
+              disabled={isVerifying}
+            >
+              Verify Another Evidence
+            </Button>
+          )}
+          
+          <div className="flex items-center text-xs text-forensic-500">
+            <AlertTriangle className="h-3 w-3 mr-1" />
+            <span>Verification is immutably recorded on the blockchain</span>
+          </div>
+        </CardFooter>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Recently Verified Evidence</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {evidence.filter(item => item.verified).slice(0, 5).map((item) => (
+              <div 
+                key={item.id} 
+                className="flex items-center justify-between p-3 border border-forensic-100 rounded-md hover:bg-forensic-50"
+              >
+                <div>
+                  <div className="flex items-center">
+                    <FileCheck className="h-4 w-4 text-forensic-success mr-2" />
+                    <span className="font-medium">{item.name}</span>
+                  </div>
+                  <div className="text-xs text-forensic-500 mt-1">
+                    ID: {item.id} | Verified on {new Date(item.submittedDate).toLocaleDateString()}
+                  </div>
+                </div>
+                <Badge className="bg-forensic-success">Verified</Badge>
+              </div>
+            ))}
+            
+            {evidence.filter(item => item.verified).length === 0 && (
+              <div className="text-center py-8 text-forensic-500">
+                <p>No verified evidence found</p>
               </div>
             )}
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+        <CardFooter className="border-t border-forensic-100">
+          <Button 
+            variant="outline" 
+            className="w-full"
+            onClick={() => navigate('/evidence')}
+          >
+            View All Evidence
+          </Button>
+        </CardFooter>
+      </Card>
     </div>
   );
 };

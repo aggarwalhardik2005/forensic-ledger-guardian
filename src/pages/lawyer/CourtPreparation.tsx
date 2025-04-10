@@ -31,6 +31,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from '@/components/ui/progress';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import {
   Gavel,
   FileCheck,
@@ -48,9 +50,11 @@ import {
   Copy,
   CheckSquare,
   Square,
-  Plus
+  Plus,
+  CalendarIcon
 } from "lucide-react";
 import { useAuth } from '@/contexts/AuthContext';
+import { useCourtPreparationActions, ChecklistItem, EvidenceItem, DocumentItem } from '@/components/court/CourtPreparationActions';
 
 // Mock case data
 const caseData = {
@@ -65,7 +69,7 @@ const caseData = {
 };
 
 // Mock evidence items
-const evidenceItems = [
+const initialEvidenceItems: EvidenceItem[] = [
   {
     id: "EV-2023-380",
     name: "Email Thread Export",
@@ -101,7 +105,7 @@ const evidenceItems = [
 ];
 
 // Mock prepared documents
-const preparedDocuments = [
+const initialDocuments: DocumentItem[] = [
   {
     id: "DOC-001",
     title: "Defense Strategy Brief",
@@ -133,7 +137,7 @@ const preparedDocuments = [
 ];
 
 // Mock checklist items
-const checklistItems = [
+const initialChecklistItems: ChecklistItem[] = [
   {
     id: "CL-001",
     task: "Review all case evidence",
@@ -210,14 +214,17 @@ const getStatusBadge = (status: string) => {
 
 const CourtPreparation = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('overview');
-  const [checklist, setChecklist] = useState(checklistItems);
+  const actions = useCourtPreparationActions();
   
-  const toggleChecklistItem = (itemId: string) => {
-    setChecklist(prev => prev.map(item => 
-      item.id === itemId ? { ...item, completed: !item.completed } : item
-    ));
-  };
+  const [activeTab, setActiveTab] = useState('overview');
+  const [checklist, setChecklist] = useState<ChecklistItem[]>(initialChecklistItems);
+  const [evidenceItems, setEvidenceItems] = useState<EvidenceItem[]>(initialEvidenceItems);
+  const [documents, setDocuments] = useState<DocumentItem[]>(initialDocuments);
+  
+  // Task dialog state
+  const [taskDialogOpen, setTaskDialogOpen] = useState(false);
+  const [newTask, setNewTask] = useState('');
+  const [taskDueDate, setTaskDueDate] = useState('');
   
   // Calculate preparation progress
   const totalTasks = checklist.length;
@@ -225,6 +232,22 @@ const CourtPreparation = () => {
   const progressPercentage = Math.round((completedTasks / totalTasks) * 100);
   
   const daysUntilCourt = Math.ceil((new Date(caseData.courtDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+  
+  const handleAddTask = () => {
+    if (!newTask.trim() || !taskDueDate) return;
+    
+    actions.addChecklistItem(
+      checklist,
+      setChecklist,
+      newTask,
+      new Date(taskDueDate).toISOString()
+    );
+    
+    // Reset form and close dialog
+    setNewTask('');
+    setTaskDueDate('');
+    setTaskDialogOpen(false);
+  };
   
   return (
     <div className="space-y-6 animate-fade-in">
@@ -381,12 +404,12 @@ const CourtPreparation = () => {
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="text-sm text-forensic-500">Total Documents</p>
-                      <p className="text-2xl font-bold text-forensic-800">{preparedDocuments.length}</p>
+                      <p className="text-2xl font-bold text-forensic-800">{documents.length}</p>
                     </div>
                     <div>
                       <p className="text-sm text-forensic-500">Completed</p>
                       <p className="text-2xl font-bold text-forensic-success">
-                        {preparedDocuments.filter(d => d.status === 'completed' || d.status === 'filed').length}
+                        {documents.filter(d => d.status === 'completed' || d.status === 'filed').length}
                       </p>
                     </div>
                   </div>
@@ -395,11 +418,11 @@ const CourtPreparation = () => {
                     <div className="flex justify-between text-sm">
                       <span>Document completion</span>
                       <span>
-                        {preparedDocuments.filter(d => d.status === 'completed' || d.status === 'filed').length} of {preparedDocuments.length} completed
+                        {documents.filter(d => d.status === 'completed' || d.status === 'filed').length} of {documents.length} completed
                       </span>
                     </div>
                     <Progress 
-                      value={Math.round((preparedDocuments.filter(d => d.status === 'completed' || d.status === 'filed').length / preparedDocuments.length) * 100)} 
+                      value={Math.round((documents.filter(d => d.status === 'completed' || d.status === 'filed').length / documents.length) * 100)} 
                       className="h-2" 
                     />
                   </div>
@@ -567,16 +590,29 @@ const CourtPreparation = () => {
                       </TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
-                          <Button size="sm" variant="outline" className="flex items-center gap-1">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="flex items-center gap-1"
+                            onClick={() => actions.previewEvidence(evidence)}
+                          >
                             <Play className="h-3 w-3" />
                             <span>Preview</span>
                           </Button>
                           {evidence.prepared ? (
-                            <Button size="sm" className="bg-forensic-accent hover:bg-forensic-accent/90">
+                            <Button 
+                              size="sm" 
+                              className="bg-forensic-accent hover:bg-forensic-accent/90"
+                              onClick={() => actions.downloadEvidence(evidence)}
+                            >
                               <Download className="h-4 w-4" />
                             </Button>
                           ) : (
-                            <Button size="sm" className="bg-forensic-warning hover:bg-forensic-warning/90 text-forensic-900">
+                            <Button 
+                              size="sm" 
+                              className="bg-forensic-warning hover:bg-forensic-warning/90 text-forensic-900"
+                              onClick={() => actions.prepareEvidence(evidenceItems, setEvidenceItems, evidence.id)}
+                            >
                               Prepare
                             </Button>
                           )}
@@ -588,11 +624,18 @@ const CourtPreparation = () => {
               </Table>
             </CardContent>
             <CardFooter className="bg-forensic-50 border-t border-forensic-100 flex justify-between">
-              <Button variant="outline" className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                className="flex items-center gap-2"
+                onClick={() => actions.navigateTo('/evidence')}
+              >
                 <UploadCloud className="h-4 w-4" />
                 <span>Add Evidence</span>
               </Button>
-              <Button className="bg-forensic-accent hover:bg-forensic-accent/90 flex items-center gap-2">
+              <Button 
+                className="bg-forensic-accent hover:bg-forensic-accent/90 flex items-center gap-2"
+                onClick={() => actions.preparePresentation()}
+              >
                 <Presentation className="h-4 w-4" />
                 <span>Prepare Presentation</span>
               </Button>
@@ -630,7 +673,11 @@ const CourtPreparation = () => {
                             This evidence has a complete and verified chain of custody with 
                             {evidence.id === "EV-2023-380" ? " 5" : " 3"} recorded transfers.
                           </p>
-                          <Button variant="outline" className="w-full text-forensic-accent">
+                          <Button 
+                            variant="outline" 
+                            className="w-full text-forensic-accent"
+                            onClick={() => actions.navigateTo(`/verify/custody?evidenceId=${evidence.id}`)}
+                          >
                             View Complete Chain
                           </Button>
                         </div>
@@ -640,7 +687,10 @@ const CourtPreparation = () => {
                 </Accordion>
               </CardContent>
               <CardFooter className="border-t border-forensic-100">
-                <Button className="w-full bg-forensic-evidence hover:bg-forensic-evidence/90">
+                <Button 
+                  className="w-full bg-forensic-evidence hover:bg-forensic-evidence/90"
+                  onClick={() => actions.generateChainOfCustodyReport()}
+                >
                   Generate Chain of Custody Report
                 </Button>
               </CardFooter>
@@ -682,7 +732,10 @@ const CourtPreparation = () => {
                 </div>
               </CardContent>
               <CardFooter className="border-t border-forensic-100">
-                <Button className="w-full bg-forensic-court hover:bg-forensic-court/90">
+                <Button 
+                  className="w-full bg-forensic-court hover:bg-forensic-court/90"
+                  onClick={() => actions.preparePresentation()}
+                >
                   Create Presentation
                 </Button>
               </CardFooter>
@@ -710,7 +763,7 @@ const CourtPreparation = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {preparedDocuments.map((document) => (
+                  {documents.map((document) => (
                     <TableRow key={document.id}>
                       <TableCell>
                         <div className="font-medium">{document.title}</div>
@@ -723,10 +776,18 @@ const CourtPreparation = () => {
                       <TableCell>{getStatusBadge(document.status)}</TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
-                          <Button size="sm" variant="outline">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => actions.editDocument(document)}
+                          >
                             Edit
                           </Button>
-                          <Button size="sm" className="bg-forensic-court hover:bg-forensic-court/90">
+                          <Button 
+                            size="sm" 
+                            className="bg-forensic-court hover:bg-forensic-court/90"
+                            onClick={() => actions.downloadDocument(document)}
+                          >
                             <Download className="h-4 w-4" />
                           </Button>
                         </div>
@@ -737,11 +798,18 @@ const CourtPreparation = () => {
               </Table>
             </CardContent>
             <CardFooter className="bg-forensic-50 border-t border-forensic-100 flex justify-between">
-              <Button variant="outline" className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                className="flex items-center gap-2"
+                onClick={() => actions.navigateTo('/legal/documentation')}
+              >
                 <FileText className="h-4 w-4" />
                 <span>Add Document</span>
               </Button>
-              <Button className="bg-forensic-court hover:bg-forensic-court/90 flex items-center gap-2">
+              <Button 
+                className="bg-forensic-court hover:bg-forensic-court/90 flex items-center gap-2"
+                onClick={() => actions.createDocument('Template')}
+              >
                 <Copy className="h-4 w-4" />
                 <span>Create from Template</span>
               </Button>
@@ -770,7 +838,11 @@ const CourtPreparation = () => {
                           <Calendar className="h-4 w-4 text-forensic-500" />
                           <span>April 25, 2025 - 2:00 PM</span>
                         </div>
-                        <Button className="w-full" variant="outline">
+                        <Button 
+                          className="w-full" 
+                          variant="outline"
+                          onClick={() => actions.viewPreparationNotes()}
+                        >
                           View Preparation Notes
                         </Button>
                       </div>
@@ -789,7 +861,11 @@ const CourtPreparation = () => {
                           <Users className="h-4 w-4 text-forensic-500" />
                           <span>Dr. Michael Reynolds - Cybersecurity Expert</span>
                         </div>
-                        <Button className="w-full" variant="outline">
+                        <Button 
+                          className="w-full" 
+                          variant="outline"
+                          onClick={() => actions.viewExpertReport()}
+                        >
                           View Expert Report
                         </Button>
                       </div>
@@ -808,7 +884,11 @@ const CourtPreparation = () => {
                           <Clock className="h-4 w-4 text-forensic-500" />
                           <span>2 of 4 statements collected</span>
                         </div>
-                        <Button className="w-full" variant="outline">
+                        <Button 
+                          className="w-full" 
+                          variant="outline"
+                          onClick={() => actions.viewWitnessStatements()}
+                        >
                           View Collected Statements
                         </Button>
                       </div>
@@ -817,7 +897,10 @@ const CourtPreparation = () => {
                 </Accordion>
               </CardContent>
               <CardFooter className="border-t border-forensic-100">
-                <Button className="w-full bg-forensic-court hover:bg-forensic-court/90">
+                <Button 
+                  className="w-full bg-forensic-court hover:bg-forensic-court/90"
+                  onClick={() => actions.scheduleWitnessMeeting()}
+                >
                   Schedule Witness Preparation
                 </Button>
               </CardFooter>
@@ -856,15 +939,27 @@ const CourtPreparation = () => {
                 <div className="space-y-2">
                   <h4 className="font-medium">Case Strategy Documents</h4>
                   <div className="space-y-2">
-                    <Button variant="outline" className="w-full justify-start text-left">
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start text-left"
+                      onClick={() => actions.viewStrategyDocument("Opening Statement Draft")}
+                    >
                       <FileText className="h-4 w-4 mr-2" />
                       <span>Opening Statement Draft</span>
                     </Button>
-                    <Button variant="outline" className="w-full justify-start text-left">
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start text-left"
+                      onClick={() => actions.viewStrategyDocument("Cross-Examination Strategy")}
+                    >
                       <FileText className="h-4 w-4 mr-2" />
                       <span>Cross-Examination Strategy</span>
                     </Button>
-                    <Button variant="outline" className="w-full justify-start text-left">
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start text-left"
+                      onClick={() => actions.viewStrategyDocument("Closing Arguments Outline")}
+                    >
                       <FileText className="h-4 w-4 mr-2" />
                       <span>Closing Arguments Outline</span>
                     </Button>
@@ -872,7 +967,10 @@ const CourtPreparation = () => {
                 </div>
               </CardContent>
               <CardFooter className="border-t border-forensic-100">
-                <Button className="w-full bg-forensic-court hover:bg-forensic-court/90">
+                <Button 
+                  className="w-full bg-forensic-court hover:bg-forensic-court/90"
+                  onClick={() => actions.updateStrategyBrief()}
+                >
                   Update Strategy Brief
                 </Button>
               </CardFooter>
@@ -902,7 +1000,7 @@ const CourtPreparation = () => {
                   >
                     <button
                       className="mt-0.5"
-                      onClick={() => toggleChecklistItem(item.id)}
+                      onClick={() => actions.toggleChecklistItem(checklist, setChecklist, item.id)}
                     >
                       {item.completed ? (
                         <CheckSquare className="h-5 w-5 text-forensic-success" />
@@ -941,7 +1039,10 @@ const CourtPreparation = () => {
                   {completedTasks} of {totalTasks} tasks completed ({progressPercentage}%)
                 </span>
               </div>
-              <Button className="bg-forensic-warning hover:bg-forensic-warning/90 text-forensic-900">
+              <Button 
+                className="bg-forensic-warning hover:bg-forensic-warning/90 text-forensic-900"
+                onClick={() => setTaskDialogOpen(true)}
+              >
                 <Plus className="h-4 w-4 mr-1" />
                 Add Task
               </Button>
@@ -992,7 +1093,11 @@ const CourtPreparation = () => {
                 </div>
               </CardContent>
               <CardFooter className="border-t border-forensic-100">
-                <Button className="w-full" variant="outline">
+                <Button 
+                  className="w-full" 
+                  variant="outline"
+                  onClick={() => actions.navigateTo('/calendar')}
+                >
                   View Full Calendar
                 </Button>
               </CardFooter>
@@ -1061,7 +1166,10 @@ const CourtPreparation = () => {
                 </div>
               </CardContent>
               <CardFooter className="border-t border-forensic-100">
-                <Button className="w-full bg-forensic-warning hover:bg-forensic-warning/90 text-forensic-900">
+                <Button 
+                  className="w-full bg-forensic-warning hover:bg-forensic-warning/90 text-forensic-900"
+                  onClick={() => actions.generateProgressReport()}
+                >
                   Generate Progress Report
                 </Button>
               </CardFooter>
@@ -1069,6 +1177,48 @@ const CourtPreparation = () => {
           </div>
         </TabsContent>
       </Tabs>
+      
+      {/* Task dialog */}
+      <Dialog open={taskDialogOpen} onOpenChange={setTaskDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add New Task</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label htmlFor="task" className="text-sm font-medium">Task Description</label>
+              <Input
+                id="task"
+                value={newTask}
+                onChange={(e) => setNewTask(e.target.value)}
+                placeholder="Enter task description"
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="dueDate" className="text-sm font-medium">Due Date</label>
+              <div className="flex items-center">
+                <Input
+                  id="dueDate"
+                  type="date"
+                  value={taskDueDate}
+                  onChange={(e) => setTaskDueDate(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTaskDialogOpen(false)}>Cancel</Button>
+            <Button 
+              className="bg-forensic-warning hover:bg-forensic-warning/90 text-forensic-900"
+              onClick={handleAddTask}
+              disabled={!newTask.trim() || !taskDueDate}
+            >
+              Add Task
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

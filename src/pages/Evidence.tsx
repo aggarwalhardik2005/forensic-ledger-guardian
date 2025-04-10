@@ -13,65 +13,13 @@ import {
   FileX,
   Eye,
   Download,
-  FileLock2
+  FileLock2,
+  RefreshCcw
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-
-// Mock evidence data
-const evidenceData = [
-  {
-    id: "EV-104-001",
-    name: "disk_image_laptop.dd",
-    type: "disk_image",
-    caseId: "FF-2023-104",
-    submittedBy: "John Smith",
-    submittedDate: "2025-04-08T10:23:45Z",
-    size: 4.2 * 1024 * 1024 * 1024, // 4.2 GB
-    verified: true
-  },
-  {
-    id: "EV-104-002",
-    name: "system_logs.zip",
-    type: "log_files",
-    caseId: "FF-2023-104",
-    submittedBy: "John Smith",
-    submittedDate: "2025-04-08T11:35:12Z",
-    size: 156 * 1024 * 1024, // 156 MB
-    verified: true
-  },
-  {
-    id: "EV-092-001",
-    name: "smartphone_extraction.tar",
-    type: "mobile_data",
-    caseId: "FF-2023-092",
-    submittedBy: "Sarah Lee",
-    submittedDate: "2025-03-02T09:12:45Z",
-    size: 2.8 * 1024 * 1024 * 1024, // 2.8 GB
-    verified: true
-  },
-  {
-    id: "EV-089-001",
-    name: "email_archives.pst",
-    type: "emails",
-    caseId: "FF-2023-089",
-    submittedBy: "Emily Johnson",
-    submittedDate: "2025-02-19T14:23:11Z",
-    size: 1.2 * 1024 * 1024 * 1024, // 1.2 GB
-    verified: false
-  },
-  {
-    id: "EV-089-002",
-    name: "network_capture.pcap",
-    type: "network_captures",
-    caseId: "FF-2023-089",
-    submittedBy: "John Smith",
-    submittedDate: "2025-02-20T16:45:33Z",
-    size: 890 * 1024 * 1024, // 890 MB
-    verified: true
-  }
-];
+import { useEvidenceManager } from '@/hooks/useEvidenceManager';
 
 // Format bytes to human-readable size
 const formatBytes = (bytes: number) => {
@@ -97,25 +45,26 @@ const Evidence = () => {
   const [sortOrder, setSortOrder] = useState('newest');
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { evidence, loading, refreshEvidence } = useEvidenceManager();
 
   // Filter evidence based on search and filters
-  const filteredEvidence = evidenceData
-    .filter(evidence => {
+  const filteredEvidence = evidence
+    .filter(item => {
       // Search query filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         return (
-          evidence.name.toLowerCase().includes(query) ||
-          evidence.id.toLowerCase().includes(query) ||
-          evidence.caseId.toLowerCase().includes(query)
+          item.name.toLowerCase().includes(query) ||
+          item.id.toLowerCase().includes(query) ||
+          item.caseId.toLowerCase().includes(query)
         );
       }
       return true;
     })
-    .filter(evidence => {
+    .filter(item => {
       // Type filter
       if (typeFilter === 'all') return true;
-      return evidence.type === typeFilter;
+      return item.type === typeFilter;
     })
     .sort((a, b) => {
       // Sort order
@@ -163,19 +112,29 @@ const Evidence = () => {
       title: "Chain of Custody",
       description: `Viewing chain of custody for ${evidence.id}`
     });
-    navigate('/verify/custody');
+    navigate(`/verify/custody?evidenceId=${evidence.id}`);
   };
 
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-forensic-800">Evidence Manager</h1>
-        <Button 
-          className="bg-forensic-evidence hover:bg-forensic-evidence/90"
-          onClick={() => navigate('/upload')}
-        >
-          Upload Evidence
-        </Button>
+        <div className="flex space-x-2">
+          <Button 
+            variant="outline"
+            onClick={refreshEvidence}
+            disabled={loading}
+          >
+            <RefreshCcw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Button 
+            className="bg-forensic-evidence hover:bg-forensic-evidence/90"
+            onClick={() => navigate('/upload')}
+          >
+            Upload Evidence
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -198,12 +157,11 @@ const Evidence = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="disk_image">Disk Images</SelectItem>
-              <SelectItem value="memory_dump">Memory Dumps</SelectItem>
-              <SelectItem value="log_files">Log Files</SelectItem>
-              <SelectItem value="emails">Email Archives</SelectItem>
-              <SelectItem value="network_captures">Network Captures</SelectItem>
-              <SelectItem value="mobile_data">Mobile Device Data</SelectItem>
+              <SelectItem value="image">Images</SelectItem>
+              <SelectItem value="video">Videos</SelectItem>
+              <SelectItem value="application">Documents</SelectItem>
+              <SelectItem value="audio">Audio</SelectItem>
+              <SelectItem value="other">Other</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -226,7 +184,11 @@ const Evidence = () => {
 
       {/* Evidence List */}
       <div className="grid grid-cols-1 gap-4">
-        {filteredEvidence.length > 0 ? (
+        {loading ? (
+          <div className="text-center py-10">
+            <p className="text-forensic-500">Loading evidence data...</p>
+          </div>
+        ) : filteredEvidence.length > 0 ? (
           filteredEvidence.map((evidence) => (
             <Card key={evidence.id} className="hover:shadow-md transition-all duration-200 border border-forensic-200">
               <CardContent className="p-4 md:p-6">
