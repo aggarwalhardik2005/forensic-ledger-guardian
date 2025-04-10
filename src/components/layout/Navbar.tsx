@@ -44,11 +44,13 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
   const isHomePage = location.pathname === '/';
 
   const scrollToSection = (sectionId: string) => {
-    const section = document.getElementById(sectionId);
-    if (section) {
-      section.scrollIntoView({ behavior: 'smooth' });
-    } else if (!isHomePage) {
-      navigate('/#' + sectionId);
+    if (isHomePage) {
+      const section = document.getElementById(sectionId);
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      navigate(`/#${sectionId}`);
     }
   };
 

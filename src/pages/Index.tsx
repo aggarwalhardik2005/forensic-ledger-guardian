@@ -19,6 +19,12 @@ import {
   ClipboardCheck,
   Sparkles
 } from "lucide-react";
+import {
+  NavigationMenu,
+  NavigationMenuList,
+  NavigationMenuItem,
+  NavigationMenuLink,
+} from "@/components/ui/navigation-menu";
 
 const Index = () => {
   // Scroll to section if hash in URL
@@ -34,6 +40,14 @@ const Index = () => {
       }
     }
   }, []);
+
+  // Function to handle scrolling to sections
+  const scrollToSection = (sectionId: string) => {
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-forensic-800 to-forensic-900 overflow-hidden relative">
@@ -54,12 +68,25 @@ const Index = () => {
             <span className="font-bold text-xl text-white tracking-tight">ForensicChain</span>
           </div>
           <nav className="hidden md:flex space-x-8 items-center">
-            <Link to="#features" className="text-forensic-300 hover:text-white transition-colors flex items-center gap-1">
+            <button 
+              onClick={() => scrollToSection('features')}
+              className="text-forensic-300 hover:text-white transition-colors flex items-center gap-1"
+            >
               <Sparkles className="h-4 w-4" />
               <span>Features</span>
-            </Link>
-            <Link to="#how-it-works" className="text-forensic-300 hover:text-white transition-colors">How It Works</Link>
-            <Link to="#security" className="text-forensic-300 hover:text-white transition-colors">Security</Link>
+            </button>
+            <button 
+              onClick={() => scrollToSection('how-it-works')}
+              className="text-forensic-300 hover:text-white transition-colors"
+            >
+              How It Works
+            </button>
+            <button 
+              onClick={() => scrollToSection('security')}
+              className="text-forensic-300 hover:text-white transition-colors"
+            >
+              Security
+            </button>
             <Button asChild variant="outline" size="sm" className="border-forensic-accent text-forensic-accent hover:bg-forensic-accent/10">
               <Link to="/dashboard">Access System</Link>
             </Button>
@@ -103,10 +130,13 @@ const Index = () => {
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="bg-transparent text-white border-forensic-400 hover:bg-forensic-800">
-                <Link to="#learn-more">
-                  Learn More
-                </Link>
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="bg-transparent text-white border-forensic-400 hover:bg-forensic-800"
+                onClick={() => scrollToSection('features')}
+              >
+                Learn More
               </Button>
             </div>
             
@@ -156,8 +186,9 @@ const Index = () => {
                   Digital evidence is securely collected and uploaded to the platform with cryptographic hashing.
                 </p>
               </div>
-              {/* Arrow - visible only on desktop */}
-              <div className="hidden lg:flex absolute top-1/2 -right-4 transform -translate-y-1/2 z-10">
+              
+              {/* Fixed arrow positioning for desktop */}
+              <div className="hidden lg:block absolute -right-4 top-1/2 transform -translate-y-1/2 z-10">
                 <ChevronRight className="w-8 h-8 text-forensic-accent" />
               </div>
             </div>
@@ -171,8 +202,9 @@ const Index = () => {
                   Evidence metadata and hash are recorded on the blockchain, creating an immutable timestamp.
                 </p>
               </div>
-              {/* Arrow - visible only on desktop */}
-              <div className="hidden lg:flex absolute top-1/2 -right-4 transform -translate-y-1/2 z-10">
+              
+              {/* Fixed arrow positioning for desktop */}
+              <div className="hidden lg:block absolute -right-4 top-1/2 transform -translate-y-1/2 z-10">
                 <ChevronRight className="w-8 h-8 text-forensic-accent" />
               </div>
             </div>
@@ -186,8 +218,9 @@ const Index = () => {
                   Authorized forensic experts analyze evidence with every action transparently recorded.
                 </p>
               </div>
-              {/* Arrow - visible only on desktop */}
-              <div className="hidden lg:flex absolute top-1/2 -right-4 transform -translate-y-1/2 z-10">
+              
+              {/* Fixed arrow positioning for desktop */}
+              <div className="hidden lg:block absolute -right-4 top-1/2 transform -translate-y-1/2 z-10">
                 <ChevronRight className="w-8 h-8 text-forensic-accent" />
               </div>
             </div>
