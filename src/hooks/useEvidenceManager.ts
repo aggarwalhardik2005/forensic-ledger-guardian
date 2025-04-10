@@ -17,6 +17,94 @@ export type EvidenceItem = {
   cidEncrypted?: string;
 };
 
+// Sample dummy evidence data
+const dummyEvidence: EvidenceItem[] = [
+  {
+    id: "EV-089-001",
+    name: "Security Camera Footage.mp4",
+    type: "video",
+    caseId: "FF-2023-089",
+    submittedBy: "Officer Johnson",
+    submittedDate: "2025-04-08T09:15:00Z",
+    size: 245000000,
+    verified: true,
+    hash: "0xf8e317d2df9f2132ca89e3ab3b4880ab8322c59e159f0eb8c962cce32e4754ea",
+    cidEncrypted: "QmT5NvUtoM5n8xr689NxpQVFNRuWgZ9Gb7hXSKSs7opbgc"
+  },
+  {
+    id: "EV-089-002",
+    name: "Network Access Logs.txt",
+    type: "application",
+    caseId: "FF-2023-089",
+    submittedBy: "Dr. Emily Chen",
+    submittedDate: "2025-04-07T14:30:00Z",
+    size: 1240000,
+    verified: true,
+    hash: "0x1b642a672a5626c9c9eb2329ed3de669d2a2bc4e15c4d51c5e7ce8145654c4fa",
+    cidEncrypted: "QmX7b6SLMdJpCXExQKmSacEEKwZvLErG95Luxeh9gp7jKt"
+  },
+  {
+    id: "EV-092-001",
+    name: "Transaction Records.pdf",
+    type: "application",
+    caseId: "FF-2023-092",
+    submittedBy: "Dr. Emily Chen",
+    submittedDate: "2025-04-06T11:20:00Z",
+    size: 3520000,
+    verified: true,
+    hash: "0x8c5e8d5e2b9a2c9a6f7c8d5e2b9a2c9a6f7c8d5e2b9a2c9a6f7c8d5e2b9a2c9a",
+    cidEncrypted: "QmT8vUy8cQMBLM7RvbGNf1Wi6XzNhE2aAaQMkQT8yh2ozt"
+  },
+  {
+    id: "EV-118-001",
+    name: "Extraction Report - iPhone 13.pdf",
+    type: "application",
+    caseId: "FF-2023-118",
+    submittedBy: "Thomas Brown",
+    submittedDate: "2025-04-05T16:45:00Z",
+    size: 8750000,
+    verified: false,
+    hash: "0x9d2c8f5e1a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d",
+    cidEncrypted: "QmNcFVrThMXEZCYbD2KqPtYZxdMdLFCe8Jt5CXUp3vGSVM"
+  },
+  {
+    id: "EV-118-002",
+    name: "SMS Message Screenshots.zip",
+    type: "application",
+    caseId: "FF-2023-118",
+    submittedBy: "Thomas Brown",
+    submittedDate: "2025-04-05T17:20:00Z",
+    size: 15600000,
+    verified: false,
+    hash: "0xa1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
+    cidEncrypted: "QmY6xkTsYcVRJ9Lk5eFzDGnSFzmQJ9JzQTmjHvG1ef4oBd"
+  },
+  {
+    id: "EV-104-001",
+    name: "Source Code Comparison.zip",
+    type: "application",
+    caseId: "FF-2023-104",
+    submittedBy: "Dr. Emily Chen",
+    submittedDate: "2025-04-04T10:05:00Z",
+    size: 22540000,
+    verified: true,
+    hash: "0xd7e6f5c4b3a2d1e0f9c8b7a6d5e4f3c2b1a0d9e8f7c6b5a4d3e2f1c0b9a8d7e6",
+    cidEncrypted: "QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn"
+  },
+  {
+    id: "EV-104-002",
+    name: "Network Traffic Analysis.pcap",
+    type: "application",
+    caseId: "FF-2023-104",
+    submittedBy: "Lisa Anderson",
+    submittedDate: "2025-04-03T14:40:00Z",
+    size: 175800000,
+    verified: true,
+    hash: "0xb5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9b8a7c6d5e4f3b2a1c0d9e8f7b6c5d4",
+    cidEncrypted: "QmTgtbb6vu4G3CMGvD8Z3CMn6Hy8zN7GJHBtPiQJguwwNP"
+  }
+];
+
 export const useEvidenceManager = (caseId?: string) => {
   const [evidence, setEvidence] = useState<EvidenceItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -32,9 +120,17 @@ export const useEvidenceManager = (caseId?: string) => {
       setLoading(true);
       try {
         // In a real implementation, this would fetch from the blockchain
-        // For now, we're using the mock data and adding any uploaded evidence
+        // Get evidence from localStorage or use dummy data if none exists
         const storedEvidence = localStorage.getItem('evidenceItems');
-        const evidenceList: EvidenceItem[] = storedEvidence ? JSON.parse(storedEvidence) : [];
+        let evidenceList: EvidenceItem[] = [];
+        
+        if (storedEvidence) {
+          evidenceList = JSON.parse(storedEvidence);
+        } else {
+          // Initialize with dummy data if no evidence exists in localStorage
+          localStorage.setItem('evidenceItems', JSON.stringify(dummyEvidence));
+          evidenceList = dummyEvidence;
+        }
         
         if (caseId) {
           // Filter by case ID if provided
@@ -94,7 +190,7 @@ export const useEvidenceManager = (caseId?: string) => {
       
       // Get existing evidence
       const storedEvidence = localStorage.getItem('evidenceItems');
-      const evidenceList: EvidenceItem[] = storedEvidence ? JSON.parse(storedEvidence) : [];
+      const evidenceList: EvidenceItem[] = storedEvidence ? JSON.parse(storedEvidence) : [...dummyEvidence];
       
       // Add new evidence
       evidenceList.push(newEvidence);
