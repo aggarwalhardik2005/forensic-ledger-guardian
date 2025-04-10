@@ -1,208 +1,318 @@
 
-import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { cn } from "@/lib/utils";
+import React, { useState, useEffect } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { ChevronLeft, ChevronRight, Shield, Home, FolderClosed, FileDigit, Upload, CheckCircle, HelpCircle, Settings, BarChart3, Users, FileLock2, Activity, FileText, Scale, BookOpen, AlignLeft } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from "@/contexts/AuthContext";
-import { Role } from "@/services/web3Service";
-import { 
-  Shield, 
-  FileDigit, 
-  LayoutDashboard, 
-  FolderKanban, 
-  Upload, 
-  FileCheck,
-  User,
-  Users,
-  Settings,
-  FileText,
-  Gavel,
-  ShieldAlert,
-  Activity,
-  BarChart2,
-  ScrollText,
-  BookOpen,
-  HelpCircle,
-  ChevronRight,
-  ChevronLeft,
-  Menu,
-  UserCog,
-  Search,
-  Clock
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Role } from '@/services/web3Service';
+import { Badge } from '@/components/ui/badge';
 
 interface SidebarProps {
   collapsed: boolean;
   toggleCollapsed: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ collapsed, toggleCollapsed }) => {
-  const { user } = useAuth();
+const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
   const location = useLocation();
+  const isMobile = useIsMobile();
+  const { user } = useAuth();
+  const [isOpen, setIsOpen] = useState(!isMobile);
 
-  const isActive = (path: string) => {
-    return location.pathname === path;
-  };
+  // Close sidebar on mobile when route changes
+  useEffect(() => {
+    if (isMobile) {
+      setIsOpen(false);
+    }
+  }, [location.pathname, isMobile]);
 
-  // Define navigation links based on user role
-  const getNavLinks = () => {
-    if (!user) return [];
-
-    switch (user.role) {
+  const roleBasedLinks = () => {
+    switch (user?.role) {
       case Role.Court:
         return [
-          { to: "/dashboard", icon: <LayoutDashboard />, label: "Dashboard" },
-          { to: "/cases", icon: <FolderKanban />, label: "Cases" },
-          { to: "/cases/create", icon: <FileText />, label: "Create Case" },
-          { to: "/evidence", icon: <FileDigit />, label: "Evidence" },
-          { to: "/upload", icon: <Upload />, label: "Upload" },
-          { to: "/verify", icon: <FileCheck />, label: "Verify" },
-          { to: "/users/manage", icon: <Users />, label: "Users" },
-          { to: "/users/roles", icon: <UserCog />, label: "Roles" },
-          { to: "/settings/security", icon: <Settings />, label: "Security" },
-          { to: "/activity", icon: <Activity />, label: "Audit Logs" },
-          { to: "/reports", icon: <BarChart2 />, label: "Reports" }
+          { to: '/users/roles', label: 'Role Management', icon: <Users size={18} /> },
+          { to: '/settings/security', label: 'System Configuration', icon: <Settings size={18} /> },
+          { to: '/activity', label: 'Audit Logs', icon: <Activity size={18} /> },
+          { to: '/reports', label: 'Reports & Analytics', icon: <BarChart3 size={18} /> },
         ];
       case Role.Officer:
         return [
-          { to: "/dashboard", icon: <LayoutDashboard />, label: "Dashboard" },
-          { to: "/fir", icon: <FileText />, label: "FIRs" },
-          { to: "/fir/new", icon: <FileText />, label: "Create FIR" },
-          { to: "/cases", icon: <FolderKanban />, label: "All Cases" },
-          { to: "/cases/assigned", icon: <FolderKanban />, label: "My Cases" },
-          { to: "/evidence", icon: <FileDigit />, label: "Evidence" },
-          { to: "/upload", icon: <Upload />, label: "Upload" },
-          { to: "/evidence/confirm", icon: <FileCheck />, label: "Confirm Evidence" },
-          { to: "/officer/reports", icon: <BarChart2 />, label: "Reports" }
+          { to: '/fir', label: 'FIR Management', icon: <AlignLeft size={18} /> },
+          { to: '/cases/update', label: 'Update Cases', icon: <FileText size={18} /> },
+          { to: '/evidence/confirm', label: 'Confirm Evidence', icon: <CheckCircle size={18} /> },
+          { to: '/officer/reports', label: 'Reports', icon: <BarChart3 size={18} /> },
         ];
       case Role.Forensic:
         return [
-          { to: "/dashboard", icon: <LayoutDashboard />, label: "Dashboard" },
-          { to: "/cases/assigned", icon: <FolderKanban />, label: "Assigned Cases" },
-          { to: "/evidence", icon: <FileDigit />, label: "Evidence" },
-          { to: "/evidence/analysis", icon: <Search />, label: "Evidence Analysis" },
-          { to: "/upload", icon: <Upload />, label: "Upload" },
-          { to: "/evidence/verify", icon: <ShieldAlert />, label: "Technical Verification" },
-          { to: "/forensic/reports", icon: <BarChart2 />, label: "Reports" }
+          { to: '/evidence/analysis', label: 'Evidence Analysis', icon: <FileDigit size={18} /> },
+          { to: '/evidence/verify', label: 'Technical Verification', icon: <CheckCircle size={18} /> },
+          { to: '/forensic/reports', label: 'Reports', icon: <BarChart3 size={18} /> },
         ];
       case Role.Lawyer:
         return [
-          { to: "/dashboard", icon: <LayoutDashboard />, label: "Dashboard" },
-          { to: "/cases/assigned", icon: <FolderKanban />, label: "My Cases" },
-          { to: "/cases/prepare", icon: <Gavel />, label: "Court Preparation" },
-          { to: "/evidence", icon: <FileDigit />, label: "Evidence" },
-          { to: "/legal/documentation", icon: <ScrollText />, label: "Legal Docs" },
-          { to: "/verify/custody", icon: <Clock />, label: "Chain of Custody" },
-          { to: "/upload", icon: <Upload />, label: "Upload" },
-          { to: "/clients", icon: <User />, label: "Clients" },
-          { to: "/meetings", icon: <Users />, label: "Meetings" },
-          { to: "/legal/reports", icon: <BarChart2 />, label: "Reports" }
+          { to: '/legal/documentation', label: 'Legal Documentation', icon: <BookOpen size={18} /> },
+          { to: '/verify/custody', label: 'Chain of Custody', icon: <Scale size={18} /> },
+          { to: '/cases/prepare', label: 'Court Preparation', icon: <FileLock2 size={18} /> },
+          { to: '/legal/reports', label: 'Legal Reports', icon: <BarChart3 size={18} /> },
+          { to: '/clients', label: 'Client Management', icon: <Users size={18} /> },
         ];
       default:
-        return [
-          { to: "/dashboard", icon: <LayoutDashboard />, label: "Dashboard" },
-          { to: "/cases", icon: <FolderKanban />, label: "Cases" },
-          { to: "/evidence", icon: <FileDigit />, label: "Evidence" },
-          { to: "/upload", icon: <Upload />, label: "Upload" },
-          { to: "/verify", icon: <FileCheck />, label: "Verify" }
-        ];
+        return [];
     }
   };
 
-  // Always show these links at the bottom regardless of role
-  const bottomLinks = [
-    { to: "/settings", icon: <Settings />, label: "Settings" },
-    { to: "/help", icon: <HelpCircle />, label: "Help" }
+  // Core links shown to all roles
+  const coreLinks = [
+    { to: '/dashboard', label: 'Dashboard', icon: <Home size={18} /> },
+    { to: '/cases', label: 'Cases', icon: <FolderClosed size={18} /> },
+    { to: '/evidence', label: 'Evidence', icon: <FileDigit size={18} /> },
+    { to: '/upload', label: 'Upload', icon: <Upload size={18} /> },
+    { to: '/verify', label: 'Verify', icon: <CheckCircle size={18} /> },
   ];
 
-  const navLinks = getNavLinks();
+  // Utility links shown at the bottom to all roles
+  const utilityLinks = [
+    { to: '/help', label: 'Help', icon: <HelpCircle size={18} /> },
+    { to: '/settings', label: 'Settings', icon: <Settings size={18} /> },
+  ];
 
+  // Check if sidebar should be rendered as mobile modal
+  if (isMobile) {
+    return (
+      <>
+        {/* Mobile overlay */}
+        {isOpen && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            onClick={() => setIsOpen(false)}
+          />
+        )}
+        
+        {/* Mobile sidebar */}
+        <div 
+          className={cn(
+            "fixed top-0 left-0 z-50 h-full bg-white shadow-xl transition-all duration-300 transform",
+            isOpen ? "translate-x-0" : "-translate-x-full",
+            "w-64"
+          )}
+        >
+          <div className="flex flex-col h-full">
+            <div className="flex items-center justify-between p-4 border-b">
+              <div className="flex items-center">
+                <Shield className="h-6 w-6 text-forensic-accent" />
+                <span className="ml-2 font-bold text-lg">ForensicLedger</span>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setIsOpen(false)}
+                className="p-1 h-8 w-8"
+              >
+                <ChevronLeft size={20} />
+              </Button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-2">
+              {user && (
+                <div className="mb-4 p-2 bg-forensic-50 rounded-lg">
+                  <p className="text-sm font-medium">{user.name}</p>
+                  <Badge className="mt-1">
+                    {user.roleTitle || "Unknown Role"}
+                  </Badge>
+                </div>
+              )}
+              
+              <div className="mb-6">
+                <p className="px-3 text-xs font-medium text-gray-500 uppercase mb-2">Core</p>
+                <nav className="space-y-1">
+                  {coreLinks.map((link) => (
+                    <NavLink
+                      key={link.to}
+                      to={link.to}
+                      className={({ isActive }) => cn(
+                        "flex items-center px-3 py-2 text-sm rounded-md w-full",
+                        isActive 
+                          ? "bg-forensic-accent/10 text-forensic-accent font-medium" 
+                          : "text-gray-700 hover:bg-gray-100"
+                      )}
+                      onClick={() => isMobile && setIsOpen(false)}
+                    >
+                      <span className="mr-3">{link.icon}</span>
+                      <span>{link.label}</span>
+                    </NavLink>
+                  ))}
+                </nav>
+              </div>
+              
+              {user && roleBasedLinks().length > 0 && (
+                <div className="mb-6">
+                  <p className="px-3 text-xs font-medium text-gray-500 uppercase mb-2">Role Specific</p>
+                  <nav className="space-y-1">
+                    {roleBasedLinks().map((link) => (
+                      <NavLink
+                        key={link.to}
+                        to={link.to}
+                        className={({ isActive }) => cn(
+                          "flex items-center px-3 py-2 text-sm rounded-md w-full",
+                          isActive 
+                            ? "bg-forensic-accent/10 text-forensic-accent font-medium" 
+                            : "text-gray-700 hover:bg-gray-100"
+                        )}
+                        onClick={() => isMobile && setIsOpen(false)}
+                      >
+                        <span className="mr-3">{link.icon}</span>
+                        <span>{link.label}</span>
+                      </NavLink>
+                    ))}
+                  </nav>
+                </div>
+              )}
+              
+              <div>
+                <p className="px-3 text-xs font-medium text-gray-500 uppercase mb-2">Utilities</p>
+                <nav className="space-y-1">
+                  {utilityLinks.map((link) => (
+                    <NavLink
+                      key={link.to}
+                      to={link.to}
+                      className={({ isActive }) => cn(
+                        "flex items-center px-3 py-2 text-sm rounded-md w-full",
+                        isActive 
+                          ? "bg-forensic-accent/10 text-forensic-accent font-medium" 
+                          : "text-gray-700 hover:bg-gray-100"
+                      )}
+                      onClick={() => isMobile && setIsOpen(false)}
+                    >
+                      <span className="mr-3">{link.icon}</span>
+                      <span>{link.label}</span>
+                    </NavLink>
+                  ))}
+                </nav>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Mobile toggle button - shown on navbar */}
+      </>
+    );
+  }
+
+  // Desktop sidebar
   return (
-    <aside
+    <div 
       className={cn(
-        "h-screen border-r border-forensic-200 bg-white transition-all duration-300 flex flex-col",
-        collapsed ? "w-[70px]" : "w-[250px]"
+        "h-screen bg-white border-r border-forensic-200 transition-all duration-300",
+        collapsed ? "w-16" : "w-64"
       )}
     >
-      <div className="py-6 px-3 flex items-center justify-between border-b border-forensic-200">
-        {!collapsed && (
-          <Link to="/" className="flex items-center gap-2">
-            <Shield className="h-7 w-7 text-forensic-accent" />
-            <span className="font-bold text-lg text-forensic-800">ForensicLedger</span>
-          </Link>
-        )}
-        {collapsed && (
-          <Link to="/" className="mx-auto">
-            <Shield className="h-7 w-7 text-forensic-accent" />
-          </Link>
-        )}
-        <Button
-          variant="ghost"
-          size="icon"
-          className={cn("rounded-full", collapsed && "mx-auto")}
-          onClick={toggleCollapsed}
-        >
-          {collapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
-        </Button>
-      </div>
-
-      <div className="flex-1 overflow-y-auto py-4 px-2">
-        <nav className="space-y-1">
-          {navLinks.map((link) => (
-            <TooltipProvider key={link.to} delayDuration={0}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link
+      <div className="flex flex-col h-full">
+        <div className="flex items-center justify-between p-4 border-b">
+          {!collapsed && (
+            <div className="flex items-center">
+              <Shield className="h-6 w-6 text-forensic-accent" />
+              <span className="ml-2 font-bold text-lg">ForensicLedger</span>
+            </div>
+          )}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={toggleCollapsed}
+            className="p-1 h-8 w-8 ml-auto"
+          >
+            {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+          </Button>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto p-2">
+          {user && !collapsed && (
+            <div className="mb-4 p-2 bg-forensic-50 rounded-lg">
+              <p className="text-sm font-medium truncate">{user.name}</p>
+              <Badge className="mt-1">
+                {user.roleTitle || "Unknown Role"}
+              </Badge>
+            </div>
+          )}
+          
+          <div className="mb-6">
+            {!collapsed && (
+              <p className="px-3 text-xs font-medium text-gray-500 uppercase mb-2">Core</p>
+            )}
+            <nav className="space-y-1">
+              {coreLinks.map((link) => (
+                <NavLink
+                  key={link.to}
+                  to={link.to}
+                  title={collapsed ? link.label : undefined}
+                  className={({ isActive }) => cn(
+                    "flex items-center rounded-md w-full",
+                    collapsed ? "justify-center p-2" : "px-3 py-2",
+                    isActive 
+                      ? "bg-forensic-accent/10 text-forensic-accent font-medium" 
+                      : "text-gray-700 hover:bg-gray-100"
+                  )}
+                >
+                  <span className={cn(!collapsed && "mr-3")}>{link.icon}</span>
+                  {!collapsed && <span>{link.label}</span>}
+                </NavLink>
+              ))}
+            </nav>
+          </div>
+          
+          {user && roleBasedLinks().length > 0 && (
+            <div className="mb-6">
+              {!collapsed && (
+                <p className="px-3 text-xs font-medium text-gray-500 uppercase mb-2">Role Specific</p>
+              )}
+              <nav className="space-y-1">
+                {roleBasedLinks().map((link) => (
+                  <NavLink
+                    key={link.to}
                     to={link.to}
-                    className={cn(
-                      "flex items-center rounded-md px-3 py-2.5 gap-3 text-sm font-medium transition-colors",
-                      isActive(link.to)
-                        ? "bg-forensic-100 text-forensic-accent"
-                        : "text-forensic-600 hover:bg-forensic-50 hover:text-forensic-800"
+                    title={collapsed ? link.label : undefined}
+                    className={({ isActive }) => cn(
+                      "flex items-center rounded-md w-full",
+                      collapsed ? "justify-center p-2" : "px-3 py-2",
+                      isActive 
+                        ? "bg-forensic-accent/10 text-forensic-accent font-medium" 
+                        : "text-gray-700 hover:bg-gray-100"
                     )}
                   >
-                    <span className="flex-shrink-0">{React.cloneElement(link.icon, { className: "h-5 w-5" })}</span>
+                    <span className={cn(!collapsed && "mr-3")}>{link.icon}</span>
                     {!collapsed && <span>{link.label}</span>}
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right" className={cn("bg-forensic-800 text-white", !collapsed && "hidden")}>
-                  {link.label}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          ))}
-        </nav>
+                  </NavLink>
+                ))}
+              </nav>
+            </div>
+          )}
+          
+          <div>
+            {!collapsed && (
+              <p className="px-3 text-xs font-medium text-gray-500 uppercase mb-2">Utilities</p>
+            )}
+            <nav className="space-y-1">
+              {utilityLinks.map((link) => (
+                <NavLink
+                  key={link.to}
+                  to={link.to}
+                  title={collapsed ? link.label : undefined}
+                  className={({ isActive }) => cn(
+                    "flex items-center rounded-md w-full",
+                    collapsed ? "justify-center p-2" : "px-3 py-2",
+                    isActive 
+                      ? "bg-forensic-accent/10 text-forensic-accent font-medium" 
+                      : "text-gray-700 hover:bg-gray-100"
+                  )}
+                >
+                  <span className={cn(!collapsed && "mr-3")}>{link.icon}</span>
+                  {!collapsed && <span>{link.label}</span>}
+                </NavLink>
+              ))}
+            </nav>
+          </div>
+        </div>
       </div>
-
-      <div className="p-2 border-t border-forensic-200">
-        <nav className="space-y-1">
-          {bottomLinks.map((link) => (
-            <TooltipProvider key={link.to} delayDuration={0}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link
-                    to={link.to}
-                    className={cn(
-                      "flex items-center rounded-md px-3 py-2.5 gap-3 text-sm font-medium transition-colors",
-                      isActive(link.to)
-                        ? "bg-forensic-100 text-forensic-accent"
-                        : "text-forensic-600 hover:bg-forensic-50 hover:text-forensic-800"
-                    )}
-                  >
-                    <span className="flex-shrink-0">{React.cloneElement(link.icon, { className: "h-5 w-5" })}</span>
-                    {!collapsed && <span>{link.label}</span>}
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right" className={cn("bg-forensic-800 text-white", !collapsed && "hidden")}>
-                  {link.label}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          ))}
-        </nav>
-      </div>
-    </aside>
+    </div>
   );
 };
 

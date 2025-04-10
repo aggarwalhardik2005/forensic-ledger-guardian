@@ -11,10 +11,14 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import web3Service, { Role } from "@/services/web3Service";
 import { useAuth } from '@/contexts/AuthContext';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const RoleManagement = () => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
+
   const [users, setUsers] = useState([
     { id: '1', name: 'John Smith', email: 'john@court.gov', role: Role.Court, caseAccess: ['C-2023-001', 'C-2023-005'] },
     { id: '2', name: 'Emma Clark', email: 'emma@police.gov', role: Role.Officer, caseAccess: ['C-2023-001', 'C-2023-002'] },
@@ -84,22 +88,66 @@ const RoleManagement = () => {
       user.id === userId ? { ...user, role: newRole } : user
     ));
   };
+
+  // Render mobile-specific card for each user
+  const renderUserCard = (user) => (
+    <Card key={user.id} className="mb-4">
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle className="text-base">{user.name}</CardTitle>
+            <CardDescription className="text-xs">{user.email}</CardDescription>
+          </div>
+          <Badge className={getRoleBadgeColor(user.role)}>
+            {web3Service.getRoleString(user.role)}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="py-2">
+        <div className="text-xs text-muted-foreground mb-2">Case Access:</div>
+        <div className="flex flex-wrap gap-1">
+          {user.caseAccess.map(caseId => (
+            <Badge 
+              key={caseId} 
+              variant="outline" 
+              className="bg-forensic-50 text-xs"
+            >
+              {caseId}
+            </Badge>
+          ))}
+          {user.caseAccess.length === 0 && (
+            <span className="text-xs text-muted-foreground">No cases assigned</span>
+          )}
+        </div>
+      </CardContent>
+      <CardFooter className="pt-2 flex justify-end">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => handleRemoveUser(user.id)}
+          className="text-forensic-500 hover:text-red-600 p-1 h-8 w-8"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </CardFooter>
+    </Card>
+  );
   
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 md:space-y-6 animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold text-forensic-800 flex items-center">
-            <UserCog className="h-6 w-6 mr-2 text-forensic-court" />
+          <h1 className="text-xl md:text-2xl font-bold text-forensic-800 flex items-center">
+            <UserCog className="h-5 w-5 md:h-6 md:w-6 mr-2 text-forensic-court" />
             Role Management
           </h1>
-          <p className="text-sm text-forensic-500">
+          <p className="text-xs md:text-sm text-forensic-500">
             Assign users to specific cases with role designation and manage access permissions
           </p>
         </div>
         <Button 
           variant="outline" 
-          className="bg-forensic-court text-white hover:bg-forensic-court/90 flex items-center gap-2"
+          className="bg-forensic-court text-white hover:bg-forensic-court/90 flex items-center gap-2 w-full sm:w-auto"
           onClick={handleSaveRoles}
         >
           <Save className="h-4 w-4" />
@@ -107,10 +155,10 @@ const RoleManagement = () => {
         </Button>
       </div>
       
-      <div className="grid gap-6">
+      <div className="grid gap-4 md:gap-6">
         <Card>
           <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <CardTitle>User Role Assignment</CardTitle>
                 <CardDescription>
@@ -120,7 +168,7 @@ const RoleManagement = () => {
               <Button 
                 size="sm" 
                 onClick={() => setShowAddForm(!showAddForm)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 w-full sm:w-auto"
               >
                 {showAddForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                 {showAddForm ? 'Cancel' : 'Add User'}
@@ -129,8 +177,8 @@ const RoleManagement = () => {
           </CardHeader>
           <CardContent>
             {showAddForm && (
-              <div className="bg-forensic-50 border border-forensic-200 rounded-md p-4 mb-4">
-                <h3 className="font-medium mb-3">Add New User</h3>
+              <div className="bg-forensic-50 border border-forensic-200 rounded-md p-3 md:p-4 mb-4">
+                <h3 className="font-medium mb-3 text-sm md:text-base">Add New User</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Full Name</Label>
@@ -185,60 +233,68 @@ const RoleManagement = () => {
               </div>
             )}
             
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Case Access</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.name}</TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>
-                        <div className="inline-flex items-center">
-                          <Badge className={getRoleBadgeColor(user.role)}>
-                            {web3Service.getRoleString(user.role)}
-                          </Badge>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {user.caseAccess.map(caseId => (
-                            <Badge 
-                              key={caseId} 
-                              variant="outline" 
-                              className="bg-forensic-50"
+            {isMobile ? (
+              <div className="space-y-2">
+                {users.map(renderUserCard)}
+              </div>
+            ) : (
+              <ScrollArea className="w-full rounded-md border">
+                <div className="min-w-[600px]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Role</TableHead>
+                        <TableHead>Case Access</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {users.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell className="font-medium">{user.name}</TableCell>
+                          <TableCell>{user.email}</TableCell>
+                          <TableCell>
+                            <div className="inline-flex items-center">
+                              <Badge className={getRoleBadgeColor(user.role)}>
+                                {web3Service.getRoleString(user.role)}
+                              </Badge>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-wrap gap-1">
+                              {user.caseAccess.map(caseId => (
+                                <Badge 
+                                  key={caseId} 
+                                  variant="outline" 
+                                  className="bg-forensic-50"
+                                >
+                                  {caseId}
+                                </Badge>
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => handleRemoveUser(user.id)}
+                              className="text-forensic-500 hover:text-red-600 p-0 h-8 w-8"
                             >
-                              {caseId}
-                            </Badge>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => handleRemoveUser(user.id)}
-                          className="text-forensic-500 hover:text-red-600 p-0 h-8 w-8"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </ScrollArea>
+            )}
           </CardContent>
           <CardFooter className="flex justify-between border-t pt-4">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               {users.length} users configured with role assignments
             </p>
           </CardFooter>
@@ -253,7 +309,7 @@ const RoleManagement = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Case ID</Label>
                   <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
@@ -277,7 +333,7 @@ const RoleManagement = () => {
                 <Switch id="case-access" />
                 <Label htmlFor="case-access">Grant access to selected case</Label>
               </div>
-              <Button className="flex items-center gap-2">
+              <Button className="flex items-center gap-2 w-full sm:w-auto">
                 <Save className="h-4 w-4" />
                 Update Access
               </Button>

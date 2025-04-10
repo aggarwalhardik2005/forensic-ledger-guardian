@@ -92,6 +92,19 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Responsive typography */
+  h1 {
+    @apply text-xl md:text-2xl lg:text-3xl font-bold;
+  }
+  
+  h2 {
+    @apply text-lg md:text-xl lg:text-2xl font-semibold;
+  }
+  
+  h3 {
+    @apply text-base md:text-lg font-medium;
+  }
 }
 
 @layer components {
@@ -100,7 +113,7 @@
   }
   
   .status-badge {
-    @apply px-3 py-1 rounded-full text-xs font-medium;
+    @apply px-2 py-1 md:px-3 md:py-1 rounded-full text-xs font-medium;
   }
   
   .status-badge-sealed {
@@ -118,4 +131,32 @@
   .ethereum-gradient {
     @apply bg-gradient-to-r from-forensic-accent to-forensic-evidence text-white;
   }
+  
+  /* Responsive layout helpers */
+  .responsive-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4;
+  }
+  
+  .responsive-container {
+    @apply px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4;
+  }
+  
+  .responsive-card {
+    @apply p-3 sm:p-4 md:p-6;
+  }
+  
+  .responsive-flex {
+    @apply flex flex-col sm:flex-row;
+  }
+  
+  /* Card with consistent responsive padding */
+  .card-responsive {
+    @apply bg-white rounded-lg shadow-sm border border-forensic-200 p-3 sm:p-4 md:p-6;
+  }
+  
+  /* Table container for small screens */
+  .table-container {
+    @apply w-full overflow-x-auto rounded-md border;
+  }
 }
+
