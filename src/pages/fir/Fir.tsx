@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +28,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { toast } from '@/hooks/use-toast';
 
 // Mock FIR data
 const firData = [
@@ -131,6 +133,7 @@ const getFIRStatusBadge = (status: string) => {
 const FIR = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const navigate = useNavigate();
   
   // Filter FIRs based on search and filter
   const filteredFIRs = firData
@@ -153,15 +156,43 @@ const FIR = () => {
       return fir.status === statusFilter;
     });
 
+  const handleCreateFIR = () => {
+    navigate('/fir/new');
+  };
+
+  const handleViewFIR = (firId: string) => {
+    // This would navigate to a details page in a real implementation
+    toast({
+      title: "Viewing FIR",
+      description: `Opening details for FIR ${firId}`,
+    });
+  };
+
+  const handleEditFIR = (firId: string) => {
+    toast({
+      title: "Edit FIR",
+      description: `Opening edit form for FIR ${firId}`,
+    });
+  };
+
+  const handleAddEvidence = (firId: string) => {
+    navigate('/upload', { state: { firId } });
+  };
+
+  const handleRequestCaseCreation = (firId: string) => {
+    toast({
+      title: "Request Sent",
+      description: `Case creation request sent for FIR ${firId}`,
+    });
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-2 xs:gap-0">
         <h1 className="text-2xl font-bold text-forensic-800">First Information Reports</h1>
-        <Button asChild className="bg-forensic-800 hover:bg-forensic-800/90">
-          <Link to="/fir/new" className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            <span>New FIR</span>
-          </Link>
+        <Button onClick={handleCreateFIR} className="bg-forensic-800 hover:bg-forensic-800/90">
+          <Plus className="h-4 w-4 mr-2" />
+          <span>New FIR</span>
         </Button>
       </div>
       
@@ -227,17 +258,31 @@ const FIR = () => {
                 </div>
                 
                 <div className="mt-3 md:mt-0 flex items-center gap-2">
-                  <Button size="sm" variant="outline" className="h-8 flex items-center gap-1">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="h-8 flex items-center gap-1"
+                    onClick={() => handleViewFIR(fir.id)}
+                  >
                     <Eye className="h-4 w-4" />
                     <span className="hidden sm:inline">View</span>
                   </Button>
                   
-                  <Button size="sm" variant="outline" className="h-8 flex items-center gap-1">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="h-8 flex items-center gap-1"
+                    onClick={() => handleEditFIR(fir.id)}
+                  >
                     <Pencil className="h-4 w-4" />
                     <span className="hidden sm:inline">Edit</span>
                   </Button>
                   
-                  <Button size="sm" className="bg-forensic-evidence hover:bg-forensic-evidence/90 h-8 flex items-center gap-1">
+                  <Button 
+                    size="sm" 
+                    className="bg-forensic-evidence hover:bg-forensic-evidence/90 h-8 flex items-center gap-1"
+                    onClick={() => handleAddEvidence(fir.id)}
+                  >
                     <FilePlus className="h-4 w-4" />
                     <span className="hidden sm:inline">Add Evidence</span>
                   </Button>
@@ -249,14 +294,15 @@ const FIR = () => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
-                        <Link to={`/fir/${fir.id}`} className="w-full flex items-center">
-                          View Details
-                        </Link>
+                      <DropdownMenuItem onClick={() => handleViewFIR(fir.id)}>
+                        View Details
                       </DropdownMenuItem>
                       <DropdownMenuItem>History</DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-forensic-court">
+                      <DropdownMenuItem 
+                        className="text-forensic-court"
+                        onClick={() => handleRequestCaseCreation(fir.id)}
+                      >
                         Request Case Creation
                       </DropdownMenuItem>
                     </DropdownMenuContent>

@@ -21,7 +21,8 @@ import {
   FileQuestion,
   AlertCircle,
   ArrowRight,
-  Send
+  Send,
+  XCircle
 } from "lucide-react";
 import {
   Select,
@@ -32,15 +33,46 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from "@/hooks/use-toast";
 
 interface FIRManagementProps {
   mode?: 'view' | 'create' | 'edit';
+}
+
+interface FormErrors {
+  title?: string;
+  date?: string;
+  time?: string;
+  location?: string;
+  incidentType?: string;
+  description?: string;
+  complainantName?: string;
+  contactNumber?: string;
 }
 
 const FIRManagement: React.FC<FIRManagementProps> = ({ mode = 'create' }) => {
   const { user } = useAuth();
   const [step, setStep] = useState(1);
   const [formCompleted, setFormCompleted] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
+  
+  // Form fields
+  const [title, setTitle] = useState('');
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
+  const [location, setLocation] = useState('');
+  const [incidentType, setIncidentType] = useState('');
+  const [description, setDescription] = useState('');
+  const [complainantName, setComplainantName] = useState('');
+  const [organization, setOrganization] = useState('');
+  const [contactNumber, setContactNumber] = useState('');
+  const [email, setEmail] = useState('');
+  const [suspectName, setSuspectName] = useState('');
+  const [suspectType, setSuspectType] = useState('');
+  const [suspectInfo, setSuspectInfo] = useState('');
+  const [witnessName, setWitnessName] = useState('');
+  const [witnessContact, setWitnessContact] = useState('');
+  const [witnessStatement, setWitnessStatement] = useState('');
   
   const titles = {
     view: "FIR Management",
@@ -54,10 +86,56 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = 'create' }) => {
     edit: "Update an existing First Information Report."
   };
 
+  const validateStepOne = () => {
+    const newErrors: FormErrors = {};
+    
+    if (!title.trim()) newErrors.title = "Title is required";
+    if (!date) newErrors.date = "Date is required";
+    if (!time) newErrors.time = "Time is required";
+    if (!location.trim()) newErrors.location = "Location is required";
+    if (!incidentType) newErrors.incidentType = "Incident type is required";
+    if (!description.trim()) newErrors.description = "Description is required";
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+  
+  const validateStepTwo = () => {
+    const newErrors: FormErrors = {};
+    
+    if (!complainantName.trim()) newErrors.complainantName = "Complainant name is required";
+    if (!contactNumber.trim()) newErrors.contactNumber = "Contact number is required";
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+  
+  const handleNextStep = () => {
+    if (step === 1) {
+      const isValid = validateStepOne();
+      if (isValid) setStep(2);
+    } else if (step === 2) {
+      const isValid = validateStepTwo();
+      if (isValid) setStep(3);
+    }
+  };
+  
+  const handlePreviousStep = () => {
+    setStep(step - 1);
+    setErrors({});
+  };
+
   const handleCompleteForm = () => {
-    // In real implementation, this would validate and submit the form
+    // Generate FIR ID (in real implementation this would be done on the backend)
+    const firId = "FF-2023-120";
+    
+    // In real implementation, this would validate and submit the form to the blockchain
     setFormCompleted(true);
     setStep(4); // Show success step
+    toast({
+      title: "FIR Created Successfully",
+      description: `Your FIR with ID ${firId} has been created.`,
+    });
   };
   
   return (
@@ -139,7 +217,17 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = 'create' }) => {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Incident Title</label>
-                  <Input placeholder="Enter a descriptive title for the incident" />
+                  <Input 
+                    placeholder="Enter a descriptive title for the incident" 
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className={errors.title ? "border-red-500" : ""}
+                  />
+                  {errors.title && (
+                    <p className="text-sm text-red-500 flex items-center mt-1">
+                      <XCircle className="h-3 w-3 mr-1" /> {errors.title}
+                    </p>
+                  )}
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -148,11 +236,31 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = 'create' }) => {
                       <Calendar className="h-4 w-4 mr-2 text-forensic-500" />
                       Date of Incident
                     </label>
-                    <Input type="date" />
+                    <Input 
+                      type="date" 
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                      className={errors.date ? "border-red-500" : ""}
+                    />
+                    {errors.date && (
+                      <p className="text-sm text-red-500 flex items-center mt-1">
+                        <XCircle className="h-3 w-3 mr-1" /> {errors.date}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Time of Incident</label>
-                    <Input type="time" />
+                    <Input 
+                      type="time" 
+                      value={time}
+                      onChange={(e) => setTime(e.target.value)}
+                      className={errors.time ? "border-red-500" : ""}
+                    />
+                    {errors.time && (
+                      <p className="text-sm text-red-500 flex items-center mt-1">
+                        <XCircle className="h-3 w-3 mr-1" /> {errors.time}
+                      </p>
+                    )}
                   </div>
                 </div>
                 
@@ -161,13 +269,26 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = 'create' }) => {
                     <MapPin className="h-4 w-4 mr-2 text-forensic-500" />
                     Location of Incident
                   </label>
-                  <Input placeholder="Enter the physical location of the incident" />
+                  <Input 
+                    placeholder="Enter the physical location of the incident" 
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    className={errors.location ? "border-red-500" : ""}
+                  />
+                  {errors.location && (
+                    <p className="text-sm text-red-500 flex items-center mt-1">
+                      <XCircle className="h-3 w-3 mr-1" /> {errors.location}
+                    </p>
+                  )}
                 </div>
                 
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Type of Incident</label>
-                  <Select>
-                    <SelectTrigger className="w-full">
+                  <Select 
+                    value={incidentType}
+                    onValueChange={(value) => setIncidentType(value)}
+                  >
+                    <SelectTrigger className={`w-full ${errors.incidentType ? "border-red-500" : ""}`}>
                       <SelectValue placeholder="Select incident type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -182,6 +303,11 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = 'create' }) => {
                       <SelectItem value="other">Other Cyber Crime</SelectItem>
                     </SelectContent>
                   </Select>
+                  {errors.incidentType && (
+                    <p className="text-sm text-red-500 flex items-center mt-1">
+                      <XCircle className="h-3 w-3 mr-1" /> {errors.incidentType}
+                    </p>
+                  )}
                 </div>
                 
                 <div className="space-y-2">
@@ -189,13 +315,21 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = 'create' }) => {
                   <Textarea 
                     placeholder="Provide a detailed description of the incident including how it was discovered" 
                     rows={5}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className={errors.description ? "border-red-500" : ""}
                   />
+                  {errors.description && (
+                    <p className="text-sm text-red-500 flex items-center mt-1">
+                      <XCircle className="h-3 w-3 mr-1" /> {errors.description}
+                    </p>
+                  )}
                 </div>
               </CardContent>
               <CardFooter className="flex justify-end border-t border-forensic-100 pt-4">
                 <Button 
                   className="bg-forensic-800 hover:bg-forensic-800/90"
-                  onClick={() => setStep(2)}
+                  onClick={handleNextStep}
                 >
                   Next Step
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -223,22 +357,51 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = 'create' }) => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Complainant Name</label>
-                      <Input placeholder="Full name of complainant" />
+                      <Input 
+                        placeholder="Full name of complainant" 
+                        value={complainantName}
+                        onChange={(e) => setComplainantName(e.target.value)}
+                        className={errors.complainantName ? "border-red-500" : ""}
+                      />
+                      {errors.complainantName && (
+                        <p className="text-sm text-red-500 flex items-center mt-1">
+                          <XCircle className="h-3 w-3 mr-1" /> {errors.complainantName}
+                        </p>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Organization</label>
-                      <Input placeholder="If representing an organization" />
+                      <Input 
+                        placeholder="If representing an organization" 
+                        value={organization}
+                        onChange={(e) => setOrganization(e.target.value)}
+                      />
                     </div>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Contact Number</label>
-                      <Input placeholder="Phone number" />
+                      <Input 
+                        placeholder="Phone number" 
+                        value={contactNumber}
+                        onChange={(e) => setContactNumber(e.target.value)}
+                        className={errors.contactNumber ? "border-red-500" : ""}
+                      />
+                      {errors.contactNumber && (
+                        <p className="text-sm text-red-500 flex items-center mt-1">
+                          <XCircle className="h-3 w-3 mr-1" /> {errors.contactNumber}
+                        </p>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Email Address</label>
-                      <Input type="email" placeholder="Email address" />
+                      <Input 
+                        type="email" 
+                        placeholder="Email address" 
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
                     </div>
                   </div>
                 </div>
@@ -252,11 +415,15 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = 'create' }) => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Suspect Name/Identifier</label>
-                      <Input placeholder="Name or identifying information (if known)" />
+                      <Input 
+                        placeholder="Name or identifying information (if known)" 
+                        value={suspectName}
+                        onChange={(e) => setSuspectName(e.target.value)}
+                      />
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Suspect Type</label>
-                      <Select>
+                      <Select value={suspectType} onValueChange={(value) => setSuspectType(value)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
@@ -276,6 +443,8 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = 'create' }) => {
                     <Textarea 
                       placeholder="Any other information about the suspect (IP addresses, identifying characteristics, etc.)" 
                       rows={3}
+                      value={suspectInfo}
+                      onChange={(e) => setSuspectInfo(e.target.value)}
                     />
                   </div>
                 </div>
@@ -289,11 +458,19 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = 'create' }) => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Witness Name</label>
-                      <Input placeholder="Full name of witness" />
+                      <Input 
+                        placeholder="Full name of witness" 
+                        value={witnessName}
+                        onChange={(e) => setWitnessName(e.target.value)}
+                      />
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Contact Information</label>
-                      <Input placeholder="Phone or email" />
+                      <Input 
+                        placeholder="Phone or email"
+                        value={witnessContact}
+                        onChange={(e) => setWitnessContact(e.target.value)}
+                      />
                     </div>
                   </div>
                   
@@ -302,6 +479,8 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = 'create' }) => {
                     <Textarea 
                       placeholder="Brief statement from witness" 
                       rows={3}
+                      value={witnessStatement}
+                      onChange={(e) => setWitnessStatement(e.target.value)}
                     />
                   </div>
                   
@@ -313,13 +492,13 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = 'create' }) => {
               <CardFooter className="flex justify-between border-t border-forensic-100 pt-4">
                 <Button 
                   variant="outline" 
-                  onClick={() => setStep(1)}
+                  onClick={handlePreviousStep}
                 >
                   Previous Step
                 </Button>
                 <Button 
                   className="bg-forensic-800 hover:bg-forensic-800/90"
-                  onClick={() => setStep(3)}
+                  onClick={handleNextStep}
                 >
                   Next Step
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -344,29 +523,36 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = 'create' }) => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <p className="text-sm text-forensic-500">Title</p>
-                        <p className="font-medium">Unauthorized Data Access Incident</p>
+                        <p className="font-medium">{title || "Not provided"}</p>
                       </div>
                       <div>
                         <p className="text-sm text-forensic-500">Date & Time</p>
-                        <p className="font-medium">April 9, 2025, 13:45</p>
+                        <p className="font-medium">{date && time ? `${new Date(date).toLocaleDateString()}, ${time}` : "Not provided"}</p>
                       </div>
                       <div>
                         <p className="text-sm text-forensic-500">Location</p>
-                        <p className="font-medium">Tech Corp HQ, 123 Main St</p>
+                        <p className="font-medium">{location || "Not provided"}</p>
                       </div>
                       <div>
                         <p className="text-sm text-forensic-500">Type</p>
-                        <p className="font-medium">Unauthorized System Access</p>
+                        <p className="font-medium">{
+                          incidentType === 'data_breach' ? 'Data Breach' :
+                          incidentType === 'unauthorized_access' ? 'Unauthorized System Access' :
+                          incidentType === 'information_theft' ? 'Information Theft' :
+                          incidentType === 'malware_attack' ? 'Malware Attack' :
+                          incidentType === 'phishing' ? 'Phishing Incident' :
+                          incidentType === 'identity_theft' ? 'Identity Theft' :
+                          incidentType === 'data_loss' ? 'Data Loss' :
+                          incidentType === 'physical' ? 'Physical Device Theft' :
+                          incidentType === 'other' ? 'Other Cyber Crime' :
+                          'Not selected'
+                        }</p>
                       </div>
                     </div>
                     
                     <div className="mt-4">
                       <p className="text-sm text-forensic-500">Description</p>
-                      <p className="text-sm">
-                        Unauthorized access to the internal database was detected by IT security team.
-                        The breach appears to have occurred through compromised login credentials.
-                        Several confidential files were accessed during the incident.
-                      </p>
+                      <p className="text-sm">{description || "Not provided"}</p>
                     </div>
                   </div>
                 </div>
@@ -377,11 +563,17 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = 'create' }) => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <p className="text-sm text-forensic-500">Name</p>
-                        <p className="font-medium">Tech Corp Inc.</p>
+                        <p className="font-medium">{complainantName || "Not provided"}</p>
+                        {organization && (
+                          <p className="text-sm text-forensic-600">({organization})</p>
+                        )}
                       </div>
                       <div>
                         <p className="text-sm text-forensic-500">Contact</p>
-                        <p className="font-medium">security@techcorp.example</p>
+                        <p className="font-medium">{contactNumber || "Not provided"}</p>
+                        {email && (
+                          <p className="text-sm text-forensic-600">{email}</p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -393,23 +585,54 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = 'create' }) => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <p className="text-sm text-forensic-500">Suspect</p>
-                        <p className="font-medium">Unknown</p>
+                        <p className="font-medium">{suspectName || "Unknown"}</p>
                       </div>
                       <div>
                         <p className="text-sm text-forensic-500">Type</p>
-                        <p className="font-medium">External Actor</p>
+                        <p className="font-medium">{
+                          suspectType === 'internal' ? 'Internal Actor' :
+                          suspectType === 'external' ? 'External Actor' :
+                          suspectType === 'former_employee' ? 'Former Employee' :
+                          suspectType === 'group' ? 'Organized Group' :
+                          suspectType === 'unknown' ? 'Unknown' :
+                          'Not selected'
+                        }</p>
                       </div>
                     </div>
                     
-                    <div className="mt-4">
-                      <p className="text-sm text-forensic-500">Additional Information</p>
-                      <p className="text-sm">
-                        Access originated from IP address 192.168.x.x. Multiple failed login attempts
-                        before successful breach.
-                      </p>
-                    </div>
+                    {suspectInfo && (
+                      <div className="mt-4">
+                        <p className="text-sm text-forensic-500">Additional Information</p>
+                        <p className="text-sm">{suspectInfo}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
+                
+                {witnessName && (
+                  <div className="space-y-4">
+                    <h3 className="text-md font-semibold">Witness Information</h3>
+                    <div className="bg-forensic-50 p-4 rounded-md border border-forensic-100">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm text-forensic-500">Name</p>
+                          <p className="font-medium">{witnessName}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-forensic-500">Contact</p>
+                          <p className="font-medium">{witnessContact || "Not provided"}</p>
+                        </div>
+                      </div>
+                      
+                      {witnessStatement && (
+                        <div className="mt-4">
+                          <p className="text-sm text-forensic-500">Statement</p>
+                          <p className="text-sm">{witnessStatement}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
                 
                 <div className="p-4 border border-forensic-200 rounded-md bg-forensic-50">
                   <div className="flex items-center">
@@ -425,7 +648,7 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = 'create' }) => {
               <CardFooter className="flex justify-between border-t border-forensic-100 pt-4">
                 <Button 
                   variant="outline" 
-                  onClick={() => setStep(2)}
+                  onClick={handlePreviousStep}
                 >
                   Previous Step
                 </Button>

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -12,19 +12,33 @@ import {
   FileCheck, 
   ArrowUpRight, 
   UserRound,
-  Gavel // Replacing Handcuffs with Gavel which is a better representation for legal/case updates
+  Gavel 
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import RecentActivityList from '../RecentActivityList';
 import StatCard from '../StatCard';
 
 const OfficerDashboard = () => {
+  const navigate = useNavigate();
+  
   // Mock data - would come from API/blockchain in real implementation
   const stats = {
     totalFIRs: 36,
     pendingFIRs: 14,
     totalCases: 22,
     totalEvidence: 87
+  };
+
+  const handleCreateFIR = () => {
+    navigate('/fir/new');
+  };
+
+  const handleUploadEvidence = () => {
+    navigate('/upload');
+  };
+
+  const handleCaseUpdate = () => {
+    navigate('/cases/update');
   };
 
   return (
@@ -74,11 +88,12 @@ const OfficerDashboard = () => {
             </p>
           </CardContent>
           <CardFooter>
-            <Button asChild className="w-full bg-forensic-800 hover:bg-forensic-800/90">
-              <Link to="/fir/new">
-                <span>Create FIR</span>
-                <ArrowUpRight className="ml-2 h-4 w-4" />
-              </Link>
+            <Button 
+              className="w-full bg-forensic-800 hover:bg-forensic-800/90"
+              onClick={handleCreateFIR}
+            >
+              <span>Create FIR</span>
+              <ArrowUpRight className="ml-2 h-4 w-4" />
             </Button>
           </CardFooter>
         </Card>
@@ -97,11 +112,12 @@ const OfficerDashboard = () => {
             </p>
           </CardContent>
           <CardFooter>
-            <Button asChild className="w-full bg-forensic-evidence hover:bg-forensic-evidence/90">
-              <Link to="/upload">
-                <span>Upload Files</span>
-                <ArrowUpRight className="ml-2 h-4 w-4" />
-              </Link>
+            <Button 
+              className="w-full bg-forensic-evidence hover:bg-forensic-evidence/90"
+              onClick={handleUploadEvidence}
+            >
+              <span>Upload Files</span>
+              <ArrowUpRight className="ml-2 h-4 w-4" />
             </Button>
           </CardFooter>
         </Card>
@@ -120,11 +136,12 @@ const OfficerDashboard = () => {
             </p>
           </CardContent>
           <CardFooter>
-            <Button asChild className="w-full bg-forensic-accent hover:bg-forensic-accent/90">
-              <Link to="/cases/update">
-                <span>Update Case</span>
-                <ArrowUpRight className="ml-2 h-4 w-4" />
-              </Link>
+            <Button 
+              className="w-full bg-forensic-accent hover:bg-forensic-accent/90"
+              onClick={handleCaseUpdate}
+            >
+              <span>Update Case</span>
+              <ArrowUpRight className="ml-2 h-4 w-4" />
             </Button>
           </CardFooter>
         </Card>

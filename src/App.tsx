@@ -92,14 +92,11 @@ const App: React.FC = () => {
                 <Route path="/users/add" element={<Layout><AddUser /></Layout>} />
                 <Route path="/users/roles" element={<Layout><RoleManagement /></Layout>} />
                 <Route path="/settings/security" element={<Layout><SystemConfiguration /></Layout>} />
-                <Route path="/activity" element={<Layout><AuditLogs /></Layout>} />
                 <Route path="/reports" element={<Layout><ReportsAnalytics /></Layout>} />
                 <Route path="/cases/create" element={<Layout><CreateCase /></Layout>} />
                 <Route path="/cases/approval" element={<Layout><CasesApproval /></Layout>} />
                 
                 {/* Officer role specific routes */}
-                <Route path="/fir" element={<Layout><FIR /></Layout>} />
-                <Route path="/fir/new" element={<Layout><FIRManagement /></Layout>} />
                 <Route path="/cases/update" element={<Layout><Cases /></Layout>} />
                 <Route path="/cases/assigned" element={<Layout><Cases /></Layout>} />
                 <Route path="/evidence/confirm" element={<Layout><EvidenceConfirmation /></Layout>} />
