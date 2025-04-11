@@ -26,7 +26,7 @@ const Verify = () => {
           <Button 
             variant="outline"
             className="text-forensic-court"
-            onClick={() => navigate("/lawyer/chain-of-custody-verification")}
+            onClick={() => navigate("/verify/custody")}
           >
             <Shield className="h-4 w-4 mr-2" />
             Chain of Custody
