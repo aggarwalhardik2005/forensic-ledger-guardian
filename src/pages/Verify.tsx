@@ -26,7 +26,7 @@ const Verify = () => {
           <Button 
             variant="outline"
             className="text-forensic-court"
-            onClick={() => navigate("/lawyer/chain-of-custody")}
+            onClick={() => navigate("/verify/custody")}
           >
             <Shield className="h-4 w-4 mr-2" />
             Chain of Custody
@@ -34,7 +34,7 @@ const Verify = () => {
           <Button 
             variant="outline"
             className="text-forensic-accent"
-            onClick={() => navigate("/forensic/technical-verification")}
+            onClick={() => navigate("/evidence/verify")}
           >
             <Fingerprint className="h-4 w-4 mr-2" />
             Technical Verification
@@ -76,4 +76,3 @@ const Verify = () => {
 };
 
 export default Verify;
-
