@@ -34,7 +34,7 @@ const Verify = () => {
           <Button 
             variant="outline"
             className="text-forensic-accent"
-            onClick={() => navigate("/forensic/technical-verification")}
+            onClick={() => navigate("/evidence/verify")}
           >
             <Fingerprint className="h-4 w-4 mr-2" />
             Technical Verification
