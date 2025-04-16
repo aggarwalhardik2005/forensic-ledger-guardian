@@ -8,7 +8,8 @@ import {
   Bell,
   Sparkles,
   HelpCircle,
-  Lock
+  Lock,
+  Shield
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Role } from "@/services/web3Service";
