@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Shield, Home, FolderClosed, FileDigit, Upload, CheckCircle, HelpCircle, Settings, BarChart3, Users, FileLock2, Activity, FileText, Scale, BookOpen, AlignLeft } from 'lucide-react';
@@ -43,9 +44,8 @@ const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
           { to: '/officer/reports', label: 'Reports', icon: <BarChart3 size={18} /> },
         ];
       case Role.Forensic:
-        return [
-          { to: '/upload', label: 'Upload', icon: <Upload size={18} /> },
-        ];
+        // Removed the duplicate Upload button from Role Specific links
+        return [];
       case Role.Lawyer:
         return [];
       default:
