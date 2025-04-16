@@ -4,145 +4,137 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-  Gavel, 
-  Scale, 
   FolderKanban, 
   Users, 
-  FileDigit,
-  Lock,
-  ArrowUpRight,
-  FileCheck,
-  ShieldCheck,
-  Clock
+  Settings, 
+  BarChart3,
+  Activity,
+  ArrowUpRight
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
 import RecentActivityList from '../RecentActivityList';
 import StatCard from '../StatCard';
 
 const CourtDashboard = () => {
   // Mock data - would come from API/blockchain in real implementation
   const stats = {
-    totalCases: 38,
-    pendingApprovals: 12,
-    activeCases: 22,
-    closedCases: 16
+    totalCases: 32,
+    pendingApproval: 7,
+    totalUsers: 42,
+    activeUsers: 28
   };
 
   return (
-    <>
-      {/* Stats Row */}
+    <div className="space-y-6 animate-fade-in">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard 
           title="Total Cases" 
           value={stats.totalCases} 
-          icon={<FolderKanban className="h-5 w-5 text-forensic-court" />} 
+          icon={<FolderKanban className="h-5 w-5 text-forensic-evidence" />} 
           linkTo="/cases"
         />
         <StatCard 
-          title="Pending Approvals" 
-          value={stats.pendingApprovals} 
-          icon={<Gavel className="h-5 w-5 text-forensic-warning" />} 
+          title="Pending Approval" 
+          value={stats.pendingApproval} 
+          icon={<FolderKanban className="h-5 w-5 text-forensic-accent" />} 
           linkTo="/cases/approval"
-          highlight={stats.pendingApprovals > 0}
+          highlight={stats.pendingApproval > 0}
         />
         <StatCard 
-          title="Active Cases" 
-          value={stats.activeCases} 
-          icon={<Scale className="h-5 w-5 text-forensic-accent" />} 
-          linkTo="/cases?status=active"
+          title="Total Users" 
+          value={stats.totalUsers} 
+          icon={<Users className="h-5 w-5 text-forensic-court" />} 
+          linkTo="/users/manage"
         />
         <StatCard 
-          title="Closed Cases" 
-          value={stats.closedCases} 
-          icon={<Lock className="h-5 w-5 text-forensic-400" />} 
-          linkTo="/cases?status=closed"
+          title="Active Users" 
+          value={stats.activeUsers} 
+          icon={<Users className="h-5 w-5 text-forensic-warning" />} 
+          linkTo="/users/manage?status=active"
         />
       </div>
 
-      {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Pending Case Approvals */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
+      {/* Quick Actions - Only showing Court-specific actions */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center">
-              <Gavel className="h-5 w-5 mr-2 text-forensic-court" />
-              Pending Case Approvals
+              <Users className="h-5 w-5 mr-2 text-forensic-evidence" />
+              Role Management
             </CardTitle>
-            <CardDescription>Cases waiting for your approval</CardDescription>
+            <CardDescription>Manage user roles and permissions</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="flex items-center justify-between border-b pb-3">
-                  <div>
-                    <p className="font-medium">Case #FF-2023-1{i}2</p>
-                    <p className="text-sm text-forensic-500">Filed on April {i+1}, 2023</p>
-                  </div>
-                  <div className="space-x-2">
-                    <Badge className="bg-forensic-warning text-forensic-900">Pending Approval</Badge>
-                    <Button 
-                      size="sm" 
-                      className="bg-forensic-court hover:bg-forensic-court/90"
-                      asChild
-                    >
-                      <Link to="/cases/approval">
-                        Review
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <CardContent className="pb-2">
+            <p className="text-sm text-forensic-600">
+              Assign and modify roles for system users
+            </p>
           </CardContent>
           <CardFooter>
-            <Button variant="outline" asChild className="w-full">
-              <Link to="/cases/approval">View All Pending Approvals</Link>
+            <Button asChild className="w-full bg-forensic-evidence hover:bg-forensic-evidence/90">
+              <Link to="/users/roles">
+                <span>Manage Roles</span>
+                <ArrowUpRight className="ml-2 h-4 w-4" />
+              </Link>
             </Button>
           </CardFooter>
         </Card>
 
-        {/* User Management */}
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center">
-              <Users className="h-5 w-5 mr-2 text-forensic-court" />
-              User Management
+              <Settings className="h-5 w-5 mr-2 text-forensic-accent" />
+              System Configuration
             </CardTitle>
-            <CardDescription>Role assignments and access control</CardDescription>
+            <CardDescription>Configure system settings</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <Button asChild className="w-full bg-forensic-court hover:bg-forensic-court/90">
-              <Link to="/users/manage">
-                <span>Manage User Roles</span>
-                <ArrowUpRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-            
-            <Button asChild variant="outline" className="w-full">
-              <Link to="/users/add">
-                <span>Add New User</span>
-                <ArrowUpRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-            
-            <Button asChild variant="outline" className="w-full">
-              <Link to="/users/roles">
-                <span>Configure Role Permissions</span>
-                <ArrowUpRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+          <CardContent className="pb-2">
+            <p className="text-sm text-forensic-600">
+              Manage system parameters and security settings
+            </p>
           </CardContent>
+          <CardFooter>
+            <Button asChild className="w-full bg-forensic-accent hover:bg-forensic-accent/90">
+              <Link to="/settings/security">
+                <span>Configure System</span>
+                <ArrowUpRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </CardFooter>
         </Card>
 
-        {/* Recent Activity */}
-        <Card className="lg:col-span-3">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center">
+              <Activity className="h-5 w-5 mr-2 text-forensic-court" />
+              Audit Logs
+            </CardTitle>
+            <CardDescription>View system audit trail</CardDescription>
+          </CardHeader>
+          <CardContent className="pb-2">
+            <p className="text-sm text-forensic-600">
+              Monitor all system activities and access logs
+            </p>
+          </CardContent>
+          <CardFooter>
+            <Button asChild className="w-full bg-forensic-court hover:bg-forensic-court/90">
+              <Link to="/activity">
+                <span>View Audit Logs</span>
+                <ArrowUpRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+
+      {/* Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="text-lg flex items-center">
-              <Clock className="h-5 w-5 mr-2 text-forensic-600" />
-              Recent System Activity
+              <Activity className="h-5 w-5 mr-2 text-forensic-600" />
+              System Activity
             </CardTitle>
-            <CardDescription>Latest actions in the forensic platform</CardDescription>
+            <CardDescription>Recent system events</CardDescription>
           </CardHeader>
           <CardContent>
             <RecentActivityList />
@@ -154,46 +146,30 @@ const CourtDashboard = () => {
           </CardFooter>
         </Card>
 
-        {/* Key Actions Row */}
-        <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center">
-                <FileDigit className="h-5 w-5 mr-2 text-forensic-court" />
-                Create New Case
-              </CardTitle>
-              <CardDescription>Create a new case from FIR</CardDescription>
-            </CardHeader>
-            <CardFooter>
-              <Button asChild className="w-full bg-forensic-court hover:bg-forensic-court/90">
-                <Link to="/cases/create">
-                  <span>New Case</span>
-                  <ArrowUpRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </CardFooter>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center">
-                <ShieldCheck className="h-5 w-5 mr-2 text-forensic-warning" />
-                System Security
-              </CardTitle>
-              <CardDescription>Platform security settings</CardDescription>
-            </CardHeader>
-            <CardFooter>
-              <Button asChild className="w-full bg-forensic-warning hover:bg-forensic-warning/90 text-forensic-900">
-                <Link to="/settings/security">
-                  <span>Security Controls</span>
-                  <ArrowUpRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </CardFooter>
-          </Card>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center">
+              <BarChart3 className="h-5 w-5 mr-2 text-forensic-600" />
+              Reports & Analytics
+            </CardTitle>
+            <CardDescription>System performance metrics</CardDescription>
+          </CardHeader>
+          <CardContent className="pb-2">
+            <p className="text-sm text-forensic-600">
+              Access comprehensive reports and analytics on system usage
+            </p>
+          </CardContent>
+          <CardFooter>
+            <Button asChild variant="outline" className="w-full">
+              <Link to="/reports">
+                <span>View Reports</span>
+                <ArrowUpRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </CardFooter>
+        </Card>
       </div>
-    </>
+    </div>
   );
 };
 

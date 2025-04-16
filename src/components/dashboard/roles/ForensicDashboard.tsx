@@ -6,13 +6,8 @@ import { Button } from "@/components/ui/button";
 import { 
   FileDigit, 
   FolderKanban, 
-  ShieldAlert, 
-  Clock, 
-  Upload, 
-  FileCheck, 
-  ArrowUpRight, 
-  FileLock2, 
-  UserCheck 
+  Upload,
+  ArrowUpRight
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import RecentActivityList from '../RecentActivityList';
@@ -23,14 +18,12 @@ const ForensicDashboard = () => {
   const stats = {
     totalCases: 24,
     activeCases: 18,
-    totalEvidence: 143,
-    pendingVerification: 7
+    totalEvidence: 143
   };
 
   return (
-    <>
-      {/* Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="space-y-6 animate-fade-in">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <StatCard 
           title="Total Cases" 
           value={stats.totalCases} 
@@ -40,7 +33,7 @@ const ForensicDashboard = () => {
         <StatCard 
           title="Active Cases" 
           value={stats.activeCases} 
-          icon={<ShieldAlert className="h-5 w-5 text-forensic-accent" />} 
+          icon={<FolderKanban className="h-5 w-5 text-forensic-accent" />} 
           linkTo="/cases?status=active"
         />
         <StatCard 
@@ -49,17 +42,10 @@ const ForensicDashboard = () => {
           icon={<FileDigit className="h-5 w-5 text-forensic-court" />} 
           linkTo="/evidence"
         />
-        <StatCard 
-          title="Pending Verification" 
-          value={stats.pendingVerification} 
-          icon={<Clock className="h-5 w-5 text-forensic-warning" />} 
-          linkTo="/verify?status=pending"
-          highlight={stats.pendingVerification > 0}
-        />
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Quick Actions - Only showing Upload for Forensic role */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center">
@@ -86,37 +72,14 @@ const ForensicDashboard = () => {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center">
-              <FileCheck className="h-5 w-5 mr-2 text-forensic-accent" />
-              Verify Evidence
-            </CardTitle>
-            <CardDescription>Check integrity of evidence files</CardDescription>
-          </CardHeader>
-          <CardContent className="pb-2">
-            <p className="text-sm text-forensic-600">
-              Validate the cryptographic hash of evidence against blockchain records
-            </p>
-          </CardContent>
-          <CardFooter>
-            <Button asChild className="w-full bg-forensic-accent hover:bg-forensic-accent/90">
-              <Link to="/verify">
-                <span>Verify Files</span>
-                <ArrowUpRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </CardFooter>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center">
-              <FileLock2 className="h-5 w-5 mr-2 text-forensic-court" />
+              <FolderKanban className="h-5 w-5 mr-2 text-forensic-court" />
               Manage Cases
             </CardTitle>
             <CardDescription>View and update case details</CardDescription>
           </CardHeader>
           <CardContent className="pb-2">
             <p className="text-sm text-forensic-600">
-              Review case status, manage evidence, and control access permissions
+              Review case status and manage evidence submissions
             </p>
           </CardContent>
           <CardFooter>
@@ -134,10 +97,7 @@ const ForensicDashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-lg flex items-center">
-              <Clock className="h-5 w-5 mr-2 text-forensic-600" />
-              Recent Activity
-            </CardTitle>
+            <CardTitle className="text-lg">Recent Activity</CardTitle>
             <CardDescription>Latest evidence chain of custody events</CardDescription>
           </CardHeader>
           <CardContent>
@@ -152,24 +112,13 @@ const ForensicDashboard = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg flex items-center">
-              <UserCheck className="h-5 w-5 mr-2 text-forensic-600" />
-              Assigned Cases
-            </CardTitle>
+            <CardTitle className="text-lg">Assigned Cases</CardTitle>
             <CardDescription>Cases where you have active roles</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-forensic-600">Case #FF-2023-089</span>
-                <span className="font-medium text-forensic-800">Forensic</span>
-              </div>
-              <Progress value={75} className="h-2 bg-forensic-100" />
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-forensic-600">Case #FF-2023-092</span>
                 <span className="font-medium text-forensic-800">Forensic</span>
               </div>
               <Progress value={30} className="h-2 bg-forensic-100" />
@@ -190,7 +139,7 @@ const ForensicDashboard = () => {
           </CardFooter>
         </Card>
       </div>
-    </>
+    </div>
   );
 };
 
