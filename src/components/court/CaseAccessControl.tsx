@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Check, Calendar, Lock, Info, X, Plus, Save } from "lucide-react";
+import { Check, Calendar, Lock, Info, X, Plus, Save, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Popover,
@@ -28,6 +28,13 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Role } from '@/services/web3Service';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface UserType {
   id: string;
@@ -72,6 +79,8 @@ const CaseAccessControl = () => {
   const [expiryDate, setExpiryDate] = useState<Date | undefined>(undefined);
   const [openCaseCommand, setOpenCaseCommand] = useState<boolean>(false);
   const [openUserCommand, setOpenUserCommand] = useState<boolean>(false);
+  const [caseSearchQuery, setCaseSearchQuery] = useState<string>('');
+  const [userSearchQuery, setUserSearchQuery] = useState<string>('');
   const [accessMatrix, setAccessMatrix] = useState<AccessMatrixItem[]>([
     { userId: '1', caseId: 'C-2023-001', hasAccess: true },
     { userId: '2', caseId: 'C-2023-001', hasAccess: true },
@@ -80,6 +89,17 @@ const CaseAccessControl = () => {
     { userId: '4', caseId: 'C-2023-001', hasAccess: true },
     { userId: '4', caseId: 'C-2023-005', hasAccess: true },
   ]);
+  
+  // Filtered data based on search queries
+  const filteredCases = cases.filter(caseItem => 
+    caseItem.id.toLowerCase().includes(caseSearchQuery.toLowerCase()) ||
+    caseItem.title.toLowerCase().includes(caseSearchQuery.toLowerCase())
+  );
+  
+  const filteredUsers = users.filter(user => 
+    user.name.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
+    user.email.toLowerCase().includes(userSearchQuery.toLowerCase())
+  );
   
   // Helper functions
   const getRoleBadgeColor = (role: Role) => {
@@ -168,6 +188,14 @@ const CaseAccessControl = () => {
     setSelectedUsers(selectedUsers.filter(u => u.id !== userToRemove.id));
   };
 
+  const handleCaseSearch = (value: string) => {
+    setCaseSearchQuery(value);
+  };
+  
+  const handleUserSearch = (value: string) => {
+    setUserSearchQuery(value);
+  };
+
   return (
     <Card className="shadow-sm border-forensic-200 animate-fade-in">
       <CardHeader>
@@ -191,45 +219,89 @@ const CaseAccessControl = () => {
               </Label>
               
               <div className="relative">
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  className="w-full justify-between border-forensic-200"
-                  onClick={() => setOpenCaseCommand(!openCaseCommand)}
-                >
-                  {selectedCases.length > 0 
-                    ? `${selectedCases.length} case${selectedCases.length > 1 ? 's' : ''} selected` 
-                    : "Select Cases"}
-                </Button>
-                
-                <Command className={cn("absolute top-full left-0 w-full z-10 rounded-lg border shadow-md mt-1", 
-                  openCaseCommand ? "opacity-100" : "opacity-0 pointer-events-none")}>
-                  <CommandInput placeholder="Search cases..." />
-                  <CommandList>
-                    <CommandEmpty>No cases found.</CommandEmpty>
-                    <CommandGroup>
-                      {cases.map(caseItem => (
-                        <CommandItem
-                          key={caseItem.id}
-                          onSelect={() => {
-                            const isSelected = selectedCases.some(c => c.id === caseItem.id);
-                            if (!isSelected) {
-                              setSelectedCases([...selectedCases, caseItem]);
-                            }
+                <Popover open={openCaseCommand} onOpenChange={setOpenCaseCommand}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={openCaseCommand}
+                      className="w-full justify-between border-forensic-200 bg-white"
+                    >
+                      <div className="flex items-center">
+                        <Search className="mr-2 h-4 w-4 text-muted-foreground" />
+                        {selectedCases.length > 0 
+                          ? `${selectedCases.length} case${selectedCases.length > 1 ? 's' : ''} selected` 
+                          : "Search cases..."}
+                      </div>
+                      <div className={cn(
+                        "transition-transform",
+                        openCaseCommand ? "rotate-180" : ""
+                      )}>
+                        <svg width="12" height="6" viewBox="0 0 12 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M1 0.5L6 5.5L11 0.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </div>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0 shadow-lg border border-forensic-200/70 rounded-md" align="start">
+                    <Command className="rounded-md">
+                      <CommandInput 
+                        placeholder="Search cases..." 
+                        value={caseSearchQuery}
+                        onValueChange={handleCaseSearch}
+                        className="border-b-0 focus:ring-0 focus:border-0 ring-0"
+                      />
+                      <CommandList>
+                        <CommandEmpty>No cases found.</CommandEmpty>
+                        <CommandGroup className="max-h-[200px] overflow-auto p-1">
+                          {filteredCases.map(caseItem => (
+                            <CommandItem
+                              key={caseItem.id}
+                              className="flex items-center px-2 py-1.5 cursor-pointer hover:bg-forensic-50 rounded-sm"
+                              onSelect={() => {
+                                const isSelected = selectedCases.some(c => c.id === caseItem.id);
+                                if (!isSelected) {
+                                  setSelectedCases([...selectedCases, caseItem]);
+                                }
+                              }}
+                            >
+                              <Checkbox
+                                checked={selectedCases.some(c => c.id === caseItem.id)}
+                                className="mr-2 data-[state=checked]:bg-forensic-accent data-[state=checked]:border-forensic-accent"
+                              />
+                              <div className="flex flex-col">
+                                <span className="font-medium text-sm">{caseItem.id}</span>
+                                <span className="text-muted-foreground text-xs">{caseItem.title}</span>
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                      <div className="border-t p-2 flex justify-between">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => {
+                            setCaseSearchQuery('');
                             setOpenCaseCommand(false);
                           }}
                         >
-                          <Checkbox
-                            checked={selectedCases.some(c => c.id === caseItem.id)}
-                            className="mr-2"
-                          />
-                          <span>{caseItem.id}</span>
-                          <span className="ml-2 text-muted-foreground text-xs">- {caseItem.title}</span>
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
+                          Close
+                        </Button>
+                        {selectedCases.length > 0 && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            className="text-forensic-accent hover:text-forensic-accent/90"
+                            onClick={() => setSelectedCases([])}
+                          >
+                            Clear All
+                          </Button>
+                        )}
+                      </div>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
               
               {/* Selected Cases Tags */}
@@ -239,7 +311,7 @@ const CaseAccessControl = () => {
                     <Badge 
                       key={caseItem.id} 
                       variant="secondary"
-                      className="pl-2 py-1 pr-1 flex items-center gap-1 bg-forensic-50 text-forensic-800 hover:bg-forensic-100"
+                      className="pl-2 py-1 pr-1 flex items-center gap-1 bg-forensic-50 text-forensic-800 hover:bg-forensic-100 transition-all animate-fadeIn"
                     >
                       {caseItem.id}
                       <button
@@ -261,47 +333,92 @@ const CaseAccessControl = () => {
               </Label>
               
               <div className="relative">
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  className="w-full justify-between border-forensic-200"
-                  onClick={() => setOpenUserCommand(!openUserCommand)}
-                >
-                  {selectedUsers.length > 0 
-                    ? `${selectedUsers.length} user${selectedUsers.length > 1 ? 's' : ''} selected` 
-                    : "Select Users"}
-                </Button>
-                
-                <Command className={cn("absolute top-full left-0 w-full z-10 rounded-lg border shadow-md mt-1", 
-                  openUserCommand ? "opacity-100" : "opacity-0 pointer-events-none")}>
-                  <CommandInput placeholder="Search users..." />
-                  <CommandList>
-                    <CommandEmpty>No users found.</CommandEmpty>
-                    <CommandGroup>
-                      {users.map(user => (
-                        <CommandItem
-                          key={user.id}
-                          onSelect={() => {
-                            const isSelected = selectedUsers.some(u => u.id === user.id);
-                            if (!isSelected) {
-                              setSelectedUsers([...selectedUsers, user]);
-                            }
+                <Popover open={openUserCommand} onOpenChange={setOpenUserCommand}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={openUserCommand}
+                      className="w-full justify-between border-forensic-200 bg-white"
+                    >
+                      <div className="flex items-center">
+                        <Search className="mr-2 h-4 w-4 text-muted-foreground" />
+                        {selectedUsers.length > 0 
+                          ? `${selectedUsers.length} user${selectedUsers.length > 1 ? 's' : ''} selected` 
+                          : "Search users..."}
+                      </div>
+                      <div className={cn(
+                        "transition-transform",
+                        openUserCommand ? "rotate-180" : ""
+                      )}>
+                        <svg width="12" height="6" viewBox="0 0 12 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M1 0.5L6 5.5L11 0.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </div>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0 shadow-lg border border-forensic-200/70 rounded-md" align="start">
+                    <Command className="rounded-md">
+                      <CommandInput 
+                        placeholder="Search users..." 
+                        value={userSearchQuery}
+                        onValueChange={handleUserSearch}
+                        className="border-b-0 focus:ring-0 focus:border-0 ring-0"
+                      />
+                      <CommandList>
+                        <CommandEmpty>No users found.</CommandEmpty>
+                        <CommandGroup className="max-h-[200px] overflow-auto p-1">
+                          {filteredUsers.map(user => (
+                            <CommandItem
+                              key={user.id}
+                              className="flex items-center px-2 py-1.5 cursor-pointer hover:bg-forensic-50 rounded-sm"
+                              onSelect={() => {
+                                const isSelected = selectedUsers.some(u => u.id === user.id);
+                                if (!isSelected) {
+                                  setSelectedUsers([...selectedUsers, user]);
+                                }
+                              }}
+                            >
+                              <Checkbox
+                                checked={selectedUsers.some(u => u.id === user.id)}
+                                className="mr-2 data-[state=checked]:bg-forensic-accent data-[state=checked]:border-forensic-accent"
+                              />
+                              <div className="flex flex-col flex-1">
+                                <span className="font-medium text-sm">{user.name}</span>
+                                <span className="text-muted-foreground text-xs">{user.email}</span>
+                              </div>
+                              <Badge className={cn("ml-2", getRoleBadgeColor(user.role))}>
+                                {getRoleString(user.role)}
+                              </Badge>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                      <div className="border-t p-2 flex justify-between">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => {
+                            setUserSearchQuery('');
                             setOpenUserCommand(false);
                           }}
                         >
-                          <Checkbox
-                            checked={selectedUsers.some(u => u.id === user.id)}
-                            className="mr-2"
-                          />
-                          <span>{user.name}</span>
-                          <Badge className={cn("ml-2", getRoleBadgeColor(user.role))}>
-                            {getRoleString(user.role)}
-                          </Badge>
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
+                          Close
+                        </Button>
+                        {selectedUsers.length > 0 && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            className="text-forensic-accent hover:text-forensic-accent/90"
+                            onClick={() => setSelectedUsers([])}
+                          >
+                            Clear All
+                          </Button>
+                        )}
+                      </div>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
               
               {/* Selected Users Tags */}
@@ -311,7 +428,7 @@ const CaseAccessControl = () => {
                     <Badge 
                       key={user.id} 
                       variant="secondary"
-                      className="pl-2 py-1 pr-1 flex items-center gap-1 bg-forensic-50 text-forensic-800 hover:bg-forensic-100"
+                      className="pl-2 py-1 pr-1 flex items-center gap-1 bg-forensic-50 text-forensic-800 hover:bg-forensic-100 transition-all animate-fadeIn"
                     >
                       {user.name}
                       <button
@@ -333,7 +450,8 @@ const CaseAccessControl = () => {
               <Switch 
                 id="grant-access" 
                 checked={grantAccess} 
-                onCheckedChange={setGrantAccess} 
+                onCheckedChange={setGrantAccess}
+                className="data-[state=checked]:bg-forensic-accent" 
               />
               <Label htmlFor="grant-access" className="font-medium">
                 {grantAccess ? 'Grant' : 'Revoke'} access to selected cases

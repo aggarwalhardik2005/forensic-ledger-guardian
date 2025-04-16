@@ -9,11 +9,13 @@ import { Shield, Wallet, Lock } from "lucide-react";
 import { useAuth } from '@/contexts/AuthContext';
 import { useWeb3 } from '@/contexts/Web3Context';
 import { useToast } from '@/hooks/use-toast';
+import ForgotPasswordForm from './ForgotPasswordForm';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const { login } = useAuth();
   const { connectWallet } = useWeb3();
   const { toast } = useToast();
@@ -56,6 +58,10 @@ const LoginForm = () => {
     }
   };
 
+  if (showForgotPassword) {
+    return <ForgotPasswordForm onBack={() => setShowForgotPassword(false)} />;
+  }
+
   return (
     <div className="flex items-center justify-center min-h-[80vh]">
       <Card className="w-full max-w-md shadow-lg border-forensic-200">
@@ -95,9 +101,17 @@ const LoginForm = () => {
               <div className="grid gap-2">
                 <div className="flex justify-between items-center">
                   <Label htmlFor="password">Password</Label>
-                  <a href="#" className="text-sm text-forensic-accent hover:underline">
+                  <Button 
+                    type="button"
+                    variant="link" 
+                    className="text-sm text-forensic-accent hover:text-forensic-accent/90 p-0 h-auto font-normal"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowForgotPassword(true);
+                    }}
+                  >
                     Forgot password?
-                  </a>
+                  </Button>
                 </div>
                 <Input
                   id="password"
