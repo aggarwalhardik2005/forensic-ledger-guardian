@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -46,7 +45,6 @@ const LawyerDashboard = () => {
         />
       </div>
 
-      {/* Quick Actions - Only showing Cases and Evidence for Lawyer role */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="overflow-hidden border border-forensic-200 hover:border-forensic-300 transition-colors">
           <CardHeader className="pb-2 bg-gradient-to-r from-forensic-50 to-transparent">
@@ -95,7 +93,6 @@ const LawyerDashboard = () => {
         </Card>
       </div>
 
-      {/* Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2 border border-forensic-200 hover:border-forensic-300 transition-colors">
           <CardHeader className="bg-gradient-to-r from-forensic-50 to-transparent">
@@ -120,15 +117,8 @@ const LawyerDashboard = () => {
         </Card>
 
         <Card className="border border-forensic-200 hover:border-forensic-300 transition-colors">
-          <CardHeader className="bg-gradient-to-r from-forensic-50 to-transparent">
-            <CardTitle className="text-lg flex items-center">
-              <span className="bg-forensic-100 p-1.5 rounded-full mr-2">
-                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-forensic-700">
-                  <path d="M3.875 2C3.375 2 3 2.375 3 2.875V12.125C3 12.625 3.375 13 3.875 13H11.125C11.625 13 12 12.625 12 12.125V5.5L8.5 2H3.875ZM3.875 2.75H7.75V5.75H11.25V12.25H3.75V2.75H3.875ZM8.5 2.75L11.25 5.5H8.5V2.75Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path>
-                </svg>
-              </span>
-              Assigned Cases
-            </CardTitle>
+          <CardHeader>
+            <CardTitle>Assigned Cases</CardTitle>
             <CardDescription>Cases where you have active roles</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
