@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,6 @@ import {
   LogOut,
   User,
   Menu,
-  Shield,
   Bell,
   Sparkles,
   HelpCircle,
@@ -25,6 +23,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import Logo from "@/components/shared/Logo";
 
 interface NavbarProps {
   toggleSidebar: () => void;
@@ -82,18 +81,13 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
             <Menu className="h-5 w-5" />
           </Button>
           
-          {/* Show logo on mobile */}
-          {isMobile && (
-            <div className="flex items-center">
-              <div className="flex items-center justify-center w-6 h-6 bg-gradient-to-r from-forensic-accent to-forensic-evidence rounded-md overflow-hidden">
-                <Shield className="h-4 w-4 text-white" />
-              </div>
-              <span className="ml-1 font-semibold text-sm md:text-base">ForensicChain</span>
-            </div>
+          {isMobile ? (
+            <Logo size="sm" variant={isMobile ? "icon" : "full"} />
+          ) : (
+            <Logo size="md" />
           )}
         </div>
 
-        {/* Navigation links for homepage */}
         {isHomePage && !isMobile && (
           <div className="hidden md:flex space-x-6 ml-auto mr-6">
             <Button 
@@ -128,12 +122,10 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
 
         {user ? (
           <div className="flex items-center gap-1 sm:gap-4">
-            {/* Notifications */}
             <Button variant="ghost" size="icon" className="hidden sm:flex">
               <Bell className="h-4 w-4 text-forensic-500" />
             </Button>
             
-            {/* Role Badge - hide on very small screens */}
             <Badge className={`${user.role ? getRoleBadgeColor(user.role) : "bg-gray-500"} px-2 py-1 hidden xs:inline-flex`}>
               {user.roleTitle || "Unknown"}
             </Badge>
