@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   Card, 
@@ -13,16 +12,16 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { HelpCircle, Search, FileQuestion, Mail, BookOpen, MessageSquare } from "lucide-react";
+import { HelpCircle, Search, Mail } from "lucide-react";
 
 const FAQ = () => {
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-forensic-800">Frequently Asked Questions</h1>
-      </div>
+    <div className="container mx-auto py-6 animate-fade-in">
+      <h1 className="text-2xl font-bold text-forensic-800 mb-6 flex items-center">
+        <HelpCircle className="mr-2 h-6 w-6 text-forensic-accent" />
+        Frequently Asked Questions
+      </h1>
 
       {/* Search */}
       <div className="relative max-w-lg mx-auto mb-8">
@@ -31,60 +30,6 @@ const FAQ = () => {
           placeholder="Search for answers..."
           className="pl-10 pr-4 py-6 border-forensic-200"
         />
-      </div>
-
-      {/* FAQ Categories */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <Card className="hover:shadow-md transition-all duration-200">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center">
-              <FileQuestion className="h-5 w-5 mr-2 text-forensic-accent" />
-              General Questions
-            </CardTitle>
-            <CardDescription>
-              Basic information about the platform
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button className="w-full" variant="outline">
-              View Questions
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-md transition-all duration-200">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center">
-              <BookOpen className="h-5 w-5 mr-2 text-forensic-evidence" />
-              Technical Documentation
-            </CardTitle>
-            <CardDescription>
-              Detailed usage instructions
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button className="w-full" variant="outline">
-              View Documentation
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-md transition-all duration-200">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center">
-              <MessageSquare className="h-5 w-5 mr-2 text-forensic-court" />
-              Support Tickets
-            </CardTitle>
-            <CardDescription>
-              Submit and check support requests
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button className="w-full" variant="outline">
-              Contact Support
-            </Button>
-          </CardContent>
-        </Card>
       </div>
 
       {/* FAQ Accordions */}
@@ -297,9 +242,9 @@ const FAQ = () => {
       </Card>
 
       {/* Contact Support */}
-      <Card>
+      <Card className="mt-6">
         <CardHeader>
-          <CardTitle className="text-lg flex items-center">
+          <CardTitle className="flex items-center">
             <Mail className="h-5 w-5 mr-2 text-forensic-court" />
             Didn't Find Your Answer?
           </CardTitle>
@@ -310,9 +255,9 @@ const FAQ = () => {
         <CardContent className="flex flex-col md:flex-row gap-4 items-center">
           <div className="flex-1 w-full">
             <Input placeholder="Enter your email address" className="mb-2" />
-            <Button className="w-full bg-forensic-court hover:bg-forensic-court/90">
+            <button className="w-full bg-forensic-court text-white py-2 rounded hover:bg-forensic-court/90">
               Contact Support
-            </Button>
+            </button>
           </div>
           <div className="text-center md:text-right md:w-1/2">
             <p className="text-forensic-600 text-sm">
