@@ -44,16 +44,10 @@ const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
         ];
       case Role.Forensic:
         return [
-          { to: '/legal/reports', label: 'Legal Reports', icon: <BarChart3 size={18} /> },
+          { to: '/upload', label: 'Upload', icon: <Upload size={18} /> },
         ];
       case Role.Lawyer:
-        return [
-          { to: '/legal/documentation', label: 'Legal Documentation', icon: <BookOpen size={18} /> },
-          { to: '/verify/custody', label: 'Chain of Custody', icon: <Scale size={18} /> },
-          { to: '/cases/prepare', label: 'Court Preparation', icon: <FileLock2 size={18} /> },
-          { to: '/legal/reports', label: 'Legal Reports', icon: <BarChart3 size={18} /> },
-          { to: '/clients', label: 'Client Management', icon: <Users size={18} /> },
-        ];
+        return [];
       default:
         return [];
     }
@@ -66,16 +60,25 @@ const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
       { to: '/cases', label: 'Cases', icon: <FolderClosed size={18} /> },
     ];
     
-    // Only show Evidence link for Lawyer role, and not for Court role
-    if (user?.role === Role.Lawyer || (user?.role !== Role.Court && user?.role !== undefined)) {
+    // For Lawyer (Defense Attorney) role - only show Cases and Evidence
+    if (user?.role === Role.Lawyer) {
+      baseLinks.push({ to: '/evidence', label: 'Evidence', icon: <FileDigit size={18} /> });
+      return baseLinks;
+    }
+    
+    // Don't show Evidence link for Court role
+    if (user?.role !== Role.Court) {
       baseLinks.push({ to: '/evidence', label: 'Evidence', icon: <FileDigit size={18} /> });
     }
     
     // Don't show Upload and Verify for Court role
     if (user?.role !== Role.Court) {
-      if (user?.role !== Role.Forensic) {
+      // Add Upload button for Forensic role
+      if (user?.role === Role.Forensic || user?.role === Role.Officer) {
         baseLinks.push({ to: '/upload', label: 'Upload', icon: <Upload size={18} /> });
       }
+      
+      // Keep Verify for Officer role and others except Court and Forensic
       if (user?.role !== Role.Forensic) {
         baseLinks.push({ to: '/verify', label: 'Verify', icon: <CheckCircle size={18} /> });
       }

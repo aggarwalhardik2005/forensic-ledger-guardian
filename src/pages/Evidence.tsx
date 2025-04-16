@@ -14,11 +14,12 @@ import {
   Eye,
   Download,
   FileLock2,
-  RefreshCcw
+  RefreshCcw,
+  Briefcase
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useEvidenceManager } from '@/hooks/useEvidenceManager';
 
 // Format bytes to human-readable size
@@ -40,12 +41,20 @@ const formatType = (type: string) => {
 };
 
 const Evidence = () => {
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const initialCaseId = queryParams.get('caseId') || 'all';
+
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
+  const [caseFilter, setCaseFilter] = useState(initialCaseId);
   const [sortOrder, setSortOrder] = useState('newest');
   const { toast } = useToast();
   const navigate = useNavigate();
   const { evidence, loading, refreshEvidence } = useEvidenceManager();
+
+  // Get unique case IDs for the filter dropdown
+  const uniqueCaseIds = [...new Set(evidence.map(item => item.caseId))];
 
   // Filter evidence based on search and filters
   const filteredEvidence = evidence
@@ -66,6 +75,11 @@ const Evidence = () => {
       if (typeFilter === 'all') return true;
       return item.type === typeFilter;
     })
+    .filter(item => {
+      // Case filter
+      if (caseFilter === 'all') return true;
+      return item.caseId === caseFilter;
+    })
     .sort((a, b) => {
       // Sort order
       const dateA = new Date(a.submittedDate).getTime();
@@ -84,6 +98,16 @@ const Evidence = () => {
           return 0;
       }
     });
+
+  // Update URL when case filter changes
+  const handleCaseFilterChange = (value: string) => {
+    setCaseFilter(value);
+    if (value === 'all') {
+      navigate('/evidence');
+    } else {
+      navigate(`/evidence?caseId=${value}`);
+    }
+  };
 
   const handleView = (evidence: any) => {
     toast({
@@ -138,7 +162,7 @@ const Evidence = () => {
       </div>
 
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-forensic-500" />
           <Input
@@ -147,6 +171,24 @@ const Evidence = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+        </div>
+        
+        {/* Case filter - new */}
+        <div className="flex items-center space-x-2">
+          <Briefcase className="h-4 w-4 text-forensic-500" />
+          <Select value={caseFilter} onValueChange={handleCaseFilterChange}>
+            <SelectTrigger className="border-forensic-200">
+              <SelectValue placeholder="Filter by case" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Cases</SelectItem>
+              {uniqueCaseIds.map(caseId => (
+                <SelectItem key={caseId} value={caseId}>
+                  Case #{caseId}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         
         <div className="flex items-center space-x-2">
@@ -287,6 +329,8 @@ const Evidence = () => {
               onClick={() => {
                 setSearchQuery('');
                 setTypeFilter('all');
+                setCaseFilter('all');
+                navigate('/evidence');
               }}
             >
               Clear Filters

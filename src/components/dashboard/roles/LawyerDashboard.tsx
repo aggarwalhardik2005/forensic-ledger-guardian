@@ -6,13 +6,11 @@ import { Button } from "@/components/ui/button";
 import { 
   Scale, 
   FolderKanban, 
-  BadgeAlert, 
+  FileDigit, 
   Clock, 
   FileSearch, 
   FileCheck, 
-  ArrowUpRight, 
-  UserCog,
-  MailOpen 
+  ArrowUpRight
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import RecentActivityList from '../RecentActivityList';
@@ -23,14 +21,13 @@ const LawyerDashboard = () => {
   const stats = {
     assignedCases: 15,
     pendingCases: 8,
-    evidenceToReview: 54,
-    clientMeetings: 6
+    evidenceToReview: 54
   };
 
   return (
     <>
       {/* Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard 
           title="Assigned Cases" 
           value={stats.assignedCases} 
@@ -50,16 +47,10 @@ const LawyerDashboard = () => {
           linkTo="/evidence?status=unreviewed"
           highlight={stats.evidenceToReview > 0}
         />
-        <StatCard 
-          title="Client Meetings" 
-          value={stats.clientMeetings} 
-          icon={<MailOpen className="h-5 w-5 text-forensic-evidence" />} 
-          linkTo="/meetings"
-        />
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center">
@@ -87,9 +78,9 @@ const LawyerDashboard = () => {
           <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center">
               <FileCheck className="h-5 w-5 mr-2 text-forensic-accent" />
-              Verify Chain of Custody
+              Verify Evidence Integrity
             </CardTitle>
-            <CardDescription>Check evidence integrity</CardDescription>
+            <CardDescription>Check evidence authenticity</CardDescription>
           </CardHeader>
           <CardContent className="pb-2">
             <p className="text-sm text-forensic-600">
@@ -98,31 +89,8 @@ const LawyerDashboard = () => {
           </CardContent>
           <CardFooter>
             <Button asChild className="w-full bg-forensic-accent hover:bg-forensic-accent/90">
-              <Link to="/verify">
-                <span>Verify Integrity</span>
-                <ArrowUpRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </CardFooter>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center">
-              <Scale className="h-5 w-5 mr-2 text-forensic-court" />
-              Prepare for Court
-            </CardTitle>
-            <CardDescription>Ready case documentation</CardDescription>
-          </CardHeader>
-          <CardContent className="pb-2">
-            <p className="text-sm text-forensic-600">
-              Generate court-ready evidence reports with verification
-            </p>
-          </CardContent>
-          <CardFooter>
-            <Button asChild className="w-full bg-forensic-court hover:bg-forensic-court/90">
-              <Link to="/cases/prepare">
-                <span>Court Preparation</span>
+              <Link to="/evidence">
+                <span>Case Evidence</span>
                 <ArrowUpRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
@@ -153,16 +121,16 @@ const LawyerDashboard = () => {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center">
-              <UserCog className="h-5 w-5 mr-2 text-forensic-600" />
-              Client Cases
+              <FileDigit className="h-5 w-5 mr-2 text-forensic-600" />
+              Case Evidence
             </CardTitle>
-            <CardDescription>Current client representation</CardDescription>
+            <CardDescription>Review evidence by case</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-forensic-600">Case #FF-2023-076</span>
-                <span className="font-medium text-forensic-800">Defense</span>
+                <span className="font-medium text-forensic-800">12 Files</span>
               </div>
               <Progress value={85} className="h-2 bg-forensic-100" />
             </div>
@@ -170,7 +138,7 @@ const LawyerDashboard = () => {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-forensic-600">Case #FF-2023-101</span>
-                <span className="font-medium text-forensic-800">Prosecution</span>
+                <span className="font-medium text-forensic-800">8 Files</span>
               </div>
               <Progress value={40} className="h-2 bg-forensic-100" />
             </div>
@@ -178,14 +146,14 @@ const LawyerDashboard = () => {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-forensic-600">Case #FF-2023-118</span>
-                <span className="font-medium text-forensic-800">Defense</span>
+                <span className="font-medium text-forensic-800">3 Files</span>
               </div>
               <Progress value={15} className="h-2 bg-forensic-100" />
             </div>
           </CardContent>
           <CardFooter>
             <Button variant="outline" asChild className="w-full">
-              <Link to="/clients">Manage Clients</Link>
+              <Link to="/evidence">View All Evidence</Link>
             </Button>
           </CardFooter>
         </Card>
