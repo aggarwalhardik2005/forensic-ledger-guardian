@@ -199,4 +199,13 @@
   .link-underline:hover::after {
     @apply w-full;
   }
+
+  /* Badge with ease-in-out transition */
+  .badge-transition {
+    @apply transition-all duration-300 ease-in-out transform;
+  }
+  
+  .badge-transition:hover {
+    @apply scale-105;
+  }
 }

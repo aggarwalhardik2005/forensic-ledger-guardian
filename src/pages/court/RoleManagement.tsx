@@ -13,6 +13,7 @@ import web3Service, { Role } from "@/services/web3Service";
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import CaseAccessControl from '@/components/court/CaseAccessControl';
 
 const RoleManagement = () => {
   const { toast } = useToast();
@@ -300,46 +301,7 @@ const RoleManagement = () => {
           </CardFooter>
         </Card>
         
-        <Card>
-          <CardHeader>
-            <CardTitle>Case Access Control</CardTitle>
-            <CardDescription>
-              Manage which users have access to specific cases
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Case ID</Label>
-                  <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-                    <option value="">Select Case</option>
-                    <option value="C-2023-001">C-2023-001 - Prosecutor v. Smith</option>
-                    <option value="C-2023-002">C-2023-002 - Robbery Investigation</option>
-                    <option value="C-2023-005">C-2023-005 - Digital Evidence Case</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <Label>User</Label>
-                  <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-                    <option value="">Select User</option>
-                    {users.map(user => (
-                      <option key={user.id} value={user.id}>{user.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Switch id="case-access" />
-                <Label htmlFor="case-access">Grant access to selected case</Label>
-              </div>
-              <Button className="flex items-center gap-2 w-full sm:w-auto">
-                <Save className="h-4 w-4" />
-                Update Access
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <CaseAccessControl />
       </div>
     </div>
   );
