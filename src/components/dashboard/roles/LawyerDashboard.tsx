@@ -19,6 +19,12 @@ const LawyerDashboard = () => {
     totalEvidence: 73
   };
 
+  // Updated assigned cases data to show actual numbers
+  const assignedCases = [
+    { id: 'FF-2023-089', progress: 75 },
+    { id: 'FF-2023-092', progress: 30 }
+  ];
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -122,21 +128,17 @@ const LawyerDashboard = () => {
             <CardDescription>Cases where you have active roles</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-forensic-600 font-medium">Case #FF-2023-089</span>
-                <span className="font-medium text-forensic-800 bg-forensic-100 px-2 py-0.5 rounded-full text-xs">Defense</span>
+            {assignedCases.map((caseItem) => (
+              <div key={caseItem.id} className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-forensic-600 font-medium">Case #{caseItem.id}</span>
+                  <span className="font-medium text-forensic-800 bg-forensic-100 px-2 py-0.5 rounded-full text-xs">
+                    {assignedCases.length} Assigned
+                  </span>
+                </div>
+                <Progress value={caseItem.progress} className="h-2 bg-forensic-100" indicatorClassName="bg-forensic-evidence" />
               </div>
-              <Progress value={75} className="h-2 bg-forensic-100" indicatorClassName="bg-forensic-evidence" />
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-forensic-600 font-medium">Case #FF-2023-092</span>
-                <span className="font-medium text-forensic-800 bg-forensic-100 px-2 py-0.5 rounded-full text-xs">Defense</span>
-              </div>
-              <Progress value={30} className="h-2 bg-forensic-100" indicatorClassName="bg-forensic-accent" />
-            </div>
+            ))}
           </CardContent>
           <CardFooter>
             <Button variant="outline" asChild className="w-full hover:bg-forensic-50 transition-colors">
