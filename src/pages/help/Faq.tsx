@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { HelpCircle, Search, Mail } from "lucide-react";
+import { HelpCircle, Search, FileQuestion, Mail, BookOpen, MessageSquare } from "lucide-react";
 
 const FAQ = () => {
   return (
@@ -31,6 +31,60 @@ const FAQ = () => {
           placeholder="Search for answers..."
           className="pl-10 pr-4 py-6 border-forensic-200"
         />
+      </div>
+
+      {/* FAQ Categories */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <Card className="hover:shadow-md transition-all duration-200">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center">
+              <FileQuestion className="h-5 w-5 mr-2 text-forensic-accent" />
+              General Questions
+            </CardTitle>
+            <CardDescription>
+              Basic information about the platform
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button className="w-full" variant="outline">
+              View Questions
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-md transition-all duration-200">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center">
+              <BookOpen className="h-5 w-5 mr-2 text-forensic-evidence" />
+              Technical Documentation
+            </CardTitle>
+            <CardDescription>
+              Detailed usage instructions
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button className="w-full" variant="outline">
+              View Documentation
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-md transition-all duration-200">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center">
+              <MessageSquare className="h-5 w-5 mr-2 text-forensic-court" />
+              Support Tickets
+            </CardTitle>
+            <CardDescription>
+              Submit and check support requests
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button className="w-full" variant="outline">
+              Contact Support
+            </Button>
+          </CardContent>
+        </Card>
       </div>
 
       {/* FAQ Accordions */}
