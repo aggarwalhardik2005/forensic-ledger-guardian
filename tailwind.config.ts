@@ -146,6 +146,40 @@ export default {
 						transform: 'translateX(0)',
 					}
 				},
+				'pulse-gentle': {
+					'0%, 100%': {
+						opacity: '1'
+					},
+					'50%': {
+						opacity: '0.9'
+					}
+				},
+				'scale-in': {
+					'0%': {
+						transform: 'scale(0.95)',
+						opacity: '0'
+					},
+					'100%': {
+						transform: 'scale(1)',
+						opacity: '1'
+					}
+				},
+				'float': {
+					'0%, 100%': {
+						transform: 'translateY(0)'
+					},
+					'50%': {
+						transform: 'translateY(-5px)'
+					}
+				},
+				'shimmer': {
+					'0%': {
+						backgroundPosition: '-200% 0'
+					},
+					'100%': {
+						backgroundPosition: '200% 0'
+					}
+				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
@@ -154,6 +188,10 @@ export default {
 				'slide-in': 'slide-in 0.4s ease-out',
 				'slide-in-left': 'slide-in-left 0.3s ease-out',
 				'slide-in-right': 'slide-in-right 0.3s ease-out',
+				'pulse-gentle': 'pulse-gentle 2s ease-in-out infinite',
+				'scale-in': 'scale-in 0.2s ease-out',
+				'float': 'float 3s ease-in-out infinite',
+				'shimmer': 'shimmer 2s infinite linear'
 			},
 			fontSize: {
 				'xs': ['0.75rem', { lineHeight: '1rem' }],
@@ -169,6 +207,15 @@ export default {
 				'4.5': '1.125rem',
 				'5.5': '1.375rem',
 			},
+			scale: {
+				'101': '1.01',
+				'102': '1.02',
+				'103': '1.03',
+			},
+			boxShadow: {
+				'card': '0 2px 8px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.05)',
+				'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+			}
 		}
 	},
 	plugins: [require("tailwindcss-animate")],

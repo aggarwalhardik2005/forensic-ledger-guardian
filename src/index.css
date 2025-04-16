@@ -1,4 +1,6 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -89,21 +91,30 @@
     @apply border-border;
   }
 
+  html {
+    @apply scroll-smooth;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased font-inter;
   }
   
   /* Responsive typography */
   h1 {
-    @apply text-xl md:text-2xl lg:text-3xl font-bold;
+    @apply text-xl md:text-2xl lg:text-3xl font-bold tracking-tight;
   }
   
   h2 {
-    @apply text-lg md:text-xl lg:text-2xl font-semibold;
+    @apply text-lg md:text-xl lg:text-2xl font-semibold tracking-tight;
   }
   
   h3 {
-    @apply text-base md:text-lg font-medium;
+    @apply text-base md:text-lg font-medium tracking-tight;
+  }
+
+  /* Focus styles for accessibility */
+  :focus-visible {
+    @apply outline-none ring-2 ring-offset-2 ring-forensic-accent/50;
   }
 }
 
@@ -151,11 +162,50 @@
   
   /* Card with consistent responsive padding */
   .card-responsive {
-    @apply bg-white rounded-lg shadow-sm border border-forensic-200 p-3 sm:p-4 md:p-6;
+    @apply bg-white rounded-lg shadow-sm border border-forensic-200 p-3 sm:p-4 md:p-6 transition-shadow hover:shadow-md;
   }
   
   /* Table container for small screens */
   .table-container {
     @apply w-full overflow-x-auto rounded-md border;
   }
+
+  /* Button hover effect */
+  .button-hover-effect {
+    @apply relative overflow-hidden transition-all duration-300;
+  }
+
+  .button-hover-effect::after {
+    @apply content-[''] absolute top-0 left-0 h-full w-0 bg-white/20 transition-all duration-300;
+  }
+
+  .button-hover-effect:hover::after {
+    @apply w-full;
+  }
+
+  /* Glass card effect */
+  .glass-card {
+    @apply backdrop-blur-md bg-white/70 border border-white/20;
+  }
+
+  /* Animated underline for links */
+  .link-underline {
+    @apply relative;
+  }
+
+  .link-underline::after {
+    @apply content-[''] absolute left-0 bottom-0 w-0 h-0.5 bg-forensic-accent transition-all duration-300;
+  }
+
+  .link-underline:hover::after {
+    @apply w-full;
+  }
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 }

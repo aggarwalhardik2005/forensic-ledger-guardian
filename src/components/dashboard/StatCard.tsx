@@ -1,48 +1,54 @@
 
 import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
-import { Card, CardContent } from "@/components/ui/card";
-import { ArrowUpRight } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { ChevronRight } from 'lucide-react';
 
 interface StatCardProps {
   title: string;
-  value: number;
+  value: number | string;
   icon: React.ReactNode;
-  linkTo: string;
-  highlight?: boolean;
+  linkTo?: string;
+  className?: string;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ 
-  title, 
-  value, 
-  icon, 
-  linkTo,
-  highlight = false 
-}) => {
-  return (
-    <Link to={linkTo}>
-      <Card className={cn(
-        "transition-all duration-200 hover:shadow-md border-l-4",
-        highlight ? "border-l-forensic-danger" : "border-l-transparent"
-      )}>
-        <CardContent className="flex items-center justify-between p-6">
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-forensic-500">{title}</p>
-            <p className="text-2xl font-bold text-forensic-800">{value}</p>
-          </div>
-          <div className="flex items-center space-x-3">
-            <div className={cn(
-              "p-2 rounded-full",
-              highlight ? "bg-forensic-danger/10" : "bg-forensic-200"
-            )}>
-              {icon}
+const StatCard: React.FC<StatCardProps> = ({ title, value, icon, linkTo, className }) => {
+  const content = (
+    <div className="p-6 flex items-center justify-between">
+      <div className="space-y-2">
+        <p className="text-sm font-medium text-forensic-500">{title}</p>
+        <p className="text-3xl font-bold text-forensic-800">{value}</p>
+      </div>
+      <div className="h-12 w-12 rounded-lg bg-forensic-50 flex items-center justify-center">
+        {icon}
+      </div>
+    </div>
+  );
+  
+  if (linkTo) {
+    return (
+      <Link to={linkTo}>
+        <Card className={cn('group cursor-pointer border-forensic-200 hover:border-forensic-300 hover:shadow-md transition-all duration-300', className)}>
+          <CardContent className="p-0">
+            <div className="relative">
+              {content}
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-forensic-800/5 rounded-lg">
+                <ChevronRight className="h-6 w-6 text-forensic-accent" />
+              </div>
             </div>
-            <ArrowUpRight className="h-4 w-4 text-forensic-400" />
-          </div>
-        </CardContent>
-      </Card>
-    </Link>
+          </CardContent>
+        </Card>
+      </Link>
+    );
+  }
+
+  return (
+    <Card className={cn('border-forensic-200', className)}>
+      <CardContent className="p-0">
+        {content}
+      </CardContent>
+    </Card>
   );
 };
 
