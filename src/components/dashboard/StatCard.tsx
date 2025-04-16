@@ -11,16 +11,23 @@ interface StatCardProps {
   icon: React.ReactNode;
   linkTo?: string;
   className?: string;
+  highlight?: boolean;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ title, value, icon, linkTo, className }) => {
+const StatCard: React.FC<StatCardProps> = ({ title, value, icon, linkTo, className, highlight }) => {
   const content = (
     <div className="p-6 flex items-center justify-between">
       <div className="space-y-2">
         <p className="text-sm font-medium text-forensic-500">{title}</p>
-        <p className="text-3xl font-bold text-forensic-800">{value}</p>
+        <p className={cn(
+          "text-3xl font-bold text-forensic-800",
+          highlight && "text-forensic-warning"
+        )}>{value}</p>
       </div>
-      <div className="h-12 w-12 rounded-lg bg-forensic-50 flex items-center justify-center">
+      <div className={cn(
+        "h-12 w-12 rounded-lg bg-forensic-50 flex items-center justify-center",
+        highlight && "bg-forensic-warning/10"
+      )}>
         {icon}
       </div>
     </div>
@@ -29,7 +36,11 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, linkTo, classNa
   if (linkTo) {
     return (
       <Link to={linkTo}>
-        <Card className={cn('group cursor-pointer border-forensic-200 hover:border-forensic-300 hover:shadow-md transition-all duration-300', className)}>
+        <Card className={cn(
+          'group cursor-pointer border-forensic-200 hover:border-forensic-300 hover:shadow-md transition-all duration-300', 
+          highlight && 'border-forensic-warning/50',
+          className
+        )}>
           <CardContent className="p-0">
             <div className="relative">
               {content}
@@ -44,7 +55,11 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, linkTo, classNa
   }
 
   return (
-    <Card className={cn('border-forensic-200', className)}>
+    <Card className={cn(
+      'border-forensic-200', 
+      highlight && 'border-forensic-warning/50',
+      className
+    )}>
       <CardContent className="p-0">
         {content}
       </CardContent>
