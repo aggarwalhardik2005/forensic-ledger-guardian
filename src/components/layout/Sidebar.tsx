@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Shield, Home, FolderClosed, FileDigit, Upload, CheckCircle, HelpCircle, Settings, BarChart3, Users, FileLock2, Activity, FileText, Scale, BookOpen, AlignLeft } from 'lucide-react';
@@ -45,9 +44,7 @@ const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
         ];
       case Role.Forensic:
         return [
-          { to: '/evidence/analysis', label: 'Evidence Analysis', icon: <FileDigit size={18} /> },
-          { to: '/evidence/verify', label: 'Technical Verification', icon: <CheckCircle size={18} /> },
-          { to: '/forensic/reports', label: 'Reports', icon: <BarChart3 size={18} /> },
+          { to: '/legal/reports', label: 'Legal Reports', icon: <BarChart3 size={18} /> },
         ];
       case Role.Lawyer:
         return [
@@ -62,14 +59,30 @@ const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
     }
   };
 
-  // Core links shown to all roles
-  const coreLinks = [
-    { to: '/dashboard', label: 'Dashboard', icon: <Home size={18} /> },
-    { to: '/cases', label: 'Cases', icon: <FolderClosed size={18} /> },
-    { to: '/evidence', label: 'Evidence', icon: <FileDigit size={18} /> },
-    { to: '/upload', label: 'Upload', icon: <Upload size={18} /> },
-    { to: '/verify', label: 'Verify', icon: <CheckCircle size={18} /> },
-  ];
+  // Core links shown to roles with adjustments based on requirements
+  const getCoreLinks = () => {
+    const baseLinks = [
+      { to: '/dashboard', label: 'Dashboard', icon: <Home size={18} /> },
+      { to: '/cases', label: 'Cases', icon: <FolderClosed size={18} /> },
+    ];
+    
+    // Only show Evidence link for Lawyer role, and not for Court role
+    if (user?.role === Role.Lawyer || (user?.role !== Role.Court && user?.role !== undefined)) {
+      baseLinks.push({ to: '/evidence', label: 'Evidence', icon: <FileDigit size={18} /> });
+    }
+    
+    // Don't show Upload and Verify for Court role
+    if (user?.role !== Role.Court) {
+      if (user?.role !== Role.Forensic) {
+        baseLinks.push({ to: '/upload', label: 'Upload', icon: <Upload size={18} /> });
+      }
+      if (user?.role !== Role.Forensic) {
+        baseLinks.push({ to: '/verify', label: 'Verify', icon: <CheckCircle size={18} /> });
+      }
+    }
+    
+    return baseLinks;
+  };
 
   // Utility links shown at the bottom to all roles
   const utilityLinks = [
@@ -127,7 +140,7 @@ const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
               <div className="mb-6">
                 <p className="px-3 text-xs font-medium text-gray-500 uppercase mb-2">Core</p>
                 <nav className="space-y-1">
-                  {coreLinks.map((link) => (
+                  {getCoreLinks().map((link) => (
                     <NavLink
                       key={link.to}
                       to={link.to}
@@ -241,7 +254,7 @@ const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
               <p className="px-3 text-xs font-medium text-gray-500 uppercase mb-2">Core</p>
             )}
             <nav className="space-y-1">
-              {coreLinks.map((link) => (
+              {getCoreLinks().map((link) => (
                 <NavLink
                   key={link.to}
                   to={link.to}

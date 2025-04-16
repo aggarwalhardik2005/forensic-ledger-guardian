@@ -155,7 +155,7 @@ const CourtDashboard = () => {
         </Card>
 
         {/* Key Actions Row */}
-        <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-lg flex items-center">
@@ -168,24 +168,6 @@ const CourtDashboard = () => {
               <Button asChild className="w-full bg-forensic-court hover:bg-forensic-court/90">
                 <Link to="/cases/create">
                   <span>New Case</span>
-                  <ArrowUpRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </CardFooter>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center">
-                <FileCheck className="h-5 w-5 mr-2 text-forensic-accent" />
-                Evidence Verification
-              </CardTitle>
-              <CardDescription>Review and verify evidence</CardDescription>
-            </CardHeader>
-            <CardFooter>
-              <Button asChild className="w-full bg-forensic-accent hover:bg-forensic-accent/90">
-                <Link to="/verify">
-                  <span>Verify Evidence</span>
                   <ArrowUpRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
