@@ -6,7 +6,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import EvidenceVerifier from '@/components/verification/EvidenceVerifier';
-import RoleGuides from '@/components/help/RoleGuides';
 
 const Dashboard = () => {
   const { isLoggedIn, user } = useAuth();
@@ -22,17 +21,12 @@ const Dashboard = () => {
       
       {/* Common tools for all roles */}
       <Tabs defaultValue="verify" className="w-full">
-        <TabsList className="mb-4 w-full sm:w-auto grid grid-cols-2 sm:inline-flex">
+        <TabsList className="mb-4 w-full sm:w-auto grid grid-cols-1 sm:inline-flex">
           <TabsTrigger value="verify">Evidence Verification</TabsTrigger>
-          <TabsTrigger value="help">Help & Documentation</TabsTrigger>
         </TabsList>
         
         <TabsContent value="verify">
           <EvidenceVerifier />
-        </TabsContent>
-        
-        <TabsContent value="help">
-          <RoleGuides role={user?.role} />
         </TabsContent>
       </Tabs>
     </div>

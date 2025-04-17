@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -312,47 +311,6 @@ const CourtDashboard = () => {
           <CardFooter>
             <Button variant="outline" asChild className="w-full hover:bg-forensic-50 transition-colors">
               <Link to="/activity">View All Activity</Link>
-            </Button>
-          </CardFooter>
-        </Card>
-
-        <Card className="border border-forensic-200 hover:border-forensic-300 transition-colors">
-          <CardHeader className="bg-gradient-to-r from-forensic-50 to-transparent">
-            <CardTitle className="text-lg flex items-center">
-              <LayoutGrid className="h-5 w-5 mr-2 text-forensic-600" />
-              Help & Resources
-            </CardTitle>
-            <CardDescription>Court role documentation</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="border rounded-md p-3">
-              <h4 className="text-sm font-medium">Case Management Guide</h4>
-              <p className="text-xs text-forensic-500">Learn how to effectively manage case states</p>
-              <Button variant="link" size="sm" asChild className="p-0 h-auto mt-1">
-                <Link to="/help/court/case-management">View Guide</Link>
-              </Button>
-            </div>
-            <div className="border rounded-md p-3">
-              <h4 className="text-sm font-medium">Security Controls</h4>
-              <p className="text-xs text-forensic-500">Best practices for system security</p>
-              <Button variant="link" size="sm" asChild className="p-0 h-auto mt-1">
-                <Link to="/help/court/security">View Guide</Link>
-              </Button>
-            </div>
-            <div className="border rounded-md p-3">
-              <h4 className="text-sm font-medium">Role Permissions</h4>
-              <p className="text-xs text-forensic-500">Understanding the permission hierarchy</p>
-              <Button variant="link" size="sm" asChild className="p-0 h-auto mt-1">
-                <Link to="/help/court/permissions">View Guide</Link>
-              </Button>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button asChild variant="outline" className="w-full hover:bg-forensic-50 transition-colors">
-              <Link to="/help">
-                <span>View All Guides</span>
-                <ArrowUpRight className="ml-2 h-4 w-4" />
-              </Link>
             </Button>
           </CardFooter>
         </Card>
