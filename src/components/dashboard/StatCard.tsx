@@ -12,16 +12,18 @@ interface StatCardProps {
   linkTo?: string;
   className?: string;
   highlight?: boolean;
+  valueClassName?: string;  // Added this prop to support styling the value text
 }
 
-const StatCard: React.FC<StatCardProps> = ({ title, value, icon, linkTo, className, highlight }) => {
+const StatCard: React.FC<StatCardProps> = ({ title, value, icon, linkTo, className, highlight, valueClassName }) => {
   const content = (
     <div className="p-6 flex items-center justify-between">
       <div className="space-y-2">
         <p className="text-sm font-medium text-forensic-500">{title}</p>
         <p className={cn(
           "text-3xl font-bold text-forensic-800",
-          highlight && "text-forensic-warning"
+          highlight && "text-forensic-warning",
+          valueClassName
         )}>{value}</p>
       </div>
       <div className={cn(
