@@ -112,6 +112,7 @@ const CaseDetail = () => {
         </TabsList>
 
         {/* Overview Tab */}
+        
         <TabsContent value="overview" className="space-y-6">
           <Card>
             <CardHeader>
