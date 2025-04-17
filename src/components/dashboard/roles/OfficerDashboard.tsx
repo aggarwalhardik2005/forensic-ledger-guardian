@@ -10,20 +10,61 @@ import {
   CheckCircle, 
   BarChart3,
   ArrowUpRight, 
-  AlignLeft  
+  AlignLeft,
+  Clock,
+  FileCheck,
+  Filter,
+  Users
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RecentActivityList from '../RecentActivityList';
 import StatCard from '../StatCard';
+import { useWeb3 } from "@/contexts/Web3Context";
 
 const OfficerDashboard = () => {
+  const { account } = useWeb3();
+  
   // Mock data - would come from API/blockchain in real implementation
   const stats = {
     totalCases: 17,
     activeCases: 12,
     totalEvidence: 98,
-    pendingVerification: 4
+    pendingConfirmation: 7,
+    awaitingSubmission: 3
   };
+
+  // Pending evidence confirmation data
+  const pendingConfirmations = [
+    {
+      id: "EV-2023-087",
+      caseId: "CC-2023-056",
+      title: "Server Access Logs",
+      submittedBy: "Sarah Lee",
+      date: "Apr 09, 2025",
+      isOwnSubmission: false
+    },
+    {
+      id: "EV-2023-086",
+      caseId: "CC-2023-056",
+      title: "Network Traffic Capture",
+      submittedBy: "Sarah Lee", 
+      date: "Apr 09, 2025",
+      isOwnSubmission: false
+    },
+    {
+      id: "EV-2023-085",
+      caseId: "CC-2023-078",
+      title: "Transaction Records",
+      submittedBy: "Michael Chen",
+      date: "Apr 08, 2025",
+      isOwnSubmission: true
+    }
+  ];
+
+  // Filter for eligible confirmations (not self-submitted)
+  const eligibleConfirmations = pendingConfirmations.filter(item => !item.isOwnSubmission);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -47,18 +88,104 @@ const OfficerDashboard = () => {
           linkTo="/evidence"
         />
         <StatCard 
-          title="Pending Verification" 
-          value={stats.pendingVerification} 
+          title="Pending Confirmation" 
+          value={eligibleConfirmations.length}
           icon={<CheckCircle className="h-5 w-5 text-forensic-warning" />} 
-          linkTo="/verify?status=pending"
-          highlight={stats.pendingVerification > 0}
+          linkTo="/evidence/confirm?filter=eligible"
+          highlight={eligibleConfirmations.length > 0}
         />
       </div>
 
+      {/* Evidence Confirmation Panel */}
+      <Card className="border border-forensic-200 hover:border-forensic-300 transition-colors">
+        <CardHeader className="bg-gradient-to-r from-forensic-50 to-transparent">
+          <CardTitle className="text-lg flex items-center">
+            <CheckCircle className="h-5 w-5 mr-2 text-forensic-accent" />
+            Evidence Confirmation
+          </CardTitle>
+          <CardDescription>Review and confirm submitted evidence</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="eligible">
+            <div className="flex items-center justify-between mb-4">
+              <TabsList>
+                <TabsTrigger value="eligible">Eligible ({eligibleConfirmations.length})</TabsTrigger>
+                <TabsTrigger value="all">All Pending ({pendingConfirmations.length})</TabsTrigger>
+              </TabsList>
+              
+              <Button variant="ghost" size="sm" className="text-forensic-500 flex items-center gap-1">
+                <Filter className="h-4 w-4" />
+                <span>Filter</span>
+              </Button>
+            </div>
+            
+            <TabsContent value="eligible" className="space-y-2">
+              {eligibleConfirmations.length > 0 ? (
+                eligibleConfirmations.map(item => (
+                  <div key={item.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-forensic-100">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-forensic-800">{item.title}</p>
+                        <Badge variant="outline" className="bg-forensic-50 text-xs">{item.id}</Badge>
+                      </div>
+                      <p className="text-sm text-forensic-600">Case #{item.caseId} • Submitted by {item.submittedBy}</p>
+                    </div>
+                    <Button 
+                      size="sm" 
+                      className="bg-forensic-accent hover:bg-forensic-accent/90"
+                    >
+                      Confirm
+                    </Button>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-6 text-forensic-500">
+                  No evidence eligible for your confirmation
+                </div>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="all" className="space-y-2">
+              {pendingConfirmations.map(item => (
+                <div key={item.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-forensic-100">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-forensic-800">{item.title}</p>
+                      <Badge variant="outline" className="bg-forensic-50 text-xs">{item.id}</Badge>
+                    </div>
+                    <p className="text-sm text-forensic-600">
+                      Case #{item.caseId} • Submitted by {item.submittedBy}
+                      {item.isOwnSubmission && (
+                        <Badge className="ml-2 bg-forensic-warning/20 text-forensic-warning text-xs">Your submission</Badge>
+                      )}
+                    </p>
+                  </div>
+                  <Button 
+                    size="sm"
+                    variant={item.isOwnSubmission ? "outline" : "default"}
+                    className={item.isOwnSubmission ? "text-forensic-500" : "bg-forensic-accent hover:bg-forensic-accent/90"}
+                    disabled={item.isOwnSubmission}
+                  >
+                    {item.isOwnSubmission ? "Cannot confirm own" : "Confirm"}
+                  </Button>
+                </div>
+              ))}
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+        <CardFooter>
+          <Button asChild variant="outline" className="w-full">
+            <Link to="/evidence/confirm">
+              View All Pending Confirmation
+            </Link>
+          </Button>
+        </CardFooter>
+      </Card>
+
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
+        <Card className="border border-forensic-200 hover:border-forensic-300 transition-colors">
+          <CardHeader className="pb-2 bg-gradient-to-r from-forensic-50 to-transparent">
             <CardTitle className="text-lg flex items-center">
               <AlignLeft className="h-5 w-5 mr-2 text-forensic-evidence" />
               FIR Management
@@ -71,55 +198,94 @@ const OfficerDashboard = () => {
             </p>
           </CardContent>
           <CardFooter>
-            <Button asChild className="w-full bg-forensic-evidence hover:bg-forensic-evidence/90">
-              <Link to="/fir">
+            <Button asChild className="w-full bg-forensic-evidence hover:bg-forensic-evidence/90 shadow-sm transition-all duration-300">
+              <Link to="/fir" className="flex items-center justify-center">
                 <span>Manage FIRs</span>
-                <ArrowUpRight className="ml-2 h-4 w-4" />
+                <ArrowUpRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </Button>
           </CardFooter>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-2">
+        <Card className="border border-forensic-200 hover:border-forensic-300 transition-colors">
+          <CardHeader className="pb-2 bg-gradient-to-r from-forensic-50 to-transparent">
             <CardTitle className="text-lg flex items-center">
               <Upload className="h-5 w-5 mr-2 text-forensic-accent" />
               Upload Evidence
             </CardTitle>
-            <CardDescription>Add new digital evidence to a case</CardDescription>
+            <CardDescription>Add new digital evidence</CardDescription>
           </CardHeader>
           <CardContent className="pb-2">
-            <p className="text-sm text-forensic-600">
-              Securely upload and hash evidence files
-            </p>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">FIR Evidence:</span>
+                <Badge variant="outline" className="bg-forensic-50">{stats.awaitingSubmission} awaiting</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Case Evidence:</span>
+                <Badge variant="outline" className="bg-forensic-50">{stats.pendingConfirmation} pending</Badge>
+              </div>
+            </div>
           </CardContent>
-          <CardFooter>
-            <Button asChild className="w-full bg-forensic-accent hover:bg-forensic-accent/90">
-              <Link to="/upload">
-                <span>Upload Files</span>
-                <ArrowUpRight className="ml-2 h-4 w-4" />
+          <CardFooter className="flex flex-col space-y-2">
+            <Button asChild className="w-full bg-forensic-accent hover:bg-forensic-accent/90 shadow-sm">
+              <Link to="/upload?type=fir">
+                <span>Upload FIR Evidence</span>
+              </Link>
+            </Button>
+            <Button asChild className="w-full bg-forensic-accent/80 hover:bg-forensic-accent/90 shadow-sm">
+              <Link to="/upload?type=case">
+                <span>Upload Case Evidence</span>
               </Link>
             </Button>
           </CardFooter>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-2">
+        <Card className="border border-forensic-200 hover:border-forensic-300 transition-colors">
+          <CardHeader className="pb-2 bg-gradient-to-r from-forensic-50 to-transparent">
             <CardTitle className="text-lg flex items-center">
-              <CheckCircle className="h-5 w-5 mr-2 text-forensic-court" />
-              Verify Evidence
+              <FileCheck className="h-5 w-5 mr-2 text-forensic-court" />
+              Evidence Status
             </CardTitle>
-            <CardDescription>Check integrity of evidence files</CardDescription>
+            <CardDescription>Track evidence submission status</CardDescription>
           </CardHeader>
-          <CardContent className="pb-2">
-            <p className="text-sm text-forensic-600">
-              Validate evidence against blockchain records
-            </p>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <div className="flex justify-between items-center text-sm">
+                  <span>Submitted</span>
+                  <span className="font-medium">{stats.totalEvidence}</span>
+                </div>
+                <Progress value={100} className="h-2 bg-forensic-100" />
+              </div>
+              
+              <div className="space-y-1">
+                <div className="flex justify-between items-center text-sm">
+                  <span>Awaiting Confirmation</span>
+                  <span className="font-medium">{stats.pendingConfirmation}</span>
+                </div>
+                <Progress value={(stats.pendingConfirmation / stats.totalEvidence) * 100} 
+                  className="h-2 bg-forensic-100" 
+                  indicatorClassName="bg-forensic-warning"
+                />
+              </div>
+              
+              <div className="space-y-1">
+                <div className="flex justify-between items-center text-sm">
+                  <span>Confirmed</span>
+                  <span className="font-medium">{stats.totalEvidence - stats.pendingConfirmation}</span>
+                </div>
+                <Progress value={((stats.totalEvidence - stats.pendingConfirmation) / stats.totalEvidence) * 100} 
+                  className="h-2 bg-forensic-100"
+                  indicatorClassName="bg-forensic-success" 
+                />
+              </div>
+            </div>
           </CardContent>
           <CardFooter>
-            <Button asChild className="w-full bg-forensic-court hover:bg-forensic-court/90">
-              <Link to="/verify">
-                <span>Verify Files</span>
+            <Button asChild variant="outline" className="w-full">
+              <Link to="/evidence">
+                <span>View Evidence Dashboard</span>
                 <ArrowUpRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
@@ -129,38 +295,59 @@ const OfficerDashboard = () => {
 
       {/* Reports */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-lg">Recent Activity</CardTitle>
+        <Card className="lg:col-span-2 border border-forensic-200 hover:border-forensic-300 transition-colors">
+          <CardHeader className="bg-gradient-to-r from-forensic-50 to-transparent">
+            <CardTitle className="text-lg flex items-center">
+              <Clock className="h-5 w-5 mr-2 text-forensic-600" />
+              Recent Activity
+            </CardTitle>
             <CardDescription>Latest evidence chain of custody events</CardDescription>
           </CardHeader>
           <CardContent>
             <RecentActivityList />
           </CardContent>
           <CardFooter>
-            <Button variant="outline" asChild className="w-full">
+            <Button variant="outline" asChild className="w-full hover:bg-forensic-50 transition-colors">
               <Link to="/activity">View All Activity</Link>
             </Button>
           </CardFooter>
         </Card>
 
-        <Card>
-          <CardHeader>
+        <Card className="border border-forensic-200 hover:border-forensic-300 transition-colors">
+          <CardHeader className="bg-gradient-to-r from-forensic-50 to-transparent">
             <CardTitle className="text-lg flex items-center">
-              <BarChart3 className="h-5 w-5 mr-2 text-forensic-600" />
-              Reports
+              <Users className="h-5 w-5 mr-2 text-forensic-600" />
+              Help & Resources
             </CardTitle>
-            <CardDescription>View officer reports and analytics</CardDescription>
+            <CardDescription>Officer role documentation</CardDescription>
           </CardHeader>
-          <CardContent className="pb-2">
-            <p className="text-sm text-forensic-600">
-              Access case statistics, evidence tracking, and investigation reports
-            </p>
+          <CardContent className="space-y-3">
+            <div className="border rounded-md p-3">
+              <h4 className="text-sm font-medium">Evidence Handling</h4>
+              <p className="text-xs text-forensic-500">Guidelines for digital evidence collection</p>
+              <Button variant="link" size="sm" asChild className="p-0 h-auto mt-1">
+                <Link to="/help/officer/evidence-handling">View Guide</Link>
+              </Button>
+            </div>
+            <div className="border rounded-md p-3">
+              <h4 className="text-sm font-medium">FIR Creation</h4>
+              <p className="text-xs text-forensic-500">Best practices for filing reports</p>
+              <Button variant="link" size="sm" asChild className="p-0 h-auto mt-1">
+                <Link to="/help/officer/fir-creation">View Guide</Link>
+              </Button>
+            </div>
+            <div className="border rounded-md p-3">
+              <h4 className="text-sm font-medium">Evidence Verification</h4>
+              <p className="text-xs text-forensic-500">How to verify evidence integrity</p>
+              <Button variant="link" size="sm" asChild className="p-0 h-auto mt-1">
+                <Link to="/help/verification">View Guide</Link>
+              </Button>
+            </div>
           </CardContent>
           <CardFooter>
             <Button asChild variant="outline" className="w-full">
-              <Link to="/officer/reports">
-                <span>View Reports</span>
+              <Link to="/help">
+                <span>View All Guides</span>
                 <ArrowUpRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
