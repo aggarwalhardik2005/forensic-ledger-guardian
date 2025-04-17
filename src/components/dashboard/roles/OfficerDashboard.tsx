@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,33 +33,33 @@ const OfficerDashboard = () => {
     awaitingSubmission: 3
   };
 
-  // Pending evidence confirmation data
-  const pendingConfirmations = [
-    {
-      id: "EV-2023-087",
-      caseId: "CC-2023-056",
-      title: "Server Access Logs",
-      submittedBy: "Sarah Lee",
-      date: "Apr 09, 2025",
-      isOwnSubmission: false
-    },
-    {
-      id: "EV-2023-086",
-      caseId: "CC-2023-056",
-      title: "Network Traffic Capture",
-      submittedBy: "Sarah Lee", 
-      date: "Apr 09, 2025",
-      isOwnSubmission: false
-    },
-    {
-      id: "EV-2023-085",
-      caseId: "CC-2023-078",
-      title: "Transaction Records",
-      submittedBy: "Michael Chen",
-      date: "Apr 08, 2025",
-      isOwnSubmission: true
-    }
-  ];
+    // Pending evidence confirmation data
+    const pendingConfirmations = [
+      {
+        id: "EV-2023-087",
+        caseId: "CC-2023-056",
+        title: "Server Access Logs",
+        submittedBy: "Sarah Lee",
+        date: "Apr 09, 2025",
+        isOwnSubmission: false
+      },
+      {
+        id: "EV-2023-086",
+        caseId: "CC-2023-056",
+        title: "Network Traffic Capture",
+        submittedBy: "Sarah Lee", 
+        date: "Apr 09, 2025",
+        isOwnSubmission: false
+      },
+      {
+        id: "EV-2023-085",
+        caseId: "CC-2023-078",
+        title: "Transaction Records",
+        submittedBy: "Michael Chen",
+        date: "Apr 08, 2025",
+        isOwnSubmission: true
+      }
+    ];
 
   // Filter for eligible confirmations (not self-submitted)
   const eligibleConfirmations = pendingConfirmations.filter(item => !item.isOwnSubmission);
@@ -312,7 +311,6 @@ const OfficerDashboard = () => {
           </CardFooter>
         </Card>
 
-        {/* Completely removed the Help & Resources section */}
         <div className="space-y-6 lg:col-span-1">
           {/* Optional: You can add placeholder content or leave empty */}
         </div>
@@ -322,4 +320,3 @@ const OfficerDashboard = () => {
 };
 
 export default OfficerDashboard;
-
