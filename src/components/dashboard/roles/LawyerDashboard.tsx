@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -377,6 +378,34 @@ const LawyerDashboard = () => {
             <Button variant="outline" asChild className="w-full hover:bg-forensic-50 transition-colors">
               <Link to="/activity">View All Activity</Link>
             </Button>
+          </CardFooter>
+        </Card>
+
+        <Card className="border border-forensic-200 hover:border-forensic-300 transition-colors">
+          <CardHeader className="bg-gradient-to-r from-forensic-50 to-transparent">
+            <CardTitle>Assigned Cases</CardTitle>
+            <CardDescription>Cases where you have active roles</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {assignedCases.map((caseItem) => (
+              <div key={caseItem.id} className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-forensic-600 font-medium">Case #{caseItem.id}</span>
+                  <span className="font-medium text-forensic-800 bg-forensic-100 px-2 py-0.5 rounded-full text-xs">
+                    {assignedCases.length} Assigned
+                  </span>
+                </div>
+                <Progress value={caseItem.progress} className="h-2 bg-forensic-100" indicatorClassName="bg-forensic-evidence" />
+              </div>
+            ))}
+          </CardContent>
+          <CardFooter className="flex flex-col gap-2">
+            <Button variant="outline" asChild className="w-full hover:bg-forensic-50 transition-colors">
+              <Link to="/cases/assigned">View Assigned Cases</Link>
+            </Button>
+            <Link to="/help/lawyer" className="text-xs text-center text-forensic-500 hover:text-forensic-700 transition-colors">
+              View Lawyer Role Documentation
+            </Link>
           </CardFooter>
         </Card>
       </div>

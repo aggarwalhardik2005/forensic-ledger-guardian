@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,11 +6,14 @@ import { Button } from "@/components/ui/button";
 import { 
   FileDigit, 
   FolderKanban, 
+  Upload,
   ArrowUpRight,
+  CheckCircle,
+  FileSearch,
+  BarChart3,
+  Clock,
   Shield,
   Users,
-  Clock,
-  BarChart3,
   Microscope
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
@@ -279,6 +283,47 @@ const ForensicDashboard = () => {
           <CardFooter>
             <Button variant="outline" asChild className="w-full hover:bg-forensic-50 transition-colors">
               <Link to="/activity">View All Activity</Link>
+            </Button>
+          </CardFooter>
+        </Card>
+
+        <Card className="border border-forensic-200 hover:border-forensic-300 transition-colors">
+          <CardHeader className="bg-gradient-to-r from-forensic-50 to-transparent">
+            <CardTitle className="text-lg flex items-center">
+              <Users className="h-5 w-5 mr-2 text-forensic-600" />
+              Help & Resources
+            </CardTitle>
+            <CardDescription>Forensic role documentation</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="border rounded-md p-3">
+              <h4 className="text-sm font-medium">Forensic Analysis</h4>
+              <p className="text-xs text-forensic-500">Digital forensics best practices</p>
+              <Button variant="link" size="sm" asChild className="p-0 h-auto mt-1">
+                <Link to="/help/forensic/analysis">View Guide</Link>
+              </Button>
+            </div>
+            <div className="border rounded-md p-3">
+              <h4 className="text-sm font-medium">Blockchain Verification</h4>
+              <p className="text-xs text-forensic-500">Using blockchain for evidence integrity</p>
+              <Button variant="link" size="sm" asChild className="p-0 h-auto mt-1">
+                <Link to="/help/forensic/blockchain">View Guide</Link>
+              </Button>
+            </div>
+            <div className="border rounded-md p-3">
+              <h4 className="text-sm font-medium">Chain of Custody</h4>
+              <p className="text-xs text-forensic-500">Maintaining proper custody records</p>
+              <Button variant="link" size="sm" asChild className="p-0 h-auto mt-1">
+                <Link to="/help/custody">View Guide</Link>
+              </Button>
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button asChild variant="outline" className="w-full hover:bg-forensic-50 transition-colors">
+              <Link to="/help">
+                <span>View All Guides</span>
+                <ArrowUpRight className="ml-2 h-4 w-4" />
+              </Link>
             </Button>
           </CardFooter>
         </Card>

@@ -311,7 +311,9 @@ const OfficerDashboard = () => {
           </CardFooter>
         </Card>
 
-        {/* Remove Help & Resources section */}
+        <div className="space-y-6 lg:col-span-1">
+          {/* Optional: You can add placeholder content or leave empty */}
+        </div>
       </div>
     </div>
   );
