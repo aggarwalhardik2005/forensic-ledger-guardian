@@ -2,9 +2,8 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { BookOpen, HelpCircle, MessageSquare, Mail, ExternalLink } from "lucide-react";
+import { BookOpen, HelpCircle, MessageSquare, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
 
 const Help = () => {
   return (
@@ -14,7 +13,7 @@ const Help = () => {
         Help & Support
       </h1>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
@@ -29,7 +28,6 @@ const Help = () => {
             </p>
             <Button className="w-full bg-forensic-evidence hover:bg-forensic-evidence/90 flex items-center justify-center">
               <span>View Documentation</span>
-              <ExternalLink className="ml-2 h-4 w-4" />
             </Button>
           </CardContent>
         </Card>
@@ -49,27 +47,6 @@ const Help = () => {
             <Button className="w-full bg-forensic-court hover:bg-forensic-court/90 flex items-center justify-center">
               <span>Contact Support</span>
               <Mail className="ml-2 h-4 w-4" />
-            </Button>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <HelpCircle className="h-5 w-5 mr-2 text-forensic-accent" />
-              FAQ
-            </CardTitle>
-            <CardDescription>Frequently asked questions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-forensic-600 mb-4">
-              Find answers to common questions about using the ForensicLedger platform.
-            </p>
-            <Button asChild className="w-full bg-forensic-accent hover:bg-forensic-accent/90 flex items-center justify-center">
-              <Link to="/help/faq">
-                <span>View FAQs</span>
-                <ExternalLink className="ml-2 h-4 w-4" />
-              </Link>
             </Button>
           </CardContent>
         </Card>
@@ -124,3 +101,4 @@ const Help = () => {
 };
 
 export default Help;
+

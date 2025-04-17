@@ -13,8 +13,7 @@ import {
   AlignLeft,
   Clock,
   FileCheck,
-  Filter,
-  Users
+  Filter
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -313,49 +312,14 @@ const OfficerDashboard = () => {
           </CardFooter>
         </Card>
 
-        <Card className="border border-forensic-200 hover:border-forensic-300 transition-colors">
-          <CardHeader className="bg-gradient-to-r from-forensic-50 to-transparent">
-            <CardTitle className="text-lg flex items-center">
-              <Users className="h-5 w-5 mr-2 text-forensic-600" />
-              Help & Resources
-            </CardTitle>
-            <CardDescription>Officer role documentation</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="border rounded-md p-3">
-              <h4 className="text-sm font-medium">Evidence Handling</h4>
-              <p className="text-xs text-forensic-500">Guidelines for digital evidence collection</p>
-              <Button variant="link" size="sm" asChild className="p-0 h-auto mt-1">
-                <Link to="/help/officer/evidence-handling">View Guide</Link>
-              </Button>
-            </div>
-            <div className="border rounded-md p-3">
-              <h4 className="text-sm font-medium">FIR Creation</h4>
-              <p className="text-xs text-forensic-500">Best practices for filing reports</p>
-              <Button variant="link" size="sm" asChild className="p-0 h-auto mt-1">
-                <Link to="/help/officer/fir-creation">View Guide</Link>
-              </Button>
-            </div>
-            <div className="border rounded-md p-3">
-              <h4 className="text-sm font-medium">Evidence Verification</h4>
-              <p className="text-xs text-forensic-500">How to verify evidence integrity</p>
-              <Button variant="link" size="sm" asChild className="p-0 h-auto mt-1">
-                <Link to="/help/verification">View Guide</Link>
-              </Button>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button asChild variant="outline" className="w-full">
-              <Link to="/help">
-                <span>View All Guides</span>
-                <ArrowUpRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </CardFooter>
-        </Card>
+        {/* Completely removed the Help & Resources section */}
+        <div className="space-y-6 lg:col-span-1">
+          {/* Optional: You can add placeholder content or leave empty */}
+        </div>
       </div>
     </div>
   );
 };
 
 export default OfficerDashboard;
+
