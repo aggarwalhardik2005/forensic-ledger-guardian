@@ -1,73 +1,209 @@
-# Welcome to your Lovable project
+# Forensic Ledger Guardian
 
-## Project info
+A blockchain-powered digital forensics evidence management system that ensures integrity, transparency, and immutable chain of custody for forensic evidence.
 
-**URL**: https://lovable.dev/projects/80394d05-50f1-4b85-b6be-6f73fc07667d
+## 🚀 Overview
 
-## How can I edit this code?
+Forensic Ledger Guardian is a comprehensive web application designed for law enforcement agencies, forensic investigators, legal professionals, and court systems. It leverages blockchain technology to create an immutable record of evidence handling, ensuring the integrity and authenticity of digital forensic evidence throughout the entire investigation and legal process.
 
-There are several ways of editing your application.
+## ✨ Key Features
 
-**Use Lovable**
+### 🔐 Secure Evidence Management
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/80394d05-50f1-4b85-b6be-6f73fc07667d) and start prompting.
+- **Digital Evidence Upload**: Support for various file types including disk images, documents, photos, and multimedia files
+- **Blockchain Integration**: Immutable evidence records with cryptographic hashing
+- **Chain of Custody Tracking**: Complete audit trail of evidence handling
+- **Multi-format Support**: Compatible with standard forensic file formats
 
-Changes made via Lovable will be committed automatically to this repo.
+### 👥 Role-Based Access Control
 
-**Use your preferred IDE**
+- **Police Officers**: Evidence collection and initial case management
+- **Forensic Investigators**: Detailed analysis and technical documentation
+- **Legal Professionals**: Case preparation and evidence review
+- **Court Administrators**: System oversight and user management
+- **Judges**: Evidence verification and case oversight
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 📊 Advanced Analytics
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **Case Dashboard**: Real-time case status and evidence overview
+- **Activity Monitoring**: Comprehensive logging of all system interactions
+- **Evidence Verification**: Cryptographic integrity checking
+- **Reporting Tools**: Generate detailed case reports and evidence summaries
 
-Follow these steps:
+### 🌐 Web3 Integration
+
+- **Wallet Connectivity**: Support for popular Web3 wallets
+- **Smart Contracts**: Automated evidence verification and access control
+- **IPFS Storage**: Decentralized file storage for evidence data
+- **Blockchain Verification**: Real-time evidence integrity verification
+
+## 🛠️ Technology Stack
+
+- **Frontend**: React 18 with TypeScript
+- **Styling**: Tailwind CSS with shadcn/ui components
+- **Build Tool**: Vite for fast development and optimized builds
+- **Blockchain**: Web3 integration for decentralized evidence management
+- **Storage**: IPFS for distributed file storage
+- **UI Components**: Modern, accessible design system
+- **Routing**: React Router for seamless navigation
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Node.js 18+ and npm (recommended: install with nvm)
+- Web3 wallet (MetaMask recommended)
+
+### Installation
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Clone the repository
+git clone https://github.com/aaravmahajanofficial/forensic-ledger-guardian.git
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Navigate to project directory
+cd forensic-ledger-guardian
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The application will be available at `http://localhost:8080`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Build for Production
 
-**Use GitHub Codespaces**
+```sh
+# Create production build
+npm run build
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+# Preview production build
+npm run preview
+```
 
-## What technologies are used for this project?
+## 🏗️ Project Structure
 
-This project is built with:
+```
+src/
+├── components/           # Reusable UI components
+│   ├── auth/            # Authentication components
+│   ├── blockchain/      # Web3 and wallet integration
+│   ├── cases/           # Case management components
+│   ├── evidence/        # Evidence handling components
+│   ├── court/           # Court-specific functionality
+│   └── ui/              # Design system components
+├── contexts/            # React context providers
+├── hooks/               # Custom React hooks
+├── pages/               # Page components
+├── services/            # API and external service integrations
+├── types/               # TypeScript type definitions
+└── utils/               # Utility functions
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 🔧 Development
 
-## How can I deploy this project?
+### Available Scripts
 
-Simply open [Lovable](https://lovable.dev/projects/80394d05-50f1-4b85-b6be-6f73fc07667d) and click on Share -> Publish.
+```sh
+# Start development server
+npm run dev
 
-## Can I connect a custom domain to my Lovable project?
+# Build for production
+npm run build
 
-Yes it is!
+# Build for development environment
+npm run build:dev
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+# Run linting
+npm run lint
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+# Preview production build
+npm run preview
+```
+
+### Code Quality
+
+- ESLint configuration for code consistency
+- TypeScript for type safety
+- Component-based architecture for maintainability
+
+## 🔒 Security Features
+
+- **Cryptographic Hashing**: SHA-256 hashing for evidence integrity
+- **Digital Signatures**: Evidence authenticity verification
+- **Access Control**: Role-based permissions and authentication
+- **Audit Logging**: Comprehensive activity tracking
+- **Blockchain Immutability**: Tamper-proof evidence records
+
+## 📱 User Roles & Capabilities
+
+### Police Officers
+
+- Upload digital evidence from crime scenes
+- Create and manage investigation cases
+- Generate chain of custody documentation
+- Access evidence verification tools
+
+### Forensic Investigators
+
+- Perform detailed evidence analysis
+- Generate technical reports
+- Manage evidence processing workflows
+- Document investigation findings
+
+### Legal Professionals
+
+- Review case evidence and documentation
+- Prepare court presentations
+- Access verified evidence records
+- Generate legal compliance reports
+
+### Court Administrators
+
+- Manage user accounts and permissions
+- Oversee system configuration
+- Monitor audit logs and activity
+- Maintain system security standards
+
+## 🌟 Key Benefits
+
+- **Evidence Integrity**: Cryptographic proof of evidence authenticity
+- **Transparency**: Complete audit trail visible to authorized parties
+- **Efficiency**: Streamlined evidence management workflows
+- **Compliance**: Meets legal standards for evidence handling
+- **Scalability**: Supports organizations of all sizes
+- **Accessibility**: Web-based interface accessible from anywhere
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/new-feature`
+3. Make your changes and commit: `git commit -am 'Add new feature'`
+4. Push to the branch: `git push origin feature/new-feature`
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🆘 Support
+
+For support and questions:
+
+- Create an issue in this repository
+- Review the Help section within the application
+- Check the role-specific guides for detailed instructions
+
+## 🔮 Future Enhancements
+
+- Enhanced mobile responsiveness
+- Advanced analytics and reporting
+- Integration with additional blockchain networks
+- AI-powered evidence analysis tools
+- Multi-language support
+- Advanced search and filtering capabilities
+
+---
+
+Built with ❤️ for the digital forensics community
