@@ -1,11 +1,17 @@
+// AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabaseClient';
+import { Role } from '@/services/web3Service';
 
 export interface User {
   id: string;
   email: string;
+  name: string;
+  role: Role;
+  roleTitle: string;
+  address?: string;
 }
 
 interface AuthContextType {
@@ -20,30 +26,74 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  console.log('AuthProvider initialized');
+  
+
+  const login = async (email: string, password: string): Promise<boolean> => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    console.log('Login response:', data);
+    console.log('Login error:', error);
+    if (error) {
+      toast({
+        title: 'Login Failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+      return false;
+    }
+    
+
+
+
+
+    toast({
+      title: 'Login Successful',
+      description: `Welcome back, ${email}`,
+    });
+
+    const loadUserProfile = async (userId: string, email: string) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('name, role, roleTitle, address')
+      .eq('id', userId)
+      .single();
+  
+    
+    if (error) {
+      console.error('Error loading profile:', error);
+      return null;
+    }
+
+    const fullUser: User = {
+      id: userId,
+      email,
+      name: data.name,
+      role: data.role as Role,
+      roleTitle: data.roleTitle,
+      address: data.address || undefined,
+    };
+
+    setUser(fullUser);
+    localStorage.setItem('forensicLedgerUser', JSON.stringify(fullUser));
+    return fullUser;
+  };
 
   useEffect(() => {
     const initAuth = async () => {
-      const { data, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error('Error fetching session:', error);
-      }
+      const { data } = await supabase.auth.getSession();
+      console.log('Loading user profile:', { data });
       if (data.session?.user) {
-        setUser({
-          id: data.session.user.id,
-          email: data.session.user.email || '',
-        });
+        await loadUserProfile(data.session.user.id, data.session.user.email || '');
       }
-      setLoading(false);
     };
 
     initAuth();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
-        setUser({ id: session.user.id, email: session.user.email || '' });
-        localStorage.setItem('forensicLedgerUser', JSON.stringify(session.user));
+        await loadUserProfile(session.user.id, session.user.email || '');
       } else {
         setUser(null);
         localStorage.removeItem('forensicLedgerUser');
@@ -55,36 +105,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      toast({
-        title: 'Login Failed',
-        description: error.message,
-        variant: 'destructive',
-      });
-      return false;
-    }
-    toast({
-      title: 'Login Successful',
-      description: `Welcome back, ${email}`,
-    });
+    if (data.user) {
+      const profile = await loadUserProfile(data.user.id, email);
+      if (!profile) {
+        console.log('Failed to load user profile');  
+      };
+    }  
+
+    navigate('/dashboard'); // move navigation here
     return true;
   };
 
   const logout = async () => {
     await supabase.auth.signOut();
     setUser(null);
+    localStorage.removeItem('forensicLedgerUser');
     toast({
       title: 'Logged Out',
       description: 'You have been logged out successfully',
     });
     navigate('/');
   };
-
-  if (loading) {
-    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
-  }
 
   return (
     <AuthContext.Provider value={{ user, login, logout, isLoggedIn: !!user }}>
