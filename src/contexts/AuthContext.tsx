@@ -1,63 +1,23 @@
-
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+// AuthContext.tsx
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Role } from '@/services/web3Service';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabaseClient';
+import { Role } from '@/services/web3Service';
 
-// Define user types
 export interface User {
   id: string;
-  name: string;
   email: string;
+  name: string;
   role: Role;
   roleTitle: string;
-  address?: string; // Added address property as optional
+  address?: string;
 }
-
-// Mock users for development
-const mockUsers = [
-  {
-    id: '1',
-    email: 'court@example.com',
-    password: 'court123',
-    name: 'Judge Smith',
-    role: Role.Court,
-    roleTitle: 'Court Judge',
-    address: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F'
-  },
-  {
-    id: '2',
-    email: 'officer@example.com',
-    password: 'officer123',
-    name: 'Officer Johnson',
-    role: Role.Officer,
-    roleTitle: 'Police Officer',
-    address: '0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2'
-  },
-  {
-    id: '3',
-    email: 'forensic@example.com',
-    password: 'forensic123',
-    name: 'Dr. Anderson',
-    role: Role.Forensic,
-    roleTitle: 'Forensic Investigator',
-    address: '0x5B38Da6a701c568545dCfcB03FcB875f56beddC4'
-  },
-  {
-    id: '4',
-    email: 'lawyer@example.com',
-    password: 'lawyer123',
-    name: 'Attorney Davis',
-    role: Role.Lawyer,
-    roleTitle: 'Defense Attorney',
-    address: '0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db'
-  }
-];
 
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isLoggedIn: boolean;
 }
 
@@ -65,47 +25,104 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(() => {
-    // Check if user is stored in localStorage
-    const storedUser = localStorage.getItem('forensicLedgerUser');
-    return storedUser ? JSON.parse(storedUser) : null;
-  });
+  const [user, setUser] = useState<User | null>(null);
   const { toast } = useToast();
 
+  console.log('AuthProvider initialized');
+  
+
   const login = async (email: string, password: string): Promise<boolean> => {
-    // In a real app, this would be an API call
-    const foundUser = mockUsers.find(u => u.email === email && u.password === password);
-    
-    if (foundUser) {
-      // Remove password before storing user
-      const { password: _, ...userWithoutPassword } = foundUser;
-      
-      // Store user in state and localStorage
-      setUser(userWithoutPassword);
-      localStorage.setItem('forensicLedgerUser', JSON.stringify(userWithoutPassword));
-      
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    console.log('Login response:', data);
+    console.log('Login error:', error);
+    if (error) {
       toast({
-        title: "Login Successful",
-        description: `Welcome back, ${userWithoutPassword.name}`,
-      });
-      
-      return true;
-    } else {
-      toast({
-        title: "Login Failed",
-        description: "Invalid email or password",
-        variant: "destructive"
+        title: 'Login Failed',
+        description: error.message,
+        variant: 'destructive',
       });
       return false;
     }
+    
+
+
+
+
+    toast({
+      title: 'Login Successful',
+      description: `Welcome back, ${email}`,
+    });
+
+    const loadUserProfile = async (userId: string, email: string) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('name, role, roleTitle, address')
+      .eq('id', userId)
+      .single();
+  
+    
+    if (error) {
+      console.error('Error loading profile:', error);
+      return null;
+    }
+
+    const fullUser: User = {
+      id: userId,
+      email,
+      name: data.name,
+      role: data.role as Role,
+      roleTitle: data.roleTitle,
+      address: data.address || undefined,
+    };
+
+    setUser(fullUser);
+    localStorage.setItem('forensicLedgerUser', JSON.stringify(fullUser));
+    return fullUser;
   };
 
-  const logout = () => {
+  useEffect(() => {
+    const initAuth = async () => {
+      const { data } = await supabase.auth.getSession();
+      console.log('Loading user profile:', { data });
+      if (data.session?.user) {
+        await loadUserProfile(data.session.user.id, data.session.user.email || '');
+      }
+    };
+
+    initAuth();
+
+    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        await loadUserProfile(session.user.id, session.user.email || '');
+      } else {
+        setUser(null);
+        localStorage.removeItem('forensicLedgerUser');
+      }
+    });
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
+    if (data.user) {
+      const profile = await loadUserProfile(data.user.id, email);
+      if (!profile) {
+        console.log('Failed to load user profile');  
+      };
+    }  
+
+    navigate('/dashboard'); // move navigation here
+    return true;
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
     localStorage.removeItem('forensicLedgerUser');
     toast({
-      title: "Logged Out",
-      description: "You have been logged out successfully"
+      title: 'Logged Out',
+      description: 'You have been logged out successfully',
     });
     navigate('/');
   };
@@ -119,8 +136,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };

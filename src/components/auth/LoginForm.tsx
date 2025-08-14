@@ -11,6 +11,7 @@ import { useWeb3 } from '@/contexts/Web3Context';
 import { useToast } from '@/hooks/use-toast';
 import ForgotPasswordForm from './ForgotPasswordForm';
 
+
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -27,10 +28,13 @@ const LoginForm = () => {
     
     try {
       const success = await login(email, password);
+      console.log('Login success:', success);
+      
       if (success) {
         navigate('/dashboard');
       }
     } catch (error) {
+      console.log('error:',error);
       toast({
         title: "Login failed",
         description: "An unexpected error occurred",
