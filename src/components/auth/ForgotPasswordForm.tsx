@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Shield, ArrowLeft, Send, CheckCircle } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import { z } from "zod";
+import { supabase } from '@/lib/supabaseClient';
 
 const emailSchema = z.string().email({ message: "Please enter a valid email address" });
 
@@ -20,31 +20,33 @@ const ForgotPasswordForm = ({ onBack }: { onBack: () => void }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    
+
     try {
       // Validate email
       emailSchema.parse(email);
-      
+
       setIsLoading(true);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Success state
+
+      const { error: supabaseError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (supabaseError) throw new Error(supabaseError.message);
+
       setIsSubmitted(true);
       toast({
         title: "Recovery email sent",
         description: "Check your inbox for password reset instructions",
       });
-      
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        setError(error.errors[0].message);
+
+    } catch (err: any) {
+      if (err instanceof z.ZodError) {
+        setError(err.errors[0].message);
       } else {
-        setError("An unexpected error occurred. Please try again.");
+        setError(err.message || "An unexpected error occurred. Please try again.");
         toast({
           title: "Password reset failed",
-          description: "An error occurred while sending the recovery email",
+          description: err.message || "An error occurred while sending the recovery email",
           variant: "destructive",
         });
       }
@@ -62,12 +64,12 @@ const ForgotPasswordForm = ({ onBack }: { onBack: () => void }) => {
           </div>
           <CardTitle className="text-2xl font-bold">Reset Password</CardTitle>
           <CardDescription>
-            {isSubmitted 
-              ? "Check your email for reset instructions" 
+            {isSubmitted
+              ? "Check your email for reset instructions"
               : "Enter your email to receive a password reset link"}
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent>
           {!isSubmitted ? (
             <form onSubmit={handleSubmit}>
@@ -86,17 +88,35 @@ const ForgotPasswordForm = ({ onBack }: { onBack: () => void }) => {
                   />
                   {error && <p className="text-red-500 text-sm">{error}</p>}
                 </div>
-                
-                <Button 
+
+                <Button
                   type="submit"
                   className="bg-forensic-accent hover:bg-forensic-accent/90 w-full"
                   disabled={isLoading}
                 >
                   {isLoading ? (
                     <span className="flex items-center">
-                      <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      <svg
+                        className="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 
+                          5.291A7.962 7.962 0 014 12H0c0 
+                          3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
                       </svg>
                       Processing...
                     </span>
@@ -136,11 +156,11 @@ const ForgotPasswordForm = ({ onBack }: { onBack: () => void }) => {
             </div>
           )}
         </CardContent>
-        
+
         <CardFooter className="flex justify-center">
-          <Button 
-            variant="ghost" 
-            onClick={onBack} 
+          <Button
+            variant="ghost"
+            onClick={onBack}
             className="flex items-center text-forensic-accent hover:text-forensic-accent/90"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />

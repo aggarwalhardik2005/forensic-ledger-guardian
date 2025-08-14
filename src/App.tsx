@@ -64,7 +64,6 @@ const queryClient = new QueryClient({
 const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
         <TooltipProvider>
           <AuthProvider>
             <Web3Provider>
@@ -120,7 +119,6 @@ const App: React.FC = () => {
             </Web3Provider>
           </AuthProvider>
         </TooltipProvider>
-      </BrowserRouter>
     </QueryClientProvider>
   );
 };
