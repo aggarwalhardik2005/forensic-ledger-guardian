@@ -43,24 +43,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       });
       return false;
     }
-    
-
-
-
 
     toast({
       title: 'Login Successful',
       description: `Welcome back, ${email}`,
     });
 
-    const loadUserProfile = async (userId: string, email: string) => {
+    if (data.user) {
+      const profile = await loadUserProfile(data.user.id, email);
+      if (!profile) {
+        console.log('Failed to load user profile');
+      };
+    }
+
+    navigate('/dashboard');
+    return true;
+  };
+
+  const loadUserProfile = async (userId: string, email: string) => {
     const { data, error } = await supabase
       .from('profiles')
       .select('name, role, roleTitle, address')
       .eq('id', userId)
       .single();
   
-    
     if (error) {
       console.error('Error loading profile:', error);
       return null;
@@ -104,17 +110,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       listener.subscription.unsubscribe();
     };
   }, []);
-
-    if (data.user) {
-      const profile = await loadUserProfile(data.user.id, email);
-      if (!profile) {
-        console.log('Failed to load user profile');  
-      };
-    }  
-
-    navigate('/dashboard'); // move navigation here
-    return true;
-  };
 
   const logout = async () => {
     await supabase.auth.signOut();

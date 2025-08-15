@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/layout/Layout";
 import Index from "./pages/Index";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import Cases from "./pages/Cases";
 import Evidence from "./pages/Evidence";
@@ -71,48 +72,48 @@ const App: React.FC = () => {
               <Sonner />
               <Routes>
                 <Route path="/" element={<Index />} />
-                <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
-                <Route path="/cases" element={<Layout><Cases /></Layout>} />
-                <Route path="/cases/:caseId" element={<Layout><CaseDetail /></Layout>} />
-                <Route path="/evidence" element={<Layout><Evidence /></Layout>} />
-                <Route path="/upload" element={<Layout><Upload /></Layout>} />
-                <Route path="/verify" element={<Layout><Verify /></Layout>} />
-                <Route path="/help" element={<Layout><Help /></Layout>} />
-                <Route path="/help/faq" element={<Layout><FAQ /></Layout>} />
-                <Route path="/settings" element={<Layout><Settings /></Layout>} />
-                <Route path="/activity" element={<Layout><Activity /></Layout>} />
+                <Route path="/dashboard" element={<Layout><ProtectedRoute><Dashboard /></ProtectedRoute></Layout>} />
+                <Route path="/cases" element={<Layout><ProtectedRoute><Cases /></ProtectedRoute></Layout>} />
+                <Route path="/cases/:caseId" element={<Layout><ProtectedRoute><CaseDetail /></ProtectedRoute></Layout>} />
+                <Route path="/evidence" element={<Layout><ProtectedRoute><Evidence /></ProtectedRoute></Layout>} />
+                <Route path="/upload" element={<Layout><ProtectedRoute><Upload /></ProtectedRoute></Layout>} />
+                <Route path="/verify" element={<Layout><ProtectedRoute><Verify /></ProtectedRoute></Layout>} />
+                <Route path="/help" element={<Layout><ProtectedRoute><Help /></ProtectedRoute></Layout>} />
+                <Route path="/help/faq" element={<Layout><ProtectedRoute><FAQ /></ProtectedRoute></Layout>} />
+                <Route path="/settings" element={<Layout><ProtectedRoute><Settings /></ProtectedRoute></Layout>} />
+                <Route path="/activity" element={<Layout><ProtectedRoute><Activity /></ProtectedRoute></Layout>} />
                 
                 {/* FIR routes */}
-                <Route path="/fir" element={<Layout><FIR /></Layout>} />
-                <Route path="/fir/new" element={<Layout><FIRManagement mode="create" /></Layout>} />
+                <Route path="/fir" element={<Layout><ProtectedRoute><FIR /></ProtectedRoute></Layout>} />
+                <Route path="/fir/new" element={<Layout><ProtectedRoute><FIRManagement mode="create" /></ProtectedRoute></Layout>} />
                 
                 {/* Court role specific routes */}
-                <Route path="/users/manage" element={<Layout><UserManagement /></Layout>} />
-                <Route path="/users/add" element={<Layout><AddUser /></Layout>} />
-                <Route path="/users/roles" element={<Layout><RoleManagement /></Layout>} />
-                <Route path="/settings/security" element={<Layout><SystemConfiguration /></Layout>} />
-                <Route path="/reports" element={<Layout><ReportsAnalytics /></Layout>} />
-                <Route path="/cases/create" element={<Layout><CreateCase /></Layout>} />
-                <Route path="/cases/approval" element={<Layout><CasesApproval /></Layout>} />
+                <Route path="/users/manage" element={<Layout><ProtectedRoute><UserManagement /></ProtectedRoute></Layout>} />
+                <Route path="/users/add" element={<Layout><ProtectedRoute><AddUser /></ProtectedRoute></Layout>} />
+                <Route path="/users/roles" element={<Layout><ProtectedRoute><RoleManagement /></ProtectedRoute></Layout>} />
+                <Route path="/settings/security" element={<Layout><ProtectedRoute><SystemConfiguration /></ProtectedRoute></Layout>} />
+                <Route path="/reports" element={<Layout><ProtectedRoute><ReportsAnalytics /></ProtectedRoute></Layout>} />
+                <Route path="/cases/create" element={<Layout><ProtectedRoute><CreateCase /></ProtectedRoute></Layout>} />
+                <Route path="/cases/approval" element={<Layout><ProtectedRoute><CasesApproval /></ProtectedRoute></Layout>} />
                 
                 {/* Officer role specific routes */}
-                <Route path="/cases/update" element={<Layout><Cases /></Layout>} />
-                <Route path="/cases/assigned" element={<Layout><Cases /></Layout>} />
-                <Route path="/evidence/confirm" element={<Layout><EvidenceConfirmation /></Layout>} />
-                <Route path="/officer/reports" element={<Layout><OfficerReports /></Layout>} />
+                <Route path="/cases/update" element={<Layout><ProtectedRoute><Cases /></ProtectedRoute></Layout>} />
+                <Route path="/cases/assigned" element={<Layout><ProtectedRoute><Cases /></ProtectedRoute></Layout>} />
+                <Route path="/evidence/confirm" element={<Layout><ProtectedRoute><EvidenceConfirmation /></ProtectedRoute></Layout>} />
+                <Route path="/officer/reports" element={<Layout><ProtectedRoute><OfficerReports /></ProtectedRoute></Layout>} />
                 
                 {/* Forensic role specific routes */}
-                <Route path="/evidence/analysis" element={<Layout><EvidenceAnalysis /></Layout>} />
-                <Route path="/evidence/verify" element={<Layout><TechnicalVerification /></Layout>} />
-                <Route path="/forensic/reports" element={<Layout><ForensicReports /></Layout>} />
+                <Route path="/evidence/analysis" element={<Layout><ProtectedRoute><EvidenceAnalysis /></ProtectedRoute></Layout>} />
+                <Route path="/evidence/verify" element={<Layout><ProtectedRoute><TechnicalVerification /></ProtectedRoute></Layout>} />
+                <Route path="/forensic/reports" element={<Layout><ProtectedRoute><ForensicReports /></ProtectedRoute></Layout>} />
                 
                 {/* Lawyer role specific routes */}
-                <Route path="/legal/documentation" element={<Layout><LegalDocumentation /></Layout>} />
-                <Route path="/verify/custody" element={<Layout><ChainOfCustodyVerification /></Layout>} />
-                <Route path="/legal/reports" element={<Layout><LegalReports /></Layout>} />
-                <Route path="/cases/prepare" element={<Layout><CourtPreparation /></Layout>} />
-                <Route path="/clients" element={<Layout><ClientManagement /></Layout>} />
-                <Route path="/meetings" element={<Layout><ClientManagement view="meetings" /></Layout>} />
+                <Route path="/legal/documentation" element={<Layout><ProtectedRoute><LegalDocumentation /></ProtectedRoute></Layout>} />
+                <Route path="/verify/custody" element={<Layout><ProtectedRoute><ChainOfCustodyVerification /></ProtectedRoute></Layout>} />
+                <Route path="/legal/reports" element={<Layout><ProtectedRoute><LegalReports /></ProtectedRoute></Layout>} />
+                <Route path="/cases/prepare" element={<Layout><ProtectedRoute><CourtPreparation /></ProtectedRoute></Layout>} />
+                <Route path="/clients" element={<Layout><ProtectedRoute><ClientManagement /></ProtectedRoute></Layout>} />
+                <Route path="/meetings" element={<Layout><ProtectedRoute><ClientManagement view="meetings" /></ProtectedRoute></Layout>} />
                 
                 <Route path="*" element={<NotFound />} />
               </Routes>
