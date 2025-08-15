@@ -43,24 +43,41 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       });
       return false;
     }
-    
-
-
-
 
     toast({
       title: 'Login Successful',
       description: `Welcome back, ${email}`,
     });
 
-    const loadUserProfile = async (userId: string, email: string) => {
+    if (data.user) {
+      await loadUserProfile(data.user.id, email);
+    }
+    navigate('/dashboard');
+    return true;
+  };
+
+  const mapRoleStringToEnum = (roleString: string): Role => {
+    switch (roleString.toLowerCase()) {
+      case 'court':
+        return Role.Court;
+      case 'officer':
+        return Role.Officer;
+      case 'forensic':
+        return Role.Forensic;
+      case 'lawyer':
+        return Role.Lawyer;
+      default:
+        return Role.None;
+    }
+  };
+
+  const loadUserProfile = async (userId: string, email: string) => {
     const { data, error } = await supabase
       .from('profiles')
       .select('name, role, roleTitle, address')
       .eq('id', userId)
       .single();
-  
-    
+
     if (error) {
       console.error('Error loading profile:', error);
       return null;
@@ -70,7 +87,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       id: userId,
       email,
       name: data.name,
-      role: data.role as Role,
+      role: mapRoleStringToEnum(data.role),
       roleTitle: data.roleTitle,
       address: data.address || undefined,
     };
@@ -104,17 +121,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       listener.subscription.unsubscribe();
     };
   }, []);
-
-    if (data.user) {
-      const profile = await loadUserProfile(data.user.id, email);
-      if (!profile) {
-        console.log('Failed to load user profile');  
-      };
-    }  
-
-    navigate('/dashboard'); // move navigation here
-    return true;
-  };
 
   const logout = async () => {
     await supabase.auth.signOut();
