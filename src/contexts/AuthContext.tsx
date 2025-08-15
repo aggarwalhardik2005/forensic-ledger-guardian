@@ -52,6 +52,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (data.user) {
       await loadUserProfile(data.user.id, email);
     }
+      const profile = await loadUserProfile(data.user.id, email);
+      if (!profile) {
+        console.log('Failed to load user profile');
+      };
+    }
+        
     navigate('/dashboard');
     return true;
   };
@@ -70,7 +76,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return Role.None;
     }
   };
-
+          
   const loadUserProfile = async (userId: string, email: string) => {
     const { data, error } = await supabase
       .from('profiles')
