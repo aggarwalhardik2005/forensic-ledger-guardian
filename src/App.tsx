@@ -66,7 +66,6 @@ const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <AuthProvider>
             <Web3Provider>
               <Toaster />
               <Sonner />
@@ -118,7 +117,6 @@ const App: React.FC = () => {
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Web3Provider>
-          </AuthProvider>
         </TooltipProvider>
     </QueryClientProvider>
   );
