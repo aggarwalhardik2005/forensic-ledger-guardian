@@ -67,6 +67,24 @@ const mockCases = [
 const CaseList: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [cases, setCases] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    try {
+      const raw = localStorage.getItem('forensicLedgerCases');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          setCases(parsed);
+          return;
+        }
+      }
+    } catch (e) {
+      // ignore and fallback to mock
+    }
+
+    setCases(mockCases);
+  }, []);
   
   const handleNewCase = () => {
     navigate('/cases/create');
@@ -142,7 +160,7 @@ const CaseList: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mockCases.map((caseItem) => (
+                {cases.map((caseItem) => (
                   <TableRow 
                     key={caseItem.id} 
                     className="cursor-pointer hover:bg-forensic-50"

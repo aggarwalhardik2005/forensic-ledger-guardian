@@ -101,12 +101,44 @@ const CreateCase = () => {
       });
       return;
     }
-    
+    // Build a minimal case object compatible with CaseList
+    const generateCaseId = () => {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      const random = Math.floor(Math.random() * 900 + 100);
+      return `FF-${y}-${m}${d}-${random}`;
+    };
+
+    const newCase = {
+      id: generateCaseId(),
+      title: caseTitle,
+      status: 'open',
+      date: new Date().toISOString(),
+      filedBy: complainantName || 'Unknown',
+      evidenceCount: 0,
+      tags: [caseType]
+    };
+
+    try {
+      const raw = localStorage.getItem('forensicLedgerCases');
+      let arr = [] as any[];
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) arr = parsed;
+      }
+      arr.unshift(newCase);
+      localStorage.setItem('forensicLedgerCases', JSON.stringify(arr));
+    } catch (e) {
+      console.error('Failed to persist case to localStorage', e);
+    }
+
     toast({
       title: "Case Created",
       description: `Case "${caseTitle}" has been successfully created.`
     });
-    
+
     navigate('/cases');
   };
 
