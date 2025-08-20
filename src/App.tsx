@@ -51,6 +51,7 @@ import ChainOfCustodyVerification from "./pages/lawyer/ChainOfCustodyVerificatio
 import LegalReports from "./pages/lawyer/Reports";
 import CourtPreparation from "./pages/lawyer/CourtPreparation";
 import ClientManagement from "./pages/lawyer/ClientManagement";
+import EvidenceComponent from "./components/EvidenceComponent";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -70,7 +71,8 @@ const App: React.FC = () => {
               <Toaster />
               <Sonner />
               <Routes>
-                <Route path="/" element={<Index />} />
+                <Route path="/" element={<EvidenceComponent/>} />
+                {/* <Route path="/" element={<Index />} /> */}
                 <Route path="/dashboard" element={<Layout><ProtectedRoute><Dashboard /></ProtectedRoute></Layout>} />
                 <Route path="/cases" element={<Layout><ProtectedRoute><Cases /></ProtectedRoute></Layout>} />
                 <Route path="/cases/:caseId" element={<Layout><ProtectedRoute><CaseDetail /></ProtectedRoute></Layout>} />
