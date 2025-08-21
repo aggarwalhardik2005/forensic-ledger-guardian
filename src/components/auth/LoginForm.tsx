@@ -55,7 +55,7 @@ const LoginForm = () => {
 
     try {
       await connectWallet();
-      
+
       // Check if wallet was successfully connected
       // Wait a moment for state to update after connection
       setTimeout(async () => {
@@ -63,7 +63,7 @@ const LoginForm = () => {
           if (isConnected && account && userRole !== undefined) {
             // Now authenticate with the wallet
             const success = await loginWithWallet(account, userRole);
-            
+
             if (success) {
               toast({
                 title: "Wallet Connected",
@@ -95,7 +95,6 @@ const LoginForm = () => {
           setIsLoading(false);
         }
       }, 1000); // Give time for Web3Context state to update
-      
     } catch (error) {
       console.error("MetaMask login error:", error);
       toast({
