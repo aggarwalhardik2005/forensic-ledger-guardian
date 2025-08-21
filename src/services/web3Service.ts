@@ -522,6 +522,14 @@ const CONTRACT_ABI = [
   },
 ];
 
+// Network-specific contract addresses
+const CONTRACT_ADDRESSES: Record<string, string> = {
+  "0xaa36a7": "0x0f98bcb53ff15fdc52168573c36436cf21a1466a", // Sepolia testnet
+  "0x7a69": "0x0f98bcb53ff15fdc52168573c36436cf21a1466a", // Anvil local
+  "0x1": "0x0000000000000000000000000000000000000000", // Mainnet (placeholder)
+};
+
+// Default contract address (Sepolia)
 const CONTRACT_ADDRESS = "0x0f98bcb53ff15fdc52168573c36436cf21a1466a";
 
 export enum Role {
@@ -608,6 +616,18 @@ class Web3Service {
     this.setupProvider();
   }
 
+  // Get contract address for current network
+  private getCurrentContractAddress(): string {
+    if (
+      typeof window !== "undefined" &&
+      (window as unknown as { ethereum?: EthereumProvider }).ethereum
+    ) {
+      // We'll get chainId through the provider instead
+      return CONTRACT_ADDRESS; // Default for now, can be enhanced later
+    }
+    return CONTRACT_ADDRESS;
+  }
+
   private async setupProvider() {
     if (
       typeof window !== "undefined" &&
@@ -670,8 +690,9 @@ class Web3Service {
           }
           const signer = await this.provider.getSigner();
           this.account = await signer.getAddress();
+          const contractAddress = this.getCurrentContractAddress();
           this.contract = new ethers.Contract(
-            CONTRACT_ADDRESS,
+            contractAddress,
             CONTRACT_ABI,
             signer as unknown as ethers.ContractRunner
           );
@@ -679,7 +700,7 @@ class Web3Service {
             "Web3 initialized successfully with account:",
             this.account
           );
-          console.log("Contract initialized at address:", CONTRACT_ADDRESS);
+          console.log("Contract initialized at address:", contractAddress);
           return true;
         }
       } catch (error) {
@@ -713,8 +734,9 @@ class Web3Service {
       this.provider
         .getSigner()
         .then((signer) => {
+          const contractAddress = this.getCurrentContractAddress();
           this.contract = new ethers.Contract(
-            CONTRACT_ADDRESS,
+            contractAddress,
             CONTRACT_ABI,
             signer as unknown as ethers.ContractRunner
           );
@@ -1307,7 +1329,7 @@ class Web3Service {
   }
 
   public getContractAddress(): string {
-    return CONTRACT_ADDRESS;
+    return this.getCurrentContractAddress();
   }
 
   public getRoleString(role: Role): string {
