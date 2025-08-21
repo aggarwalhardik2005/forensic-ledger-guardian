@@ -26,6 +26,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   isLoggedIn: boolean;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,24 +36,38 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
   // DEV MODE: auto-login as officer
   useEffect(() => {
     if (import.meta.env.MODE === "development") {
-      import("./devAuth").then(({ DEV_OFFICER_USER }) => {
-        setUser(DEV_OFFICER_USER);
-        localStorage.setItem(
-          "forensicLedgerUser",
-          JSON.stringify(DEV_OFFICER_USER)
-        );
-      });
+      const localUser = localStorage.getItem("forensicLedgerUser");
+      if (localUser) {
+        setUser(JSON.parse(localUser));
+      } else {
+        import("./devAuth").then(({ DEV_OFFICER_USER }) => {
+          setUser(DEV_OFFICER_USER);
+          localStorage.setItem(
+            "forensicLedgerUser",
+            JSON.stringify(DEV_OFFICER_USER)
+          );
+        });
+      }
     }
   }, []);
 
   console.log("AuthProvider initialized");
 
   const login = async (email: string, password: string): Promise<boolean> => {
+    if (!supabase) {
+      toast({
+        title: "Application Not Configured",
+        description: "Supabase environment variables are missing.",
+        variant: "destructive",
+      });
+      return false;
+    }
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -97,6 +112,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const loadUserProfile = React.useCallback(
     async (userId: string, email: string) => {
+      if (!supabase) return null;
       const { data, error } = await supabase
         .from("profiles")
         .select("name, role, role_title, address")
@@ -125,7 +141,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   );
 
   useEffect(() => {
-    if (import.meta.env.MODE === "development") return;
+    if (import.meta.env.MODE === "development" || !supabase) {
+      setIsLoading(false);
+      return;
+    }
     const initAuth = async () => {
       const { data } = await supabase.auth.getSession();
       console.log("Loading user profile:", { data });
@@ -135,6 +154,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           data.session.user.email || ""
         );
       }
+      setIsLoading(false);
     };
 
     initAuth();
@@ -156,6 +176,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   }, [loadUserProfile]);
 
   const logout = async () => {
+    if (!supabase) return;
     await supabase.auth.signOut();
     setUser(null);
     localStorage.removeItem("forensicLedgerUser");
@@ -167,7 +188,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoggedIn: !!user }}>
+    <AuthContext.Provider value={{ user, login, logout, isLoggedIn: !!user, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
