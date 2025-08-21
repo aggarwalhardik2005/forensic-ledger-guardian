@@ -216,11 +216,6 @@ const CreateCase = () => {
         );
       }
     } catch (error) {
-      console.error("--- DETAILED ERROR LOG ---");
-      console.error("Failed to create case at line 147 in CreateCase.tsx");
-      console.error("Error object:", error);
-
-      // If the error object has more details, you can log them here
       if (error.reason) {
         console.error("Revert reason:", error.reason);
       }
