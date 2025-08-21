@@ -179,7 +179,7 @@ contract ForensicChain {
 
         firs[firId].promotedToCase = true;
         firs[firId].associatedCaseId = caseId;
-        caseRoles[caseId][msg.sender] = Role.Court;
+        caseRoles[caseId][msg.sender] = Role.Officer;
         caseIds.push(caseId);
 
         emit CaseCreated(caseId, firId, msg.sender);
