@@ -19,6 +19,7 @@ import {
   ChevronRight,
   FileCheck
 } from "lucide-react";
+import { error } from 'console';
 
 const CreateCase = () => {
   // State for form fields
