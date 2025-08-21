@@ -26,6 +26,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   isLoggedIn: boolean;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,6 +36,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
   // DEV MODE: auto-login as officer
@@ -139,7 +141,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   );
 
   useEffect(() => {
-    if (import.meta.env.MODE === "development" || !supabase) return;
+    if (import.meta.env.MODE === "development" || !supabase) {
+      setIsLoading(false);
+      return;
+    }
     const initAuth = async () => {
       const { data } = await supabase.auth.getSession();
       console.log("Loading user profile:", { data });
@@ -149,6 +154,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           data.session.user.email || ""
         );
       }
+      setIsLoading(false);
     };
 
     initAuth();
@@ -182,7 +188,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoggedIn: !!user }}>
+    <AuthContext.Provider value={{ user, login, logout, isLoggedIn: !!user, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
