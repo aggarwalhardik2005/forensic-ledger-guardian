@@ -32,13 +32,14 @@ export default function EvidenceComponent() {
     e.preventDefault();
     setLoading(true);
     try {
-      // web3Service expects the same params as the contract, minus hashOriginal (not used in the service yet)
-      // If hashOriginal is needed, web3Service should be updated accordingly
+      // web3Service expects the same params as the contract; include hashOriginal and encryptionKeyHash
       const success = await web3Service.submitFIREvidence(
         form.firId,
         form.evidenceId,
         form.cidEncrypted,
         form.hashEncrypted,
+        form.hashOriginal,
+        form.encryptionKeyHash,
         parseInt(form.evidenceType)
       );
       if (success) {
