@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,17 +17,12 @@ import {
   Save 
 } from "lucide-react";
 import { cn } from '@/lib/utils';
-
-// Mock case data - would be fetched from API
-const cases = [
-  { id: "FF-2023-104", title: "Network Intrusion at TechCorp" },
-  { id: "FF-2023-092", title: "Mobile Device Analysis - Rodriguez Case" },
-  { id: "FF-2023-089", title: "Email Fraud Investigation - Acme Corp" }
-];
+import web3Service, { Case, EvidenceType } from '@/services/web3Service';
 
 const EvidenceUpload = () => {
+  const [cases, setCases] = useState<Case[]>([]);
   const [selectedCase, setSelectedCase] = useState<string>('');
-  const [evidenceType, setEvidenceType] = useState<string>('');
+  const [evidenceType, setEvidenceType] = useState<EvidenceType>(EvidenceType.Other);
   const [description, setDescription] = useState<string>('');
   const [deviceSource, setDeviceSource] = useState<string>('');
   const [location, setLocation] = useState<string>('');
@@ -36,6 +31,14 @@ const EvidenceUpload = () => {
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchCases = async () => {
+      const allCases = await web3Service.getAllCases();
+      setCases(allCases);
+    };
+    fetchCases();
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -54,18 +57,12 @@ const EvidenceUpload = () => {
     }
   };
 
-  const simulateHash = (file: File): Promise<string> => {
-    // In a real app, this would calculate a SHA-256 hash of the file
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Mock hash calculation - this would be done with WebCrypto API
-        const mockHash = Array.from(
-          { length: 64 },
-          () => '0123456789abcdef'[Math.floor(Math.random() * 16)]
-        ).join('');
-        resolve(mockHash);
-      }, 500);
-    });
+  const calculateHash = async (file: File): Promise<string> => {
+    const buffer = await file.arrayBuffer();
+    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashHex;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -92,18 +89,27 @@ const EvidenceUpload = () => {
     setIsUploading(true);
     
     try {
-      // Simulate file hashing and blockchain transaction
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const progress = Math.round(((i + 1) / files.length) * 100);
         setUploadProgress(progress);
         
-        // Simulate file hash calculation
-        const hash = await simulateHash(file);
-        console.log(`File ${file.name} hashed: ${hash}`);
+        const hash = await calculateHash(file);
+        const evidenceId = `${selectedCase}-${Date.now()}-${i}`;
         
-        // Simulate blockchain transaction delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        const success = await web3Service.submitCaseEvidence(
+          selectedCase,
+          evidenceId,
+          "", // cidEncrypted
+          hash, // hashEncrypted
+          hash, // hashOriginal
+          "", // encryptionKeyHash
+          evidenceType
+        );
+
+        if (!success) {
+          throw new Error(`Failed to submit evidence for file ${file.name}`);
+        }
       }
       
       toast({
@@ -154,10 +160,10 @@ const EvidenceUpload = () => {
                 </SelectTrigger>
                 <SelectContent>
                   {cases.map((caseItem) => (
-                    <SelectItem key={caseItem.id} value={caseItem.id}>
+                    <SelectItem key={caseItem.caseId} value={caseItem.caseId}>
                       <div className="flex items-center">
                         <FolderKanban className="mr-2 h-4 w-4 text-forensic-accent" />
-                        <span>{caseItem.id}: {caseItem.title}</span>
+                        <span>{caseItem.caseId}: {caseItem.title}</span>
                       </div>
                     </SelectItem>
                   ))}
@@ -168,20 +174,15 @@ const EvidenceUpload = () => {
             {/* Evidence Type */}
             <div className="space-y-2">
               <Label htmlFor="evidenceType">Evidence Type</Label>
-              <Select value={evidenceType} onValueChange={setEvidenceType}>
+              <Select onValueChange={(value) => setEvidenceType(Number(value) as EvidenceType)}>
                 <SelectTrigger id="evidenceType" className="border-forensic-200">
                   <SelectValue placeholder="Select evidence type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="disk_image">Disk Image</SelectItem>
-                  <SelectItem value="memory_dump">Memory Dump</SelectItem>
-                  <SelectItem value="log_files">Log Files</SelectItem>
-                  <SelectItem value="emails">Email Archives</SelectItem>
-                  <SelectItem value="photos">Photographs</SelectItem>
-                  <SelectItem value="documents">Documents</SelectItem>
-                  <SelectItem value="mobile_data">Mobile Device Data</SelectItem>
-                  <SelectItem value="network_captures">Network Captures</SelectItem>
-                  <SelectItem value="other">Other Digital Evidence</SelectItem>
+                  <SelectItem value={String(EvidenceType.Image)}>Image</SelectItem>
+                  <SelectItem value={String(EvidenceType.Video)}>Video</SelectItem>
+                  <SelectItem value={String(EvidenceType.Document)}>Document</SelectItem>
+                  <SelectItem value={String(EvidenceType.Other)}>Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>

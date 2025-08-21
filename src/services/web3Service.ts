@@ -2,13 +2,9 @@
 import { ethers } from 'ethers';
 import { toast } from '@/hooks/use-toast';
 
-// ABI would be generated when compiling the smart contract
-const CONTRACT_ABI = [
-  // This would be replaced by the actual ABI from contract compilation
-  // For now, we'll include some placeholder function definitions based on our contract
-];
+const CONTRACT_ABI = [{"type":"constructor","inputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"accessEvidence","inputs":[{"name":"caseId","type":"string","internalType":"string"},{"name":"index","type":"uint256","internalType":"uint256"},{"name":"keyHash","type":"bytes","internalType":"bytes"}],"outputs":[{"name":"","type":"string","internalType":"string"}],"stateMutability":"nonpayable"},{"type":"function","name":"assignCaseRole","inputs":[{"name":"caseId","type":"string","internalType":"string"},{"name":"user","type":"address","internalType":"address"},{"name":"role","type":"uint8","internalType":"enum ForensicChain.Role"}],"outputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"caseAuditTrail","inputs":[{"name":"","type":"string","internalType":"string"},{"name":"","type":"uint256","internalType":"uint256"}],"outputs":[{"name":"","type":"address","internalType":"address"}],"stateMutability":"view"},{"type":"function","name":"caseEvidenceMapping","inputs":[{"name":"","type":"string","internalType":"string"},{"name":"","type":"uint256","internalType":"uint256"}],"outputs":[{"name":"evidenceId","type":"string","internalType":"string"},{"name":"cidEncrypted","type":"string","internalType":"string"},{"name":"hashEncrypted","type":"string","internalType":"string"},{"name":"hashOriginal","type":"string","internalType":"string"},{"name":"encryptionKeyHash","type":"bytes","internalType":"bytes"},{"name":"evidenceType","type":"uint8","internalType":"enum ForensicChain.EvidenceType"},{"name":"submittedBy","type":"address","internalType":"address"},{"name":"confirmed","type":"bool","internalType":"bool"},{"name":"submittedAt","type":"uint256","internalType":"uint256"}],"stateMutability":"view"},{"type":"function","name":"caseRoles","inputs":[{"name":"","type":"string","internalType":"string"},{"name":"","type":"address","internalType":"address"}],"outputs":[{"name":"","type":"uint8","internalType":"enum ForensicChain.Role"}],"stateMutability":"view"},{"type":"function","name":"cases","inputs":[{"name":"","type":"string","internalType":"string"}],"outputs":[{"name":"caseId","type":"string","internalType":"string"},{"name":"title","type":"string","internalType":"string"},{"name":"description","type":"string","internalType":"string"},{"name":"createdBy","type":"address","internalType":"address"},{"name":"seal","type":"bool","internalType":"bool"},{"name":"open","type":"bool","internalType":"bool"},{"name":"evidenceCount","type":"uint256","internalType":"uint256"}],"stateMutability":"view"},{"type":"function","name":"closeCase","inputs":[{"name":"caseId","type":"string","internalType":"string"}],"outputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"confirmCaseEvidence","inputs":[{"name":"caseId","type":"string","internalType":"string"},{"name":"index","type":"uint256","internalType":"uint256"}],"outputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"createCaseFromFIR","inputs":[{"name":"caseId","type":"string","internalType":"string"},{"name":"firId","type":"string","internalType":"string"},{"name":"title","type":"string","internalType":"string"},{"name":"description","type":"string","internalType":"string"},{"name":"tags","type":"string[]","internalType":"string[]"}],"outputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"evidenceAccessed","inputs":[{"name":"","type":"string","internalType":"string"},{"name":"","type":"uint256","internalType":"uint256"},{"name":"","type":"address","internalType":"address"}],"outputs":[{"name":"","type":"bool","internalType":"bool"}],"stateMutability":"view"},{"type":"function","name":"evidenceConfirmed","inputs":[{"name":"","type":"string","internalType":"string"},{"name":"","type":"address","internalType":"address"}],"outputs":[{"name":"","type":"bool","internalType":"bool"}],"stateMutability":"view"},{"type":"function","name":"fileFIR","inputs":[{"name":"firId","type":"string","internalType":"string"},{"name":"description","type":"string","internalType":"string"}],"outputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"firs","inputs":[{"name":"","type":"string","internalType":"string"}],"outputs":[{"name":"firId","type":"string","internalType":"string"},{"name":"filedBy","type":"address","internalType":"address"},{"name":"description","type":"string","internalType":"string"},{"name":"timestamp","type":"uint256","internalType":"uint256"},{"name":"promotedToCase","type":"bool","internalType":"bool"},{"name":"associatedCaseId","type":"string","internalType":"string"}],"stateMutability":"view"},{"type":"function","name":"getCase","inputs":[{"name":"caseId","type":"string","internalType":"string"}],"outputs":[{"name":"","type":"tuple","internalType":"struct ForensicChain.Case","components":[{"name":"caseId","type":"string","internalType":"string"},{"name":"title","type":"string","internalType":"string"},{"name":"description","type":"string","internalType":"string"},{"name":"createdBy","type":"address","internalType":"address"},{"name":"seal","type":"bool","internalType":"bool"},{"name":"open","type":"bool","internalType":"bool"},{"name":"tags","type":"string[]","internalType":"string[]"},{"name":"evidenceCount","type":"uint256","internalType":"uint256"}]}],"stateMutability":"view"},{"type":"function","name":"getEvidence","inputs":[{"name":"caseId","type":"string","internalType":"string"},{"name":"index","type":"uint256","internalType":"uint256"}],"outputs":[{"name":"","type":"tuple","internalType":"struct ForensicChain.Evidence","components":[{"name":"evidenceId","type":"string","internalType":"string"},{"name":"cidEncrypted","type":"string","internalType":"string"},{"name":"hashEncrypted","type":"string","internalType":"string"},{"name":"hashOriginal","type":"string","internalType":"string"},{"name":"encryptionKeyHash","type":"bytes","internalType":"bytes"},{"name":"evidenceType","type":"uint8","internalType":"enum ForensicChain.EvidenceType"},{"name":"submittedBy","type":"address","internalType":"address"},{"name":"confirmed","type":"bool","internalType":"bool"},{"name":"submittedAt","type":"uint256","internalType":"uint256"},{"name":"chainOfCustody","type":"address[]","internalType":"address[]"}]}],"stateMutability":"view"},{"type":"function","name":"getFIR","inputs":[{"name":"firId","type":"string","internalType":"string"}],"outputs":[{"name":"","type":"tuple","internalType":"struct ForensicChain.FIR","components":[{"name":"firId","type":"string","internalType":"string"},{"name":"filedBy","type":"address","internalType":"address"},{"name":"description","type":"string","internalType":"string"},{"name":"timestamp","type":"uint256","internalType":"uint256"},{"name":"promotedToCase","type":"bool","internalType":"bool"},{"name":"associatedCaseId","type":"string","internalType":"string"}]}],"stateMutability":"view"},{"type":"function","name":"getGlobalRole","inputs":[{"name":"user","type":"address","internalType":"address"}],"outputs":[{"name":"","type":"uint8","internalType":"enum ForensicChain.Role"}],"stateMutability":"view"},{"type":"function","name":"getMyRoleInCase","inputs":[{"name":"caseId","type":"string","internalType":"string"}],"outputs":[{"name":"","type":"uint8","internalType":"enum ForensicChain.Role"}],"stateMutability":"view"},{"type":"function","name":"globalRoles","inputs":[{"name":"","type":"address","internalType":"address"}],"outputs":[{"name":"","type":"uint8","internalType":"enum ForensicChain.Role"}],"stateMutability":"view"},{"type":"function","name":"isSystemLocked","inputs":[],"outputs":[{"name":"","type":"bool","internalType":"bool"}],"stateMutability":"view"},{"type":"function","name":"owner","inputs":[],"outputs":[{"name":"","type":"address","internalType":"address"}],"stateMutability":"view"},{"type":"function","name":"reopenCase","inputs":[{"name":"caseId","type":"string","internalType":"string"}],"outputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"sealCase","inputs":[{"name":"caseId","type":"string","internalType":"string"}],"outputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"setGlobalRole","inputs":[{"name":"user","type":"address","internalType":"address"},{"name":"role","type":"uint8","internalType":"enum ForensicChain.Role"}],"outputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"submitCaseEvidence","inputs":[{"name":"caseId","type":"string","internalType":"string"},{"name":"evidenceId","type":"string","internalType":"string"},{"name":"cidEncrypted","type":"string","internalType":"string"},{"name":"hashEncrypted","type":"string","internalType":"string"},{"name":"hashOriginal","type":"string","internalType":"string"},{"name":"encryptionKeyHash","type":"bytes","internalType":"bytes"},{"name":"evidenceType","type":"uint8","internalType":"enum ForensicChain.EvidenceType"}],"outputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"submitFIREvidence","inputs":[{"name":"firId","type":"string","internalType":"string"},{"name":"evidenceId","type":"string","internalType":"string"},{"name":"cidEncrypted","type":"string","internalType":"string"},{"name":"hashEncrypted","type":"string","internalType":"string"},{"name":"hashOriginal","type":"string","internalType":"string"},{"name":"encryptionKeyHash","type":"bytes","internalType":"bytes"},{"name":"evidenceType","type":"uint8","internalType":"enum ForensicChain.EvidenceType"}],"outputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"toggleSystemLock","inputs":[],"outputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"updateEncryptionKey","inputs":[{"name":"caseId","type":"string","internalType":"string"},{"name":"index","type":"uint256","internalType":"uint256"},{"name":"newKeyHash","type":"bytes","internalType":"bytes"}],"outputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"usedCIDHash","inputs":[{"name":"","type":"bytes32","internalType":"bytes32"}],"outputs":[{"name":"","type":"bool","internalType":"bool"}],"stateMutability":"view"},{"type":"function","name":"verifyEvidence","inputs":[{"name":"caseId","type":"string","internalType":"string"},{"name":"index","type":"uint256","internalType":"uint256"},{"name":"providedHash","type":"string","internalType":"string"}],"outputs":[{"name":"","type":"bool","internalType":"bool"}],"stateMutability":"view"},{"type":"event","name":"CaseCreated","inputs":[{"name":"caseId","type":"string","indexed":true,"internalType":"string"},{"name":"firId","type":"string","indexed":true,"internalType":"string"},{"name":"creator","type":"address","indexed":false,"internalType":"address"}],"anonymous":false},{"type":"event","name":"CaseStatusChanged","inputs":[{"name":"caseId","type":"string","indexed":true,"internalType":"string"},{"name":"statusSealed","type":"bool","indexed":false,"internalType":"bool"},{"name":"open","type":"bool","indexed":false,"internalType":"bool"}],"anonymous":false},{"type":"event","name":"EncryptionKeyUpdated","inputs":[{"name":"caseId","type":"string","indexed":true,"internalType":"string"},{"name":"index","type":"uint256","indexed":true,"internalType":"uint256"},{"name":"keyHash","type":"bytes","indexed":false,"internalType":"bytes"}],"anonymous":false},{"type":"event","name":"EvidenceAccessed","inputs":[{"name":"caseId","type":"string","indexed":true,"internalType":"string"},{"name":"index","type":"uint256","indexed":true,"internalType":"uint256"},{"name":"accessor","type":"address","indexed":false,"internalType":"address"}],"anonymous":false},{"type":"event","name":"EvidenceConfirmed","inputs":[{"name":"caseId","type":"string","indexed":true,"internalType":"string"},{"name":"index","type":"uint256","indexed":true,"internalType":"uint256"},{"name":"confirmer","type":"address","indexed":false,"internalType":"address"}],"anonymous":false},{"type":"event","name":"EvidenceSubmitted","inputs":[{"name":"caseId","type":"string","indexed":true,"internalType":"string"},{"name":"evidenceId","type":"string","indexed":false,"internalType":"string"},{"name":"cidEncrypted","type":"string","indexed":false,"internalType":"string"},{"name":"submitter","type":"address","indexed":false,"internalType":"address"}],"anonymous":false},{"type":"event","name":"FIRFiled","inputs":[{"name":"firId","type":"string","indexed":true,"internalType":"string"},{"name":"filedBy","type":"address","indexed":true,"internalType":"address"}],"anonymous":false},{"type":"event","name":"RoleAssigned","inputs":[{"name":"caseId","type":"string","indexed":true,"internalType":"string"},{"name":"user","type":"address","indexed":true,"internalType":"address"},{"name":"role","type":"uint8","indexed":false,"internalType":"enum ForensicChain.Role"}],"anonymous":false}];
 
-const CONTRACT_ADDRESS = "0x123..."; // This would be the deployed contract address
+const CONTRACT_ADDRESS = "0x0f98bcb53ff15fdc52168573c36436cf21a1466a";
 
 export enum Role {
   None = 0,
@@ -28,7 +24,9 @@ export enum EvidenceType {
 export interface Evidence {
   evidenceId: string;
   cidEncrypted: string;
-  hash: string;
+  hashEncrypted: string;
+  hashOriginal: string;
+  encryptionKeyHash: string;
   evidenceType: EvidenceType;
   submittedBy: string;
   confirmed: boolean;
@@ -251,6 +249,27 @@ class Web3Service {
     }
   }
 
+  public async getAllCases(): Promise<Case[]> {
+    if (!this.contract) return [];
+
+    try {
+      const allCases = await this.contract.getAllCases();
+      return allCases.map((caseData: Case) => ({
+        caseId: caseData.caseId,
+        title: caseData.title,
+        description: caseData.description,
+        createdBy: caseData.createdBy,
+        seal: caseData.seal,
+        open: caseData.open,
+        tags: caseData.tags,
+        evidenceCount: this.toNumber(caseData.evidenceCount)
+      }));
+    } catch (error) {
+      console.error("Error getting all cases:", error);
+      return [];
+    }
+  }
+
   // Case Management
   public async createCaseFromFIR(
     caseId: string,
@@ -374,7 +393,9 @@ class Web3Service {
     caseId: string,
     evidenceId: string,
     cidEncrypted: string,
-    hash: string,
+    hashEncrypted: string,
+    hashOriginal: string,
+    encryptionKeyHash: string,
     evidenceType: EvidenceType
   ): Promise<boolean> {
     if (!this.contract) return false;
@@ -384,7 +405,9 @@ class Web3Service {
         caseId,
         evidenceId,
         cidEncrypted,
-        hash,
+        hashEncrypted,
+        hashOriginal,
+        ethers.utils.toUtf8Bytes(encryptionKeyHash),
         evidenceType
       );
       await tx.wait();
@@ -404,7 +427,9 @@ class Web3Service {
     firId: string,
     evidenceId: string,
     cidEncrypted: string,
-    hash: string,
+    hashEncrypted: string,
+    hashOriginal: string,
+    encryptionKeyHash: string,
     evidenceType: EvidenceType
   ): Promise<boolean> {
     if (!this.contract) return false;
@@ -414,7 +439,9 @@ class Web3Service {
         firId,
         evidenceId,
         cidEncrypted,
-        hash,
+        hashEncrypted,
+        hashOriginal,
+        ethers.utils.toUtf8Bytes(encryptionKeyHash),
         evidenceType
       );
       await tx.wait();
@@ -448,18 +475,34 @@ class Web3Service {
     }
   }
 
-  public async accessEvidenceLog(caseId: string, index: number): Promise<boolean> {
-    if (!this.contract) return false;
+  public async accessEvidence(caseId: string, index: number, keyHash: string): Promise<string | null> {
+    if (!this.contract) return null;
     
     try {
-      const tx = await this.contract.accessEvidenceLog(caseId, index);
-      await tx.wait();
-      return true;
+      const cidEncrypted = await this.contract.accessEvidence(caseId, index, ethers.utils.toUtf8Bytes(keyHash));
+      return cidEncrypted;
     } catch (error) {
-      console.error(`Error accessing evidence log index ${index}:`, error);
+      console.error(`Error accessing evidence index ${index}:`, error);
       toast({
         title: "Transaction Failed",
-        description: "Failed to access evidence log. Please try again.",
+        description: "Failed to access evidence. Please try again.",
+        variant: "destructive"
+      });
+      return null;
+    }
+  }
+
+  public async verifyEvidence(caseId: string, index: number, providedHash: string): Promise<boolean> {
+    if (!this.contract) return false;
+
+    try {
+      const isValid = await this.contract.verifyEvidence(caseId, index, providedHash);
+      return isValid;
+    } catch (error) {
+      console.error(`Error verifying evidence index ${index}:`, error);
+      toast({
+        title: "Verification Failed",
+        description: "Failed to verify evidence. Please try again.",
         variant: "destructive"
       });
       return false;
@@ -474,7 +517,9 @@ class Web3Service {
       return {
         evidenceId: evidence.evidenceId,
         cidEncrypted: evidence.cidEncrypted,
-        hash: evidence.hash,
+        hashEncrypted: evidence.hashEncrypted,
+        hashOriginal: evidence.hashOriginal,
+        encryptionKeyHash: evidence.encryptionKeyHash,
         evidenceType: Number(evidence.evidenceType) as EvidenceType,
         submittedBy: evidence.submittedBy,
         confirmed: evidence.confirmed,

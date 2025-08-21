@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import web3Service, { Role } from '@/services/web3Service';
 import { 
   Save, 
   FileText, 
@@ -21,6 +22,7 @@ import {
 
 const CreateCase = () => {
   // State for form fields
+  const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
   const [caseTitle, setCaseTitle] = useState('');
   const [caseType, setCaseType] = useState('criminal');
@@ -91,7 +93,7 @@ const CreateCase = () => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validation
     if (!caseTitle) {
       toast({
@@ -101,7 +103,9 @@ const CreateCase = () => {
       });
       return;
     }
-    // Build a minimal case object compatible with CaseList
+
+    setIsLoading(true);
+
     const generateCaseId = () => {
       const now = new Date();
       const y = now.getFullYear();
@@ -111,35 +115,46 @@ const CreateCase = () => {
       return `FF-${y}-${m}${d}-${random}`;
     };
 
-    const newCase = {
-      id: generateCaseId(),
-      title: caseTitle,
-      status: 'open',
-      date: new Date().toISOString(),
-      filedBy: complainantName || 'Unknown',
-      evidenceCount: 0,
-      tags: [caseType]
-    };
+    const caseId = generateCaseId();
+    const firId = "FF-2023-120"; // Hardcoded for now
 
     try {
-      const raw = localStorage.getItem('forensicLedgerCases');
-      let arr = [] as any[];
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) arr = parsed;
+      const success = await web3Service.createCaseFromFIR(
+        caseId,
+        firId,
+        caseTitle,
+        description,
+        [caseType, priority, jurisdiction]
+      );
+
+      if (success) {
+        // Assign roles
+        await web3Service.assignCaseRole(caseId, leadOfficer, Role.Officer);
+        await web3Service.assignCaseRole(caseId, leadForensic, Role.Forensic);
+        await web3Service.assignCaseRole(caseId, prosecutor, Role.Lawyer);
+        if (defenseAttorney) {
+          await web3Service.assignCaseRole(caseId, defenseAttorney, Role.Lawyer);
+        }
+        await web3Service.assignCaseRole(caseId, judge, Role.Court);
+
+        toast({
+          title: "Case Created",
+          description: `Case "${caseTitle}" has been successfully created.`
+        });
+        navigate('/cases');
+      } else {
+        throw new Error("Failed to create case on the blockchain.");
       }
-      arr.unshift(newCase);
-      localStorage.setItem('forensicLedgerCases', JSON.stringify(arr));
-    } catch (e) {
-      console.error('Failed to persist case to localStorage', e);
+    } catch (error) {
+      console.error('Failed to create case', error);
+      toast({
+        title: "Case Creation Failed",
+        description: "There was a problem creating the case.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
     }
-
-    toast({
-      title: "Case Created",
-      description: `Case "${caseTitle}" has been successfully created.`
-    });
-
-    navigate('/cases');
   };
 
   return (
@@ -263,6 +278,7 @@ const CreateCase = () => {
                   <Button 
                     className="bg-forensic-accent hover:bg-forensic-accent/90 flex items-center gap-2"
                     onClick={() => handleNextTab('basic')}
+                    disabled={isLoading}
                   >
                     <ChevronRight className="h-4 w-4" />
                     Next: Involved Parties
@@ -377,6 +393,7 @@ const CreateCase = () => {
                   <Button 
                     className="bg-forensic-accent hover:bg-forensic-accent/90 flex items-center gap-2"
                     onClick={() => handleNextTab('parties')}
+                    disabled={isLoading}
                   >
                     <ChevronRight className="h-4 w-4" />
                     Next: Role Assignments
@@ -556,6 +573,7 @@ const CreateCase = () => {
                   <Button 
                     className="bg-forensic-court hover:bg-forensic-court/90 flex items-center gap-2"
                     onClick={handleSubmit}
+                    disabled={isLoading}
                   >
                     <Save className="h-4 w-4 mr-1" />
                     Create Case

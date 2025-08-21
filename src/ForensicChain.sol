@@ -50,6 +50,7 @@ contract ForensicChain {
     mapping(string => address[]) public caseAuditTrail;                         
     mapping(string => mapping(uint => mapping(address => bool))) public evidenceAccessed; 
     mapping(string => mapping(uint256 => Evidence)) public caseEvidenceMapping;
+    string[] public caseIds;
 
     event EvidenceSubmitted(string indexed caseId, string evidenceId, string cidEncrypted, address submitter);
     event EvidenceAccessed(string indexed caseId, uint256 indexed index, address accessor);
@@ -179,6 +180,7 @@ contract ForensicChain {
         firs[firId].promotedToCase = true;
         firs[firId].associatedCaseId = caseId;
         caseRoles[caseId][msg.sender] = Role.Court;
+        caseIds.push(caseId);
 
         emit CaseCreated(caseId, firId, msg.sender);
     }
@@ -305,5 +307,13 @@ contract ForensicChain {
 
     function getEvidence(string memory caseId, uint256 index) external view returns (Evidence memory) {
         return caseEvidenceMapping[caseId][index];
+    }
+
+    function getAllCases() external view returns (Case[] memory) {
+        Case[] memory allCases = new Case[](caseIds.length);
+        for (uint i = 0; i < caseIds.length; i++) {
+            allCases[i] = cases[caseIds[i]];
+        }
+        return allCases;
     }
 }
