@@ -241,28 +241,6 @@ const CourtDashboard = () => {
           </CardFooter>
         </Card>
 
-        <Card className="border border-forensic-200 hover:border-forensic-300 transition-colors">
-          <CardHeader className="pb-2 bg-gradient-to-r from-forensic-50 to-transparent">
-            <CardTitle className="text-lg flex items-center">
-              <FileUp className="h-5 w-5 mr-2 text-forensic-court" />
-              Promote FIR to Case
-            </CardTitle>
-            <CardDescription>Create new cases from FIRs</CardDescription>
-          </CardHeader>
-          <CardContent className="pb-2">
-            <p className="text-sm text-forensic-600">
-              Convert First Information Reports to formal cases
-            </p>
-          </CardContent>
-          <CardFooter>
-            <Button asChild className="w-full bg-forensic-court hover:bg-forensic-court/90 shadow-sm transition-all duration-300">
-              <Link to="/cases/create" className="flex items-center justify-center">
-                <span>Create Case</span>
-                <ArrowUpRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-            </Button>
-          </CardFooter>
-        </Card>
       </div>
 
       {/* System Security Toggle */}
