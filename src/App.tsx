@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Layout from "./components/layout/Layout";
 import Index from "./pages/Index";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
@@ -52,6 +52,7 @@ import ClientManagement from "./pages/lawyer/ClientManagement";
 import EvidenceComponent from "./components/EvidenceComponent";
 import WalletManagement from "./pages/WalletManagement";
 import MetaMaskHelp from "./pages/help/MetaMaskHelp";
+import RouteDebugInfo from "./components/debug/RouteDebugInfo";
 import { Role } from "./services/web3Service";
 
 // Create a client
@@ -449,6 +450,104 @@ const App: React.FC = () => {
                 </Layout>
               }
             />
+
+            {/* Wallet Management Routes */}
+            <Route
+              path="/wallet"
+              element={
+                <Layout>
+                  <ProtectedRoute>
+                    <WalletManagement />
+                  </ProtectedRoute>
+                </Layout>
+              }
+            />
+            <Route
+              path="/help/metamask"
+              element={
+                <Layout>
+                  <ProtectedRoute>
+                    <MetaMaskHelp />
+                  </ProtectedRoute>
+                </Layout>
+              }
+            />
+
+            {/* Help sub-routes for role-specific guides */}
+            <Route
+              path="/help/court/case-management"
+              element={
+                <Layout>
+                  <RoleProtectedRoute allowedRoles={[Role.Court]}>
+                    <Help />
+                  </RoleProtectedRoute>
+                </Layout>
+              }
+            />
+            <Route
+              path="/help/court/security"
+              element={
+                <Layout>
+                  <RoleProtectedRoute allowedRoles={[Role.Court]}>
+                    <Help />
+                  </RoleProtectedRoute>
+                </Layout>
+              }
+            />
+            <Route
+              path="/help/court/permissions"
+              element={
+                <Layout>
+                  <RoleProtectedRoute allowedRoles={[Role.Court]}>
+                    <Help />
+                  </RoleProtectedRoute>
+                </Layout>
+              }
+            />
+            <Route
+              path="/help/forensic/analysis"
+              element={
+                <Layout>
+                  <RoleProtectedRoute allowedRoles={[Role.Forensic]}>
+                    <Help />
+                  </RoleProtectedRoute>
+                </Layout>
+              }
+            />
+            <Route
+              path="/help/forensic/blockchain"
+              element={
+                <Layout>
+                  <RoleProtectedRoute allowedRoles={[Role.Forensic]}>
+                    <Help />
+                  </RoleProtectedRoute>
+                </Layout>
+              }
+            />
+            <Route
+              path="/help/custody"
+              element={
+                <Layout>
+                  <ProtectedRoute>
+                    <Help />
+                  </ProtectedRoute>
+                </Layout>
+              }
+            />
+
+            {/* Debug route - only for development */}
+            {import.meta.env.MODE === "development" && (
+              <Route
+                path="/debug/routes"
+                element={
+                  <Layout>
+                    <ProtectedRoute>
+                      <RouteDebugInfo />
+                    </ProtectedRoute>
+                  </Layout>
+                }
+              />
+            )}
 
             <Route path="*" element={<NotFound />} />
           </Routes>

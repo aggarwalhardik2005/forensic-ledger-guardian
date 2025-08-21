@@ -191,29 +191,35 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const loadUserProfile = React.useCallback(
     async (userId: string, email: string) => {
       if (!supabase) return null;
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("name, role, role_title, address")
-        .eq("id", userId)
-        .single();
 
-      if (error) {
-        console.error("Error loading profile:", error);
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("name, role, role_title, address")
+          .eq("id", userId)
+          .single();
+
+        if (error) {
+          console.error("Error loading profile:", error);
+          return null;
+        }
+
+        const fullUser: User = {
+          id: userId,
+          email,
+          name: data.name,
+          role: mapRoleStringToEnum(data.role),
+          roleTitle: data.role_title,
+          address: data.address || undefined,
+        };
+
+        setUser(fullUser);
+        localStorage.setItem("forensicLedgerUser", JSON.stringify(fullUser));
+        return fullUser;
+      } catch (error) {
+        console.error("Unexpected error loading user profile:", error);
         return null;
       }
-
-      const fullUser: User = {
-        id: userId,
-        email,
-        name: data.name,
-        role: mapRoleStringToEnum(data.role),
-        roleTitle: data.role_title,
-        address: data.address || undefined,
-      };
-
-      setUser(fullUser);
-      localStorage.setItem("forensicLedgerUser", JSON.stringify(fullUser));
-      return fullUser;
     },
     []
   );
@@ -223,25 +229,52 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       setIsLoading(false);
       return;
     }
+
     const initAuth = async () => {
-      const { data } = await supabase.auth.getSession();
-      console.log("Loading user profile:", { data });
-      if (data.session?.user) {
-        await loadUserProfile(
-          data.session.user.id,
-          data.session.user.email || ""
-        );
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        console.log("Loading user profile:", { data, error });
+
+        if (error) {
+          console.warn(
+            "Session error (possibly expired refresh token):",
+            error
+          );
+          // Clear any invalid session data
+          localStorage.removeItem("forensicLedgerUser");
+          setUser(null);
+        } else if (data.session?.user) {
+          await loadUserProfile(
+            data.session.user.id,
+            data.session.user.email || ""
+          );
+        }
+      } catch (error) {
+        console.error("Error initializing auth:", error);
+        // Clear any invalid session data
+        localStorage.removeItem("forensicLedgerUser");
+        setUser(null);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
     initAuth();
 
     const { data: listener } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
+        console.log("Auth state change:", event, session);
+
+        if (event === "SIGNED_OUT" || event === "TOKEN_REFRESHED") {
+          if (!session) {
+            setUser(null);
+            localStorage.removeItem("forensicLedgerUser");
+          }
+        }
+
         if (session?.user) {
           await loadUserProfile(session.user.id, session.user.email || "");
-        } else {
+        } else if (!session) {
           setUser(null);
           localStorage.removeItem("forensicLedgerUser");
         }
