@@ -1,6 +1,12 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import web3Service, { Role } from '@/services/web3Service';
-import { toast } from '@/hooks/use-toast';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import web3Service, { Role } from "@/services/web3Service";
+import { toast } from "@/hooks/use-toast";
 
 interface Web3ContextType {
   isConnected: boolean;
@@ -14,7 +20,9 @@ interface Web3ContextType {
 
 const Web3Context = createContext<Web3ContextType | undefined>(undefined);
 
-export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const Web3Provider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [isConnected, setIsConnected] = useState(false);
   const [account, setAccount] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<Role>(Role.None);
@@ -23,22 +31,38 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     // Check if wallet is already connected
     const checkConnection = async () => {
-      const currentAccount = await web3Service.getCurrentAccount();
-      if (currentAccount) {
-        setAccount(currentAccount);
-        setIsConnected(true);
-        
-        // Get user role
-        const role = await web3Service.getUserRole();
-        setUserRole(role);
+      console.log("Web3Context: Checking existing connection...");
+
+      // First test if contract connection works
+      const contractConnected = await web3Service.testContractConnection();
+      if (contractConnected) {
+        const currentAccount = await web3Service.getCurrentAccount();
+        if (currentAccount) {
+          console.log(
+            "Web3Context: Found existing connection:",
+            currentAccount
+          );
+          setAccount(currentAccount);
+          setIsConnected(true);
+
+          // Get user role
+          const role = await web3Service.getUserRole();
+          console.log(
+            "Web3Context: User role:",
+            web3Service.getRoleString(role)
+          );
+          setUserRole(role);
+        }
+      } else {
+        console.log("Web3Context: No existing connection found");
       }
     };
-    
+
     checkConnection();
-    
+
     // Listen for account changes
     if (window.ethereum) {
-      window.ethereum.on('accountsChanged', (accounts: string[]) => {
+      window.ethereum.on("accountsChanged", (accounts: string[]) => {
         if (accounts.length === 0) {
           setAccount(null);
           setIsConnected(false);
@@ -51,11 +75,11 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
       });
     }
-    
+
     return () => {
       // Clean up listeners
       if (window.ethereum) {
-        window.ethereum.removeAllListeners('accountsChanged');
+        window.ethereum.removeAllListeners("accountsChanged");
       }
     };
   }, []);
@@ -63,26 +87,38 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const connectWallet = async () => {
     setConnecting(true);
     try {
+      console.log("Web3Context: Connecting wallet...");
       const account = await web3Service.connectWallet();
       if (account) {
+        console.log("Web3Context: Wallet connected successfully:", account);
         setAccount(account);
         setIsConnected(true);
-        
+
         // Get user role
         const role = await web3Service.getUserRole();
+        console.log(
+          "Web3Context: User role after connection:",
+          web3Service.getRoleString(role)
+        );
         setUserRole(role);
-        
+
         toast({
           title: "Wallet Connected",
-          description: `Connected to account ${account.substring(0, 6)}...${account.substring(account.length - 4)}`,
+          description: `Connected to account ${account.substring(
+            0,
+            6
+          )}...${account.substring(account.length - 4)}`,
         });
+      } else {
+        console.error("Web3Context: Failed to get account after connection");
+        throw new Error("Failed to get account");
       }
     } catch (error) {
-      console.error("Failed to connect wallet:", error);
+      console.error("Web3Context: Failed to connect wallet:", error);
       toast({
         title: "Connection Failed",
-        description: "Could not connect to wallet.",
-        variant: "destructive"
+        description: "Could not connect to wallet. Check console for details.",
+        variant: "destructive",
       });
     } finally {
       setConnecting(false);
@@ -95,20 +131,20 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUserRole(Role.None);
     toast({
       title: "Wallet Disconnected",
-      description: "Your wallet has been disconnected."
+      description: "Your wallet has been disconnected.",
     });
   };
 
   const checkRoleAccess = (requiredRole: Role): boolean => {
     // Court role has highest privileges, can access anything
     if (userRole === Role.Court) return true;
-    
+
     // Otherwise, check if user has at least the required role
     return userRole >= requiredRole;
   };
 
   return (
-    <Web3Context.Provider 
+    <Web3Context.Provider
       value={{
         isConnected,
         account,
@@ -116,7 +152,7 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
         connecting,
         connectWallet,
         disconnectWallet,
-        checkRoleAccess
+        checkRoleAccess,
       }}
     >
       {children}

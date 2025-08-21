@@ -166,10 +166,18 @@ const CreateCase = () => {
       // Test contract connection
       const contractConnected = await web3Service.testContractConnection();
       if (!contractConnected) {
+        // Get diagnostic information
+        const networkInfo = await web3Service.getNetworkInfo();
+        const contractAddress = web3Service.getContractAddress();
+
+        console.log("Diagnostic Information:");
+        console.log("Network:", networkInfo);
+        console.log("Contract Address:", contractAddress);
+
         toast({
           title: "Connection Error",
           description:
-            "Could not connect to the blockchain contract. Please check your network connection.",
+            "Could not connect to the blockchain contract. Check console for details.",
           variant: "destructive",
         });
         return;

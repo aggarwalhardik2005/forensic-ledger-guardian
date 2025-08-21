@@ -604,33 +604,26 @@ class Web3Service {
   }
 
   constructor() {
-    this.initWeb3();
+    // Don't auto-initialize, wait for explicit wallet connection
+    this.setupProvider();
   }
 
-  private async initWeb3() {
+  private async setupProvider() {
     if (
       typeof window !== "undefined" &&
       (window as unknown as { ethereum?: EthereumProvider }).ethereum
     ) {
       try {
-        // Request account access
         const eth = (window as unknown as { ethereum?: EthereumProvider })
           .ethereum as EthereumProvider;
-        await eth.request({ method: "eth_requestAccounts" });
         this.provider = new ethers.BrowserProvider(eth);
-        const signer = await this.provider.getSigner();
-        this.account = await signer.getAddress();
-        this.contract = new ethers.Contract(
-          CONTRACT_ADDRESS,
-          CONTRACT_ABI,
-          signer as unknown as ethers.ContractRunner
-        );
 
         // Listen for account changes
         eth.on("accountsChanged", (accounts: unknown) => {
           const arr = Array.isArray(accounts) ? (accounts as string[]) : [];
           if (arr.length === 0) {
             this.account = null;
+            this.contract = null;
             toast({
               title: "Disconnected",
               description: "Wallet disconnected.",
@@ -647,6 +640,48 @@ class Web3Service {
             });
           }
         });
+      } catch (error) {
+        console.error("Error setting up provider:", error);
+      }
+    } else {
+      console.error("No ethereum browser extension detected");
+    }
+  }
+
+  private async initWeb3() {
+    if (
+      typeof window !== "undefined" &&
+      (window as unknown as { ethereum?: EthereumProvider }).ethereum
+    ) {
+      try {
+        // Request account access
+        const eth = (window as unknown as { ethereum?: EthereumProvider })
+          .ethereum as EthereumProvider;
+        const accountsRaw = await eth.request({
+          method: "eth_requestAccounts",
+        });
+        const accounts = Array.isArray(accountsRaw)
+          ? (accountsRaw as string[])
+          : [];
+
+        if (accounts.length > 0) {
+          if (!this.provider) {
+            this.provider = new ethers.BrowserProvider(eth);
+          }
+          const signer = await this.provider.getSigner();
+          this.account = await signer.getAddress();
+          this.contract = new ethers.Contract(
+            CONTRACT_ADDRESS,
+            CONTRACT_ABI,
+            signer as unknown as ethers.ContractRunner
+          );
+          console.log(
+            "Web3 initialized successfully with account:",
+            this.account
+          );
+          console.log("Contract initialized at address:", CONTRACT_ADDRESS);
+          return true;
+        }
       } catch (error) {
         console.error(
           "User denied account access or another error occurred:",
@@ -667,6 +702,7 @@ class Web3Service {
         variant: "destructive",
       });
     }
+    return false;
   }
 
   private initContract() {
@@ -696,40 +732,17 @@ class Web3Service {
   }
 
   public async connectWallet(): Promise<string | null> {
-    // Use window.ethereum directly to request accounts for compatibility
-    const eth =
-      typeof window !== "undefined"
-        ? ((window as unknown as { ethereum?: EthereumProvider }).ethereum as
-            | EthereumProvider
-            | undefined)
-        : undefined;
-    if (!this.provider) {
-      await this.initWeb3();
+    console.log("Attempting to connect wallet...");
+
+    // Initialize Web3 connection
+    const success = await this.initWeb3();
+    if (success && this.account) {
+      console.log("Wallet connected successfully:", this.account);
+      console.log("Contract initialized:", this.contract ? "Yes" : "No");
+      return this.account;
     }
 
-    if (eth) {
-      try {
-        const accountsRaw = await eth.request({
-          method: "eth_requestAccounts",
-        });
-        const accounts = Array.isArray(accountsRaw)
-          ? (accountsRaw as string[])
-          : [];
-        if (accounts.length > 0) {
-          this.account = accounts[0];
-          this.initContract();
-          return this.account;
-        }
-      } catch (error) {
-        console.error("Error connecting to wallet:", error);
-        toast({
-          title: "Connection Error",
-          description: "Could not connect to wallet.",
-          variant: "destructive",
-        });
-      }
-    }
-
+    console.error("Failed to connect wallet");
     return null;
   }
 
@@ -1200,13 +1213,34 @@ class Web3Service {
 
   // Helper Functions
   public async testContractConnection(): Promise<boolean> {
+    console.log("Testing contract connection...");
+    console.log("Contract exists:", this.contract ? "Yes" : "No");
+    console.log("Account connected:", this.account || "No");
+    console.log("Provider available:", this.provider ? "Yes" : "No");
+
     if (!this.contract) {
       console.error("Contract not initialized");
-      return false;
+
+      // Try to connect wallet if not connected
+      if (!this.account) {
+        console.log("Attempting to connect wallet...");
+        const connected = await this.connectWallet();
+        if (!connected) {
+          console.error("Failed to connect wallet");
+          return false;
+        }
+      }
+
+      // If still no contract after connection attempt
+      if (!this.contract) {
+        console.error("Contract still not initialized after wallet connection");
+        return false;
+      }
     }
 
     try {
       // Try a simple read operation to test contract connection
+      console.log("Calling contract method isSystemLocked...");
       const isLocked = await this.contract.isSystemLocked();
       console.log(
         "Contract connection test successful. System locked:",
@@ -1215,6 +1249,18 @@ class Web3Service {
       return true;
     } catch (error) {
       console.error("Contract connection test failed:", error);
+
+      // Check if it's a network issue
+      if (error instanceof Error) {
+        if (error.message.includes("network")) {
+          console.error(
+            "Network error - check if you're connected to the correct network"
+          );
+        } else if (error.message.includes("revert")) {
+          console.error("Contract reverted - contract may not be deployed");
+        }
+      }
+
       return false;
     }
   }
@@ -1237,6 +1283,31 @@ class Web3Service {
       console.error("Error setting up test environment:", error);
       return false;
     }
+  }
+
+  public async getNetworkInfo(): Promise<{
+    chainId: number;
+    name: string;
+  } | null> {
+    if (!this.provider) {
+      console.error("Provider not initialized");
+      return null;
+    }
+
+    try {
+      const network = await this.provider.getNetwork();
+      return {
+        chainId: Number(network.chainId),
+        name: network.name,
+      };
+    } catch (error) {
+      console.error("Error getting network info:", error);
+      return null;
+    }
+  }
+
+  public getContractAddress(): string {
+    return CONTRACT_ADDRESS;
   }
 
   public getRoleString(role: Role): string {
