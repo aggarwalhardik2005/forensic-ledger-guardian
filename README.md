@@ -51,7 +51,7 @@ Forensic Ledger Guardian is a comprehensive web application designed for law enf
 
 ### Prerequisites
 
-- Node.js 18+ and npm (recommended: install with nvm)
+- Node.js 18+ and npm (recommended: install with npm)
 - Web3 wallet (MetaMask recommended)
 
 ### Installation
