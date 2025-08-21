@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/layout/Layout";
 import Index from "./pages/Index";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import RoleProtectedRoute from "./components/auth/RoleProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import Cases from "./pages/Cases";
 import Evidence from "./pages/Evidence";
@@ -16,7 +17,6 @@ import Help from "./pages/Help";
 import FAQ from "./pages/help/Faq";
 import NotFound from "./pages/NotFound";
 import { Web3Provider } from "./contexts/Web3Context";
-import { AuthProvider } from "./contexts/AuthContext";
 import Settings from "./pages/Settings";
 import Activity from "./pages/Activity";
 
@@ -27,7 +27,6 @@ import FIR from "./pages/fir/Fir";
 import UserManagement from "./pages/users/Manage";
 import RoleManagement from "./pages/court/RoleManagement";
 import SystemConfiguration from "./pages/court/SystemConfiguration";
-import AuditLogs from "./pages/court/AuditLogs";
 import ReportsAnalytics from "./pages/court/ReportsAnalytics";
 import CreateCase from "./pages/cases/CreateCase";
 import CasesApproval from "./pages/cases/CasesApproval";
@@ -53,6 +52,7 @@ import ClientManagement from "./pages/lawyer/ClientManagement";
 import EvidenceComponent from "./components/EvidenceComponent";
 import WalletManagement from "./pages/WalletManagement";
 import MetaMaskHelp from "./pages/help/MetaMaskHelp";
+import { Role } from "./services/web3Service";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -67,62 +67,6 @@ const queryClient = new QueryClient({
 const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
-
-        <TooltipProvider>
-            <Web3Provider>
-              <Toaster />
-              <Sonner />
-              <Routes>
-                <Route path="/" element={<EvidenceComponent/>} />
-                {/* <Route path="/" element={<Index />} /> */}
-                <Route path="/dashboard" element={<Layout><ProtectedRoute><Dashboard /></ProtectedRoute></Layout>} />
-                <Route path="/cases" element={<Layout><ProtectedRoute><Cases /></ProtectedRoute></Layout>} />
-                <Route path="/cases/:caseId" element={<Layout><ProtectedRoute><CaseDetail /></ProtectedRoute></Layout>} />
-                <Route path="/evidence" element={<Layout><ProtectedRoute><Evidence /></ProtectedRoute></Layout>} />
-                <Route path="/upload" element={<Layout><ProtectedRoute><Upload /></ProtectedRoute></Layout>} />
-                <Route path="/verify" element={<Layout><ProtectedRoute><Verify /></ProtectedRoute></Layout>} />
-                <Route path="/help" element={<Layout><ProtectedRoute><Help /></ProtectedRoute></Layout>} />
-                <Route path="/help/faq" element={<Layout><ProtectedRoute><FAQ /></ProtectedRoute></Layout>} />
-                <Route path="/settings" element={<Layout><ProtectedRoute><Settings /></ProtectedRoute></Layout>} />
-                <Route path="/activity" element={<Layout><ProtectedRoute><Activity /></ProtectedRoute></Layout>} />
-                
-                {/* FIR routes */}
-                <Route path="/fir" element={<Layout><ProtectedRoute><FIR /></ProtectedRoute></Layout>} />
-                <Route path="/fir/new" element={<Layout><ProtectedRoute><FIRManagement mode="create" /></ProtectedRoute></Layout>} />
-                
-                {/* Court role specific routes */}
-                <Route path="/users/manage" element={<Layout><ProtectedRoute><UserManagement /></ProtectedRoute></Layout>} />
-                <Route path="/users/add" element={<Layout><ProtectedRoute><AddUser /></ProtectedRoute></Layout>} />
-                <Route path="/users/roles" element={<Layout><ProtectedRoute><RoleManagement /></ProtectedRoute></Layout>} />
-                <Route path="/settings/security" element={<Layout><ProtectedRoute><SystemConfiguration /></ProtectedRoute></Layout>} />
-                <Route path="/reports" element={<Layout><ProtectedRoute><ReportsAnalytics /></ProtectedRoute></Layout>} />
-                <Route path="/cases/create" element={<Layout><ProtectedRoute><CreateCase /></ProtectedRoute></Layout>} />
-                <Route path="/cases/approval" element={<Layout><ProtectedRoute><CasesApproval /></ProtectedRoute></Layout>} />
-                
-                {/* Officer role specific routes */}
-                <Route path="/cases/update" element={<Layout><ProtectedRoute><Cases /></ProtectedRoute></Layout>} />
-                <Route path="/cases/assigned" element={<Layout><ProtectedRoute><Cases /></ProtectedRoute></Layout>} />
-                <Route path="/evidence/confirm" element={<Layout><ProtectedRoute><EvidenceConfirmation /></ProtectedRoute></Layout>} />
-                <Route path="/officer/reports" element={<Layout><ProtectedRoute><OfficerReports /></ProtectedRoute></Layout>} />
-                
-                {/* Forensic role specific routes */}
-                <Route path="/evidence/analysis" element={<Layout><ProtectedRoute><EvidenceAnalysis /></ProtectedRoute></Layout>} />
-                <Route path="/evidence/verify" element={<Layout><ProtectedRoute><TechnicalVerification /></ProtectedRoute></Layout>} />
-                <Route path="/forensic/reports" element={<Layout><ProtectedRoute><ForensicReports /></ProtectedRoute></Layout>} />
-                
-                {/* Lawyer role specific routes */}
-                <Route path="/legal/documentation" element={<Layout><ProtectedRoute><LegalDocumentation /></ProtectedRoute></Layout>} />
-                <Route path="/verify/custody" element={<Layout><ProtectedRoute><ChainOfCustodyVerification /></ProtectedRoute></Layout>} />
-                <Route path="/legal/reports" element={<Layout><ProtectedRoute><LegalReports /></ProtectedRoute></Layout>} />
-                <Route path="/cases/prepare" element={<Layout><ProtectedRoute><CourtPreparation /></ProtectedRoute></Layout>} />
-                <Route path="/clients" element={<Layout><ProtectedRoute><ClientManagement /></ProtectedRoute></Layout>} />
-                <Route path="/meetings" element={<Layout><ProtectedRoute><ClientManagement view="meetings" /></ProtectedRoute></Layout>} />
-                
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Web3Provider>
-        </TooltipProvider>
-=======
       <TooltipProvider>
         <Web3Provider>
           <Toaster />
@@ -140,6 +84,49 @@ const App: React.FC = () => {
                 </Layout>
               }
             />
+
+            {/* Role-specific dashboard routes - for future use or direct navigation */}
+            <Route
+              path="/dashboard/court"
+              element={
+                <Layout>
+                  <RoleProtectedRoute allowedRoles={[Role.Court]}>
+                    <Dashboard />
+                  </RoleProtectedRoute>
+                </Layout>
+              }
+            />
+            <Route
+              path="/dashboard/officer"
+              element={
+                <Layout>
+                  <RoleProtectedRoute allowedRoles={[Role.Officer]}>
+                    <Dashboard />
+                  </RoleProtectedRoute>
+                </Layout>
+              }
+            />
+            <Route
+              path="/dashboard/forensic"
+              element={
+                <Layout>
+                  <RoleProtectedRoute allowedRoles={[Role.Forensic]}>
+                    <Dashboard />
+                  </RoleProtectedRoute>
+                </Layout>
+              }
+            />
+            <Route
+              path="/dashboard/lawyer"
+              element={
+                <Layout>
+                  <RoleProtectedRoute allowedRoles={[Role.Lawyer]}>
+                    <Dashboard />
+                  </RoleProtectedRoute>
+                </Layout>
+              }
+            />
+
             <Route
               path="/cases"
               element={
@@ -211,16 +198,6 @@ const App: React.FC = () => {
               }
             />
             <Route
-              path="/help/metamask"
-              element={
-                <Layout>
-                  <ProtectedRoute>
-                    <MetaMaskHelp />
-                  </ProtectedRoute>
-                </Layout>
-              }
-            />
-            <Route
               path="/settings"
               element={
                 <Layout>
@@ -236,16 +213,6 @@ const App: React.FC = () => {
                 <Layout>
                   <ProtectedRoute>
                     <Activity />
-                  </ProtectedRoute>
-                </Layout>
-              }
-            />
-            <Route
-              path="/wallet"
-              element={
-                <Layout>
-                  <ProtectedRoute>
-                    <WalletManagement />
                   </ProtectedRoute>
                 </Layout>
               }
@@ -273,14 +240,14 @@ const App: React.FC = () => {
               }
             />
 
-            {/* Court role specific routes */}
+            {/* Court role specific routes - Only accessible by Court Officials */}
             <Route
               path="/users/manage"
               element={
                 <Layout>
-                  <ProtectedRoute>
+                  <RoleProtectedRoute allowedRoles={[Role.Court]}>
                     <UserManagement />
-                  </ProtectedRoute>
+                  </RoleProtectedRoute>
                 </Layout>
               }
             />
@@ -288,9 +255,9 @@ const App: React.FC = () => {
               path="/users/add"
               element={
                 <Layout>
-                  <ProtectedRoute>
+                  <RoleProtectedRoute allowedRoles={[Role.Court]}>
                     <AddUser />
-                  </ProtectedRoute>
+                  </RoleProtectedRoute>
                 </Layout>
               }
             />
@@ -298,9 +265,9 @@ const App: React.FC = () => {
               path="/users/roles"
               element={
                 <Layout>
-                  <ProtectedRoute>
+                  <RoleProtectedRoute allowedRoles={[Role.Court]}>
                     <RoleManagement />
-                  </ProtectedRoute>
+                  </RoleProtectedRoute>
                 </Layout>
               }
             />
@@ -308,9 +275,9 @@ const App: React.FC = () => {
               path="/settings/security"
               element={
                 <Layout>
-                  <ProtectedRoute>
+                  <RoleProtectedRoute allowedRoles={[Role.Court]}>
                     <SystemConfiguration />
-                  </ProtectedRoute>
+                  </RoleProtectedRoute>
                 </Layout>
               }
             />
@@ -318,9 +285,9 @@ const App: React.FC = () => {
               path="/reports"
               element={
                 <Layout>
-                  <ProtectedRoute>
+                  <RoleProtectedRoute allowedRoles={[Role.Court]}>
                     <ReportsAnalytics />
-                  </ProtectedRoute>
+                  </RoleProtectedRoute>
                 </Layout>
               }
             />
@@ -328,9 +295,9 @@ const App: React.FC = () => {
               path="/cases/create"
               element={
                 <Layout>
-                  <ProtectedRoute>
+                  <RoleProtectedRoute allowedRoles={[Role.Court, Role.Officer]}>
                     <CreateCase />
-                  </ProtectedRoute>
+                  </RoleProtectedRoute>
                 </Layout>
               }
             />
@@ -338,21 +305,21 @@ const App: React.FC = () => {
               path="/cases/approval"
               element={
                 <Layout>
-                  <ProtectedRoute>
+                  <RoleProtectedRoute allowedRoles={[Role.Court]}>
                     <CasesApproval />
-                  </ProtectedRoute>
+                  </RoleProtectedRoute>
                 </Layout>
               }
             />
 
-            {/* Officer role specific routes */}
+            {/* Officer role specific routes - Only accessible by Police Officers */}
             <Route
               path="/cases/update"
               element={
                 <Layout>
-                  <ProtectedRoute>
+                  <RoleProtectedRoute allowedRoles={[Role.Officer]}>
                     <Cases />
-                  </ProtectedRoute>
+                  </RoleProtectedRoute>
                 </Layout>
               }
             />
@@ -360,9 +327,9 @@ const App: React.FC = () => {
               path="/cases/assigned"
               element={
                 <Layout>
-                  <ProtectedRoute>
+                  <RoleProtectedRoute allowedRoles={[Role.Officer]}>
                     <Cases />
-                  </ProtectedRoute>
+                  </RoleProtectedRoute>
                 </Layout>
               }
             />
@@ -370,9 +337,11 @@ const App: React.FC = () => {
               path="/evidence/confirm"
               element={
                 <Layout>
-                  <ProtectedRoute>
+                  <RoleProtectedRoute
+                    allowedRoles={[Role.Officer, Role.Forensic]}
+                  >
                     <EvidenceConfirmation />
-                  </ProtectedRoute>
+                  </RoleProtectedRoute>
                 </Layout>
               }
             />
@@ -380,21 +349,21 @@ const App: React.FC = () => {
               path="/officer/reports"
               element={
                 <Layout>
-                  <ProtectedRoute>
+                  <RoleProtectedRoute allowedRoles={[Role.Officer]}>
                     <OfficerReports />
-                  </ProtectedRoute>
+                  </RoleProtectedRoute>
                 </Layout>
               }
             />
 
-            {/* Forensic role specific routes */}
+            {/* Forensic role specific routes - Only accessible by Forensic Experts */}
             <Route
               path="/evidence/analysis"
               element={
                 <Layout>
-                  <ProtectedRoute>
+                  <RoleProtectedRoute allowedRoles={[Role.Forensic]}>
                     <EvidenceAnalysis />
-                  </ProtectedRoute>
+                  </RoleProtectedRoute>
                 </Layout>
               }
             />
@@ -402,9 +371,9 @@ const App: React.FC = () => {
               path="/evidence/verify"
               element={
                 <Layout>
-                  <ProtectedRoute>
+                  <RoleProtectedRoute allowedRoles={[Role.Forensic]}>
                     <TechnicalVerification />
-                  </ProtectedRoute>
+                  </RoleProtectedRoute>
                 </Layout>
               }
             />
@@ -412,21 +381,21 @@ const App: React.FC = () => {
               path="/forensic/reports"
               element={
                 <Layout>
-                  <ProtectedRoute>
+                  <RoleProtectedRoute allowedRoles={[Role.Forensic]}>
                     <ForensicReports />
-                  </ProtectedRoute>
+                  </RoleProtectedRoute>
                 </Layout>
               }
             />
 
-            {/* Lawyer role specific routes */}
+            {/* Lawyer role specific routes - Only accessible by Legal Counsel */}
             <Route
               path="/legal/documentation"
               element={
                 <Layout>
-                  <ProtectedRoute>
+                  <RoleProtectedRoute allowedRoles={[Role.Lawyer]}>
                     <LegalDocumentation />
-                  </ProtectedRoute>
+                  </RoleProtectedRoute>
                 </Layout>
               }
             />
@@ -434,9 +403,9 @@ const App: React.FC = () => {
               path="/verify/custody"
               element={
                 <Layout>
-                  <ProtectedRoute>
+                  <RoleProtectedRoute allowedRoles={[Role.Lawyer, Role.Court]}>
                     <ChainOfCustodyVerification />
-                  </ProtectedRoute>
+                  </RoleProtectedRoute>
                 </Layout>
               }
             />
@@ -444,9 +413,9 @@ const App: React.FC = () => {
               path="/legal/reports"
               element={
                 <Layout>
-                  <ProtectedRoute>
+                  <RoleProtectedRoute allowedRoles={[Role.Lawyer]}>
                     <LegalReports />
-                  </ProtectedRoute>
+                  </RoleProtectedRoute>
                 </Layout>
               }
             />
@@ -454,9 +423,9 @@ const App: React.FC = () => {
               path="/cases/prepare"
               element={
                 <Layout>
-                  <ProtectedRoute>
+                  <RoleProtectedRoute allowedRoles={[Role.Lawyer]}>
                     <CourtPreparation />
-                  </ProtectedRoute>
+                  </RoleProtectedRoute>
                 </Layout>
               }
             />
@@ -464,9 +433,9 @@ const App: React.FC = () => {
               path="/clients"
               element={
                 <Layout>
-                  <ProtectedRoute>
+                  <RoleProtectedRoute allowedRoles={[Role.Lawyer]}>
                     <ClientManagement />
-                  </ProtectedRoute>
+                  </RoleProtectedRoute>
                 </Layout>
               }
             />
@@ -474,9 +443,9 @@ const App: React.FC = () => {
               path="/meetings"
               element={
                 <Layout>
-                  <ProtectedRoute>
+                  <RoleProtectedRoute allowedRoles={[Role.Lawyer]}>
                     <ClientManagement view="meetings" />
-                  </ProtectedRoute>
+                  </RoleProtectedRoute>
                 </Layout>
               }
             />

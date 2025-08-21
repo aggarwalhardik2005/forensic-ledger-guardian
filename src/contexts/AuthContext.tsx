@@ -102,6 +102,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     userRole: Role
   ): Promise<boolean> => {
     try {
+      // Validate that the user has a valid role (not a guest user)
+      if (userRole === Role.None) {
+        toast({
+          title: "Access Denied",
+          description:
+            "Your wallet address is not authorized to access this system. Please contact an administrator.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
       // Create a user object based on wallet address and role
       const getRoleTitle = (role: Role): string => {
         switch (role) {
@@ -114,14 +125,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           case Role.Lawyer:
             return "Legal Counsel";
           default:
-            return "User";
+            return "Unauthorized User";
         }
+      };
+
+      // Get the route path based on user role
+      const getRoleDashboardPath = (role: Role): string => {
+        // For now, all roles go to the main dashboard which will show role-specific content
+        // In the future, we could have separate dashboard routes if needed
+        return "/dashboard";
       };
 
       const walletUser: User = {
         id: `wallet-${walletAddress}`,
         email: `${walletAddress}@wallet.local`,
-        name: `Wallet User (${walletAddress.substring(
+        name: `${getRoleTitle(userRole)} (${walletAddress.substring(
           0,
           6
         )}...${walletAddress.substring(walletAddress.length - 4)})`,
@@ -134,17 +152,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       localStorage.setItem("forensicLedgerUser", JSON.stringify(walletUser));
 
       toast({
-        title: "Wallet Connected",
-        description: `Welcome, ${getRoleTitle(userRole)}!`,
+        title: "Authentication Successful",
+        description: `Welcome to the Forensic Ledger Guardian, ${getRoleTitle(
+          userRole
+        )}!`,
       });
 
-      navigate("/dashboard");
+      // Navigate to the appropriate dashboard
+      const dashboardPath = getRoleDashboardPath(userRole);
+      navigate(dashboardPath);
       return true;
     } catch (error) {
       console.error("Wallet authentication error:", error);
       toast({
         title: "Authentication Failed",
-        description: "Could not authenticate with wallet",
+        description: "Could not authenticate with wallet. Please try again.",
         variant: "destructive",
       });
       return false;

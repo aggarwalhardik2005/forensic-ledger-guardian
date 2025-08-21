@@ -15,6 +15,7 @@ import { Shield, Wallet, Lock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWeb3 } from "@/hooks/useWeb3";
 import { useToast } from "@/hooks/use-toast";
+import { Role } from "@/services/web3Service";
 import ForgotPasswordForm from "./ForgotPasswordForm";
 
 const LoginForm = () => {
@@ -61,15 +62,24 @@ const LoginForm = () => {
       setTimeout(async () => {
         try {
           if (isConnected && account && userRole !== undefined) {
+            // Check if user has a valid role before attempting authentication
+            if (userRole === Role.None) {
+              toast({
+                title: "Access Denied",
+                description:
+                  "Your wallet address is not authorized to access this system. Please contact an administrator to register your wallet with appropriate permissions.",
+                variant: "destructive",
+              });
+              setIsLoading(false);
+              return;
+            }
+
             // Now authenticate with the wallet
             const success = await loginWithWallet(account, userRole);
 
             if (success) {
-              toast({
-                title: "Wallet Connected",
-                description: "Successfully signed in with MetaMask",
-              });
-              navigate("/dashboard");
+              // Success toast is handled in loginWithWallet
+              // Navigate will also be handled there
             } else {
               toast({
                 title: "Authentication failed",
@@ -80,7 +90,8 @@ const LoginForm = () => {
           } else {
             toast({
               title: "Connection incomplete",
-              description: "Wallet connection was not completed properly",
+              description:
+                "Wallet connection was not completed properly. Please ensure MetaMask is installed and unlocked.",
               variant: "destructive",
             });
           }
@@ -99,7 +110,8 @@ const LoginForm = () => {
       console.error("MetaMask login error:", error);
       toast({
         title: "Connection failed",
-        description: "Could not connect to MetaMask",
+        description:
+          "Could not connect to MetaMask. Please ensure MetaMask is installed and try again.",
         variant: "destructive",
       });
       setIsLoading(false);
