@@ -100,18 +100,19 @@ const CreateCase = () => {
       toast({
         title: "Missing Information",
         description: "Please provide a case title before creating the case.",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
 
     setIsLoading(true);
+    console.log("Initiating case creation...");
 
     const generateCaseId = () => {
       const now = new Date();
       const y = now.getFullYear();
-      const m = String(now.getMonth() + 1).padStart(2, '0');
-      const d = String(now.getDate()).padStart(2, '0');
+      const m = String(now.getMonth() + 1).padStart(2, "0");
+      const d = String(now.getDate()).padStart(2, "0");
       const random = Math.floor(Math.random() * 900 + 100);
       return `FF-${y}-${m}${d}-${random}`;
     };
@@ -120,6 +121,15 @@ const CreateCase = () => {
     const firId = "FF-2023-120"; // Hardcoded for now
 
     try {
+      console.log("Step 1: Creating case with the following details:");
+      console.log({
+        caseId,
+        firId,
+        caseTitle,
+        description,
+        tags: [caseType, priority, jurisdiction],
+      });
+
       const success = await web3Service.createCaseFromFIR(
         caseId,
         firId,
@@ -128,33 +138,66 @@ const CreateCase = () => {
         [caseType, priority, jurisdiction]
       );
 
+      console.log("Step 1 successful:", success);
+
       if (success) {
         // Assign roles
+        console.log("Step 2: Assigning roles...");
+        console.log(`Assigning Officer: ${leadOfficer}`);
         await web3Service.assignCaseRole(caseId, leadOfficer, Role.Officer);
+
+        console.log(`Assigning Forensic Expert: ${leadForensic}`);
         await web3Service.assignCaseRole(caseId, leadForensic, Role.Forensic);
+
+        console.log(`Assigning Prosecutor: ${prosecutor}`);
         await web3Service.assignCaseRole(caseId, prosecutor, Role.Lawyer);
+
         if (defenseAttorney) {
-          await web3Service.assignCaseRole(caseId, defenseAttorney, Role.Lawyer);
+          console.log(`Assigning Defense Attorney: ${defenseAttorney}`);
+          await web3Service.assignCaseRole(
+            caseId,
+            defenseAttorney,
+            Role.Lawyer
+          );
         }
+
+        console.log(`Assigning Judge: ${judge}`);
         await web3Service.assignCaseRole(caseId, judge, Role.Court);
+
+        console.log("All roles assigned successfully.");
 
         toast({
           title: "Case Created",
-          description: `Case "${caseTitle}" has been successfully created.`
+          description: `Case "${caseTitle}" has been successfully created.`,
         });
-        navigate('/cases');
+        navigate("/cases");
       } else {
-        throw new Error("Failed to create case on the blockchain.");
+        throw new Error(
+          "Failed to create case on the blockchain. The transaction may have reverted."
+        );
       }
     } catch (error) {
-      console.error('Failed to create case', error);
+      console.error("--- DETAILED ERROR LOG ---");
+      console.error("Failed to create case at line 147 in CreateCase.tsx");
+      console.error("Error object:", error);
+
+      // If the error object has more details, you can log them here
+      if (error.reason) {
+        console.error("Revert reason:", error.reason);
+      }
+      if (error.data) {
+        console.error("Error data:", error.data);
+      }
+
       toast({
         title: "Case Creation Failed",
-        description: "There was a problem creating the case.",
-        variant: "destructive"
+        description:
+          "There was a problem creating the case. Check the console for more details.",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
+      console.log("Case creation process finished.");
     }
   };
 
