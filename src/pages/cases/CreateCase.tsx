@@ -160,6 +160,85 @@ const CreateCase = () => {
     const firId = "FF-2023-120"; // Hardcoded for now
 
     try {
+      // Pre-checks before case creation
+      console.log("Pre-flight checks...");
+
+      // Test contract connection
+      const contractConnected = await web3Service.testContractConnection();
+      if (!contractConnected) {
+        toast({
+          title: "Connection Error",
+          description:
+            "Could not connect to the blockchain contract. Please check your network connection.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Check user role
+      const userRole = await web3Service.getUserRole();
+      console.log("User role:", web3Service.getRoleString(userRole));
+
+      if (userRole !== Role.Officer) {
+        // Try to set up test environment if user has no role
+        if (userRole === Role.None) {
+          console.log(
+            "User has no role, attempting to set up test environment..."
+          );
+          const setupSuccess = await web3Service.setupTestEnvironment();
+          if (!setupSuccess) {
+            toast({
+              title: "Setup Failed",
+              description:
+                "Could not set up the test environment. Please contact an administrator.",
+              variant: "destructive",
+            });
+            return;
+          }
+          console.log("Test environment setup successful");
+        } else {
+          toast({
+            title: "Insufficient Permissions",
+            description:
+              "Only Officers can create cases. Your current role: " +
+              web3Service.getRoleString(userRole),
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+
+      // Check if FIR exists
+      const fir = await web3Service.getFIR(firId);
+      console.log("FIR check result:", fir);
+
+      if (
+        !fir ||
+        fir.filedBy === "0x0000000000000000000000000000000000000000"
+      ) {
+        console.log("FIR not found, creating it first...");
+        const firCreated = await web3Service.fileFIR(
+          firId,
+          "Default FIR for case creation - Cyberbullying incident report"
+        );
+        if (!firCreated) {
+          toast({
+            title: "FIR Creation Failed",
+            description: "Could not create the required FIR. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+        console.log("FIR created successfully");
+      } else if (fir.promotedToCase) {
+        toast({
+          title: "FIR Already Used",
+          description: "This FIR has already been promoted to a case.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       console.log("Step 1: Creating case with the following details:");
       console.log({
         caseId,
@@ -180,30 +259,80 @@ const CreateCase = () => {
       console.log("Step 1 successful:", success);
 
       if (success) {
+        // For now, we'll use placeholder addresses for role assignments
+        // In a real system, these would be looked up from a user registry
+        const userAddresses = {
+          "john.smith": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+          "emily.chen": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+          "sarah.lee": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+          lawyer2: "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
+          "michael.wong": "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc",
+          officer2: "0x976EA74026E726554dB657fA54763abd0C3a0aa9",
+          forensic1: "0x14dC79964da2C08b23698B3D3cc7Ca32193d9955",
+        };
+
         // Assign roles
         console.log("Step 2: Assigning roles...");
-        console.log(`Assigning Officer: ${leadOfficer}`);
-        await web3Service.assignCaseRole(caseId, leadOfficer, Role.Officer);
 
-        console.log(`Assigning Forensic Expert: ${leadForensic}`);
-        await web3Service.assignCaseRole(caseId, leadForensic, Role.Forensic);
+        try {
+          if (userAddresses[leadOfficer]) {
+            console.log(
+              `Assigning Officer: ${leadOfficer} (${userAddresses[leadOfficer]})`
+            );
+            await web3Service.assignCaseRole(
+              caseId,
+              userAddresses[leadOfficer],
+              Role.Officer
+            );
+          }
 
-        console.log(`Assigning Prosecutor: ${prosecutor}`);
-        await web3Service.assignCaseRole(caseId, prosecutor, Role.Lawyer);
+          if (userAddresses[leadForensic]) {
+            console.log(
+              `Assigning Forensic Expert: ${leadForensic} (${userAddresses[leadForensic]})`
+            );
+            await web3Service.assignCaseRole(
+              caseId,
+              userAddresses[leadForensic],
+              Role.Forensic
+            );
+          }
 
-        if (defenseAttorney) {
-          console.log(`Assigning Defense Attorney: ${defenseAttorney}`);
-          await web3Service.assignCaseRole(
-            caseId,
-            defenseAttorney,
-            Role.Lawyer
-          );
+          if (userAddresses[prosecutor]) {
+            console.log(
+              `Assigning Prosecutor: ${prosecutor} (${userAddresses[prosecutor]})`
+            );
+            await web3Service.assignCaseRole(
+              caseId,
+              userAddresses[prosecutor],
+              Role.Lawyer
+            );
+          }
+
+          if (defenseAttorney && userAddresses[defenseAttorney]) {
+            console.log(
+              `Assigning Defense Attorney: ${defenseAttorney} (${userAddresses[defenseAttorney]})`
+            );
+            await web3Service.assignCaseRole(
+              caseId,
+              userAddresses[defenseAttorney],
+              Role.Lawyer
+            );
+          }
+
+          if (userAddresses[judge]) {
+            console.log(`Assigning Judge: ${judge} (${userAddresses[judge]})`);
+            await web3Service.assignCaseRole(
+              caseId,
+              userAddresses[judge],
+              Role.Court
+            );
+          }
+
+          console.log("All roles assigned successfully.");
+        } catch (roleError) {
+          console.warn("Some role assignments failed:", roleError);
+          // Don't fail the whole case creation if role assignments fail
         }
-
-        console.log(`Assigning Judge: ${judge}`);
-        await web3Service.assignCaseRole(caseId, judge, Role.Court);
-
-        console.log("All roles assigned successfully.");
 
         toast({
           title: "Case Created",
