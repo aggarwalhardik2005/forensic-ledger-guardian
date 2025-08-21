@@ -24,6 +24,7 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
+  loginWithWallet: (walletAddress: string, userRole: Role) => Promise<boolean>;
   logout: () => Promise<void>;
   isLoggedIn: boolean;
   isLoading: boolean;
@@ -93,6 +94,50 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
     navigate("/dashboard");
     return true;
+  };
+
+  // Wallet-based authentication
+  const loginWithWallet = async (walletAddress: string, userRole: Role): Promise<boolean> => {
+    try {
+      // Create a user object based on wallet address and role
+      const getRoleTitle = (role: Role): string => {
+        switch (role) {
+          case Role.Court: return "Court Official";
+          case Role.Officer: return "Police Officer";
+          case Role.Forensic: return "Forensic Expert";
+          case Role.Lawyer: return "Legal Counsel";
+          default: return "User";
+        }
+      };
+
+      const walletUser: User = {
+        id: `wallet-${walletAddress}`,
+        email: `${walletAddress}@wallet.local`,
+        name: `Wallet User (${walletAddress.substring(0, 6)}...${walletAddress.substring(walletAddress.length - 4)})`,
+        role: userRole,
+        roleTitle: getRoleTitle(userRole),
+        address: walletAddress,
+      };
+
+      setUser(walletUser);
+      localStorage.setItem("forensicLedgerUser", JSON.stringify(walletUser));
+
+      toast({
+        title: "Wallet Connected",
+        description: `Welcome, ${getRoleTitle(userRole)}!`,
+      });
+
+      navigate("/dashboard");
+      return true;
+    } catch (error) {
+      console.error("Wallet authentication error:", error);
+      toast({
+        title: "Authentication Failed",
+        description: "Could not authenticate with wallet",
+        variant: "destructive",
+      });
+      return false;
+    }
   };
 
   const mapRoleStringToEnum = (roleString: string): Role => {
@@ -188,7 +233,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoggedIn: !!user, isLoading }}>
+    <AuthContext.Provider value={{ user, login, loginWithWallet, logout, isLoggedIn: !!user, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

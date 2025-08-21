@@ -22,8 +22,8 @@ const LoginForm = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const { login } = useAuth();
-  const { connectWallet } = useWeb3();
+  const { login, loginWithWallet } = useAuth();
+  const { connectWallet, account, userRole, isConnected } = useWeb3();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -55,14 +55,54 @@ const LoginForm = () => {
 
     try {
       await connectWallet();
-      // The Web3Context will handle redirecting if needed
+      
+      // Check if wallet was successfully connected
+      // Wait a moment for state to update after connection
+      setTimeout(async () => {
+        try {
+          if (isConnected && account && userRole !== undefined) {
+            // Now authenticate with the wallet
+            const success = await loginWithWallet(account, userRole);
+            
+            if (success) {
+              toast({
+                title: "Wallet Connected",
+                description: "Successfully signed in with MetaMask",
+              });
+              navigate("/dashboard");
+            } else {
+              toast({
+                title: "Authentication failed",
+                description: "Could not authenticate with the connected wallet",
+                variant: "destructive",
+              });
+            }
+          } else {
+            toast({
+              title: "Connection incomplete",
+              description: "Wallet connection was not completed properly",
+              variant: "destructive",
+            });
+          }
+        } catch (authError) {
+          console.error("Authentication error:", authError);
+          toast({
+            title: "Authentication failed",
+            description: "Could not authenticate with the connected wallet",
+            variant: "destructive",
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      }, 1000); // Give time for Web3Context state to update
+      
     } catch (error) {
+      console.error("MetaMask login error:", error);
       toast({
         title: "Connection failed",
         description: "Could not connect to MetaMask",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };
