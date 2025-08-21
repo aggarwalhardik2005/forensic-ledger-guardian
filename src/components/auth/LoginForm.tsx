@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Shield, Wallet, Lock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useWeb3 } from "@/hooks/useWeb3";
+import { useWeb3 } from "@/contexts/Web3Context";
 import { useToast } from "@/hooks/use-toast";
 import { Role } from "@/services/web3Service";
 import ForgotPasswordForm from "./ForgotPasswordForm";
@@ -65,12 +65,14 @@ const LoginForm = () => {
             // Check if user has a valid role before attempting authentication
             if (userRole === Role.None) {
               toast({
-                title: "Access Denied",
+                title: "No Role Assigned",
                 description:
-                  "Your wallet address is not authorized to access this system. Please contact an administrator to register your wallet with appropriate permissions.",
-                variant: "destructive",
+                  "Your wallet doesn't have a role assigned yet. Redirecting to setup...",
+                variant: "default",
               });
               setIsLoading(false);
+              // Redirect to bootstrap/admin setup page
+              navigate("/bootstrap");
               return;
             }
 

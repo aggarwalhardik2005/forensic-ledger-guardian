@@ -19,6 +19,7 @@ import NotFound from "./pages/NotFound";
 import { Web3Provider } from "./contexts/Web3Context";
 import Settings from "./pages/Settings";
 import Activity from "./pages/Activity";
+import OwnerBootstrap from "./components/admin/OwnerBootstrap";
 
 // FIR pages
 import FIR from "./pages/fir/Fir";
@@ -75,6 +76,17 @@ const App: React.FC = () => {
           <Routes>
             {/* <Route path="/" element={<EvidenceComponent/>} /> */}
             <Route path="/" element={<Index />} />
+
+            {/* Bootstrap/Setup route for contract owner */}
+            <Route
+              path="/bootstrap"
+              element={
+                <Layout>
+                  <OwnerBootstrap />
+                </Layout>
+              }
+            />
+
             <Route
               path="/dashboard"
               element={

@@ -390,3 +390,12 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({
 };
 
 export { Web3Context };
+
+// Custom hook to use the Web3 context
+export const useWeb3 = () => {
+  const context = useContext(Web3Context);
+  if (context === undefined) {
+    throw new Error("useWeb3 must be used within a Web3Provider");
+  }
+  return context;
+};

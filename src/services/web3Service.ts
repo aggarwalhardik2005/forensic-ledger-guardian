@@ -796,6 +796,24 @@ class Web3Service {
     }
   }
 
+  // Check if contract is connected
+  public isContractConnected(): boolean {
+    return this.contract !== null;
+  }
+
+  // Get contract owner address
+  public async getContractOwner(): Promise<string | null> {
+    if (!this.contract) return null;
+
+    try {
+      const owner = await this.contract.owner();
+      return owner;
+    } catch (error) {
+      console.error("Error getting contract owner:", error);
+      return null;
+    }
+  }
+
   // FIR Management
   public async fileFIR(firId: string, description: string): Promise<boolean> {
     if (!this.contract) return false;
