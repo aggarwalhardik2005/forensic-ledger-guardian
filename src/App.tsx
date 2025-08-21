@@ -71,8 +71,8 @@ const App: React.FC = () => {
               <Toaster />
               <Sonner />
               <Routes>
-                <Route path="/" element={<EvidenceComponent/>} />
-                {/* <Route path="/" element={<Index />} /> */}
+                {/* <Route path="/" element={<EvidenceComponent/>} /> */}
+                <Route path="/" element={<Index />} />
                 <Route path="/dashboard" element={<Layout><ProtectedRoute><Dashboard /></ProtectedRoute></Layout>} />
                 <Route path="/cases" element={<Layout><ProtectedRoute><Cases /></ProtectedRoute></Layout>} />
                 <Route path="/cases/:caseId" element={<Layout><ProtectedRoute><CaseDetail /></ProtectedRoute></Layout>} />
