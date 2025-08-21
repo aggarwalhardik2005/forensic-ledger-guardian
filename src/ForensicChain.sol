@@ -157,33 +157,32 @@ contract ForensicChain {
     }
 
     function createCaseFromFIR(
-        string memory caseId,
-        string memory firId,
-        string memory title,
-        string memory description,
-        string[] memory tags
-    ) external notLocked onlyRole(Role.Officer) {
-        require(cases[caseId].createdBy == address(0), "Case already exists");
-        require(firs[firId].filedBy != address(0), "FIR not found");
-        require(!firs[firId].promotedToCase, "FIR already promoted");
+    string memory caseId,
+    string memory firId,
+    string memory title,
+    string memory description,
+    string[] memory tags
+) external notLocked onlyRole(Role.Officer) {
+    require(cases[caseId].createdBy == address(0), "Case already exists");
+    require(firs[firId].filedBy != address(0), "FIR not found");
+    require(!firs[firId].promotedToCase, "FIR already promoted");
 
-        Case storage c = cases[caseId];
-        c.caseId = caseId;
-        c.title = title;
-        c.description = description;
-        c.createdBy = msg.sender;
-        c.seal = false;
-        c.open = true;
-        c.tags = tags;
-        c.evidenceCount = 0;
+    Case storage c = cases[caseId];
+    c.caseId = caseId;
+    c.title = title;
+    c.description = description;
+    c.createdBy = msg.sender;
+    c.seal = false;
+    c.open = true;
+    c.tags = tags;
+    c.evidenceCount = 0;
 
-        firs[firId].promotedToCase = true;
-        firs[firId].associatedCaseId = caseId;
-        caseRoles[caseId][msg.sender] = Role.Court;
-        caseIds.push(caseId);
+    firs[firId].promotedToCase = true;
+    firs[firId].associatedCaseId = caseId;
+    caseIds.push(caseId);
 
-        emit CaseCreated(caseId, firId, msg.sender);
-    }
+    emit CaseCreated(caseId, firId, msg.sender);
+}
 
     function assignCaseRole(string memory caseId, address user, Role role) external notLocked onlyCourt {
         require(role != Role.None, "Cannot assign None role");
