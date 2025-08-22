@@ -773,19 +773,29 @@ class Web3Service {
   }
 
   public async getUserRole(): Promise<Role> {
-    if (!this.contract || !this.account) return Role.None;
+    if (!this.contract || !this.account) {
+      console.log("getUserRole: No contract or account available");
+      return Role.None;
+    }
 
     try {
+      console.log(`getUserRole: Checking role for account ${this.account}`);
       const roleRaw = await this.contract.getGlobalRole(this.account);
       const role = this.toNumber(roleRaw) as Role;
       console.log(
-        `getUserRole: Account ${this.account} has role ${this.getRoleString(
+        `getUserRole: Account ${this.account} has blockchain role ${this.getRoleString(
           role
-        )}`
+        )} (raw value: ${roleRaw})`
       );
+      
+      // Additional debugging
+      const owner = await this.contract.owner();
+      console.log(`getUserRole: Contract owner is ${owner}`);
+      console.log(`getUserRole: Current account is owner: ${owner.toLowerCase() === this.account.toLowerCase()}`);
+      
       return role;
     } catch (error) {
-      console.error("Error getting user role:", error);
+      console.error("getUserRole: Error getting user role:", error);
       return Role.None;
     }
   }
@@ -1253,14 +1263,26 @@ class Web3Service {
   }
 
   public async setGlobalRole(user: string, role: Role): Promise<boolean> {
-    if (!this.contract) return false;
+    if (!this.contract) {
+      console.log("setGlobalRole: No contract available");
+      return false;
+    }
 
     try {
+      console.log(`setGlobalRole: Setting role ${this.getRoleString(role)} for user ${user}`);
       const tx = await this.contract.setGlobalRole(user, role);
+      console.log(`setGlobalRole: Transaction sent, hash: ${tx.hash}`);
       await tx.wait();
+      console.log(`setGlobalRole: Transaction confirmed for ${user} -> ${this.getRoleString(role)}`);
+      
+      // Verify the role was set correctly
+      const verifyRole = await this.contract.getGlobalRole(user);
+      const verifiedRole = this.toNumber(verifyRole) as Role;
+      console.log(`setGlobalRole: Verified role for ${user}: ${this.getRoleString(verifiedRole)}`);
+      
       return true;
     } catch (error) {
-      console.error("Error setting global role:", error);
+      console.error("setGlobalRole: Error setting global role:", error);
       toast({
         title: "Transaction Failed",
         description: "Failed to set global role. Please try again.",
@@ -1349,33 +1371,71 @@ class Web3Service {
     if (!this.contract || !this.account) return false;
 
     try {
-      console.log("Checking if user can initialize admin role...");
+      console.log("initializeAdminRole: Checking if user can initialize admin role...");
 
       // Check if the current user is the contract owner
       const isOwner = await this.isContractOwner();
+      console.log(`initializeAdminRole: Is owner: ${isOwner}`);
+      
       if (!isOwner) {
         console.log(
-          "User is not the contract owner, cannot initialize admin role"
+          "initializeAdminRole: User is not the contract owner, cannot initialize admin role"
         );
         return false;
       }
 
       // Check current role
       const currentRole = await this.getUserRole();
+      console.log(`initializeAdminRole: Current role is ${this.getRoleString(currentRole)}`);
+      
       if (currentRole === Role.None) {
-        console.log("Contract owner detected, setting up Court role...");
-        await this.setGlobalRole(this.account, Role.Court);
-        console.log("Admin role initialized successfully");
-        return true;
+        console.log("initializeAdminRole: Contract owner detected, setting up Court role...");
+        const success = await this.setGlobalRole(this.account, Role.Court);
+        if (success) {
+          console.log("initializeAdminRole: Admin role initialized successfully");
+          return true;
+        } else {
+          console.log("initializeAdminRole: Failed to set role");
+          return false;
+        }
       } else {
         console.log(
-          "User already has a role:",
+          "initializeAdminRole: User already has a role:",
           this.getRoleString(currentRole)
         );
         return true;
       }
     } catch (error) {
-      console.error("Error initializing admin role:", error);
+      console.error("initializeAdminRole: Error initializing admin role:", error);
+      return false;
+    }
+  }
+
+  // Method to reset a user's role (for debugging purposes)
+  public async resetUserRole(userAddress?: string): Promise<boolean> {
+    if (!this.contract || !this.account) return false;
+
+    try {
+      const targetAddress = userAddress || this.account;
+      console.log(`resetUserRole: Resetting role for ${targetAddress}`);
+      
+      // Check if current user can set roles (must be owner)
+      const isOwner = await this.isContractOwner();
+      if (!isOwner) {
+        console.log("resetUserRole: Only contract owner can reset roles");
+        return false;
+      }
+      
+      const success = await this.setGlobalRole(targetAddress, Role.None);
+      if (success) {
+        console.log(`resetUserRole: Successfully reset role for ${targetAddress}`);
+        return true;
+      } else {
+        console.log(`resetUserRole: Failed to reset role for ${targetAddress}`);
+        return false;
+      }
+    } catch (error) {
+      console.error("resetUserRole: Error resetting role:", error);
       return false;
     }
   }
