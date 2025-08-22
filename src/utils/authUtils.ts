@@ -16,15 +16,13 @@ export const clearAllAuthData = (): void => {
 };
 
 /**
- * Checks if the current user is a development user
+ * Checks if the current user is a development user - DISABLED FOR PRODUCTION
  */
 export const isDevUser = (
   user: { id?: string; email?: string } | null
 ): boolean => {
-  return (
-    user !== null &&
-    (user.id === "dev-officer" || user.email === "officer@dev.local")
-  );
+  // Always return false for production - no dev users allowed
+  return false;
 };
 
 /**

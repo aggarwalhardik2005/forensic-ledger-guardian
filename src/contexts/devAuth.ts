@@ -1,14 +1,6 @@
 // devAuth.ts
-// Utility to auto-login as officer in development mode
-import { Role } from "@/services/web3Service";
+// Development authentication utilities - DISABLED FOR PRODUCTION
+// This file is kept for reference but all dev functionality is disabled
 
-export const DEV_OFFICER_USER = {
-  id: "dev-officer",
-  email: "officer@dev.local",
-  name: "Dev Officer",
-  role: Role.Officer,
-  roleTitle: "Officer",
-  address: "0xdevOfficer",
-};
-
-export const isDev = () => import.meta.env.MODE === "development";
+export const DEV_OFFICER_USER = null;
+export const isDev = () => false; // Disabled for production

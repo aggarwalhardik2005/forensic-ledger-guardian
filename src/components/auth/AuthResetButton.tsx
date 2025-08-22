@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { clearAllAuthData, forceAuthReset, isDevUser } from "@/utils/authUtils";
+import { clearAllAuthData, forceAuthReset } from "@/utils/authUtils";
 import { RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -55,9 +55,8 @@ const AuthResetButton: React.FC<AuthResetButtonProps> = ({
     }
   };
 
-  // Show the button if user is logged in and it's a dev user, or if explicitly requested
-  const showButton =
-    user && (isDevUser(user) || import.meta.env.MODE === "development");
+  // Hide button in production - only show for development mode
+  const showButton = import.meta.env.MODE === "development";
 
   if (!showButton) {
     return null;

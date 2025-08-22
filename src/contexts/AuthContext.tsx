@@ -41,16 +41,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  // Clear any development authentication data on app start
+    // Clear any development user data on initialization
   useEffect(() => {
     const storedUser = localStorage.getItem("forensicLedgerUser");
     if (storedUser) {
       try {
         const userData = JSON.parse(storedUser);
-        // Clear development user data
+        // Clear development user data and any invalid data
         if (
           userData.id === "dev-officer" ||
-          userData.email === "officer@dev.local"
+          userData.email === "officer@dev.local" ||
+          userData.address === "0xdevOfficer"
         ) {
           localStorage.removeItem("forensicLedgerUser");
           console.log("Cleared development user data");
@@ -63,60 +64,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
   }, []);
 
-  // DEV MODE: Disable auto-login to allow proper testing of authentication flow
   useEffect(() => {
-    // Commenting out dev auto-login to fix production authentication issues
-    // if (import.meta.env.MODE === "development") {
-    //   const initDevMode = () => {
-    //     // Check if there's an active Supabase session first
-    //     if (supabase) {
-    //       supabase.auth.getSession().then(({ data }) => {
-    //         if (data.session) {
-    //           // User has active email session, don't override with dev user
-    //           return;
-    //         }
-    //         // No active session, check localStorage
-    //         const localUser = localStorage.getItem("forensicLedgerUser");
-    //         if (localUser) {
-    //           try {
-    //             const parsedUser = JSON.parse(localUser);
-    //             // Only use dev user if it's actually the dev user, not a real user
-    //             if (parsedUser.id === "dev-officer") {
-    //               setUser(parsedUser);
-    //             }
-    //           } catch (error) {
-    //             console.error("Error parsing stored user:", error);
-    //             localStorage.removeItem("forensicLedgerUser");
-    //           }
-    //         } else {
-    //           // No stored user, set dev user
-    //           import("./devAuth").then(({ DEV_OFFICER_USER }) => {
-    //             setUser(DEV_OFFICER_USER);
-    //             localStorage.setItem(
-    //               "forensicLedgerUser",
-    //               JSON.stringify(DEV_OFFICER_USER)
-    //             );
-    //           });
-    //         }
-    //       });
-    //     } else {
-    //       // No Supabase, use dev mode
-    //       const localUser = localStorage.getItem("forensicLedgerUser");
-    //       if (localUser) {
-    //         setUser(JSON.parse(localUser));
-    //       } else {
-    //         import("./devAuth").then(({ DEV_OFFICER_USER }) => {
-    //           setUser(DEV_OFFICER_USER);
-    //           localStorage.setItem(
-    //             "forensicLedgerUser",
-    //             JSON.stringify(DEV_OFFICER_USER)
-    //           );
-    //         });
-    //       }
-    //     }
-    //   };
-    //   initDevMode();
-    // }
   }, []);
 
   console.log("AuthProvider initialized");
@@ -133,6 +81,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
     // Clear any existing dev/wallet user data before attempting email login
     localStorage.removeItem("forensicLedgerUser");
+    sessionStorage.removeItem("forensicLedgerUser");
     setUser(null);
 
     const { data, error } = await supabase.auth.signInWithPassword({

@@ -51,26 +51,50 @@ Forensic Ledger Guardian is a comprehensive web application designed for law enf
 
 ### Prerequisites
 
-- Node.js 18+ and npm (recommended: install with npm)
+- Node.js (v18 or higher)
+- npm or yarn package manager
 - Web3 wallet (MetaMask recommended)
+- Access to Ethereum Sepolia testnet
 
 ### Installation
 
-```sh
-# Clone the repository
-git clone https://github.com/aaravmahajanofficial/forensic-ledger-guardian.git
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-org/forensic-ledger-guardian.git
+   cd forensic-ledger-guardian
+   ```
 
-# Navigate to project directory
-cd forensic-ledger-guardian
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-# Install dependencies
-npm install
+3. **Environment Setup**
+   
+   Create a `.env` file in the root directory:
+   ```env
+   VITE_SUPABASE_URL=your_supabase_project_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
 
-# Start development server
-npm run dev
-```
+4. **Start the development server**
+   ```bash
+   npm run dev
+   ```
 
-The application will be available at `http://localhost:8080`
+The application will be available at `http://localhost:5173`
+
+### Production Deployment
+
+1. **Build the application**
+   ```bash
+   npm run build
+   ```
+
+2. **Deploy to your hosting provider**
+   ```bash
+   npm run preview  # Test the production build locally
+   ```
 
 ### Build for Production
 
