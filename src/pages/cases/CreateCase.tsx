@@ -29,13 +29,19 @@ import {
   ShieldAlert,
   ChevronRight,
   FileCheck,
+  Settings,
 } from "lucide-react";
 import { error } from "console";
+import RoleManager from "@/components/debug/RoleManager";
+import { useWeb3 } from "@/hooks/useWeb3";
 
 const CreateCase = () => {
+  const { userRole, account } = useWeb3();
+  
   // State for form fields
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("basic");
+  const [showRoleManager, setShowRoleManager] = useState(false);
   const [caseTitle, setCaseTitle] = useState(
     "Default Case Title - Cyberbullying Incident"
   );
@@ -134,6 +140,16 @@ const CreateCase = () => {
   };
 
   const handleSubmit = async () => {
+    // Role validation first
+    if (userRole !== Role.Court && userRole !== Role.Officer) {
+      toast({
+        title: "Insufficient Permissions",
+        description: "You need Court or Officer role to create cases. Use the 'Manage Role' button to set the appropriate role.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Validation
     if (!caseTitle) {
       toast({
@@ -352,18 +368,41 @@ const CreateCase = () => {
           "Failed to create case on the blockchain. The transaction may have reverted."
         );
       }
-    } catch (error) {
-      if (error.reason) {
-        console.error("Revert reason:", error.reason);
+    } catch (error: unknown) {
+      console.error("Case creation error:", error);
+      
+      let errorTitle = "Case Creation Failed";
+      let errorDescription = "There was a problem creating the case. Check the console for more details.";
+      
+      // Handle specific error types
+      const err = error as { reason?: string; data?: string }; // Type assertion for error handling
+      if (err.reason) {
+        console.error("Revert reason:", err.reason);
+        
+        if (err.reason.includes("Only Court can perform this action")) {
+          errorTitle = "Permission Denied";
+          errorDescription = "This operation requires Court role. Use the 'Manage Role' button to set yourself as Court role for testing.";
+        } else if (err.reason.includes("Unauthorized role")) {
+          errorTitle = "Unauthorized Role";
+          errorDescription = "You don't have the required role to perform this action. Use the 'Manage Role' button to set the appropriate role.";
+        } else if (err.reason.includes("Case already exists")) {
+          errorTitle = "Case Already Exists";
+          errorDescription = "A case with this ID already exists. Please try with a different case ID.";
+        } else if (err.reason.includes("FIR not found")) {
+          errorTitle = "FIR Not Found";
+          errorDescription = "The specified FIR was not found. Please check the FIR ID.";
+        } else {
+          errorDescription = `Error: ${err.reason}`;
+        }
       }
-      if (error.data) {
-        console.error("Error data:", error.data);
+      
+      if (err.data) {
+        console.error("Error data:", err.data);
       }
 
       toast({
-        title: "Case Creation Failed",
-        description:
-          "There was a problem creating the case. Check the console for more details.",
+        title: errorTitle,
+        description: errorDescription,
         variant: "destructive",
       });
     } finally {
@@ -879,20 +918,57 @@ const CreateCase = () => {
                     <ChevronRight className="h-4 w-4 rotate-180" />
                     Back: Involved Parties
                   </Button>
-                  <Button
-                    className="bg-forensic-court hover:bg-forensic-court/90 flex items-center gap-2"
-                    onClick={handleSubmit}
-                    disabled={isLoading}
-                  >
-                    <Save className="h-4 w-4 mr-1" />
-                    Create Case
-                  </Button>
+                  
+                  <div className="flex gap-2">
+                    {/* Role Management Button */}
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2"
+                      onClick={() => setShowRoleManager(true)}
+                    >
+                      <Settings className="h-4 w-4" />
+                      Manage Role
+                    </Button>
+                    
+                    {/* Submit Button with Role Check */}
+                    <Button
+                      className="bg-forensic-court hover:bg-forensic-court/90 flex items-center gap-2"
+                      onClick={handleSubmit}
+                      disabled={isLoading || (userRole !== Role.Court && userRole !== Role.Officer)}
+                    >
+                      <Save className="h-4 w-4 mr-1" />
+                      Create Case
+                    </Button>
+                  </div>
                 </div>
+                
+                {/* Role Information */}
+                {(userRole !== Role.Court && userRole !== Role.Officer) && (
+                  <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <ShieldAlert className="h-5 w-5 text-yellow-600" />
+                      <p className="text-sm text-yellow-800">
+                        <strong>Role Required:</strong> You need Court or Officer role to create cases. 
+                        Current role: {userRole === Role.None ? 'None' : 
+                                     userRole === Role.Forensic ? 'Forensic' : 
+                                     userRole === Role.Lawyer ? 'Lawyer' : 'Unknown'}
+                      </p>
+                    </div>
+                    <p className="text-xs text-yellow-600 mt-1">
+                      Click "Manage Role" to set the appropriate role for testing.
+                    </p>
+                  </div>
+                )}
               </div>
             </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
+      
+      {/* Role Manager Modal */}
+      {showRoleManager && (
+        <RoleManager onClose={() => setShowRoleManager(false)} />
+      )}
     </div>
   );
 };
