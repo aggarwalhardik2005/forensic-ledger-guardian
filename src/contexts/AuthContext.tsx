@@ -41,7 +41,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-    // Clear any development user data on initialization
+  // Clear any development user data on initialization
   useEffect(() => {
     const storedUser = localStorage.getItem("forensicLedgerUser");
     if (storedUser) {
@@ -64,8 +64,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
   }, []);
 
-  useEffect(() => {
-  }, []);
+  useEffect(() => {}, []);
 
   console.log("AuthProvider initialized");
 

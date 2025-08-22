@@ -9,15 +9,15 @@ export const forceRoleRefresh = async (): Promise<void> => {
   // Clear any cached authentication data
   localStorage.removeItem("forensicLedgerUser");
   sessionStorage.removeItem("forensicLedgerUser");
-  
+
   // Clear wallet connection data that might interfere
   localStorage.removeItem("walletconnect");
   localStorage.removeItem("WALLETCONNECT_DEEPLINK_CHOICE");
-  
+
   console.log("Role state cleared, forcing refresh...");
-  
+
   // Dispatch a custom event to notify components to refresh
-  window.dispatchEvent(new CustomEvent('forceRoleRefresh'));
+  window.dispatchEvent(new CustomEvent("forceRoleRefresh"));
 };
 
 /**
@@ -28,6 +28,6 @@ export const clearAuthenticationState = (): void => {
   sessionStorage.removeItem("forensicLedgerUser");
   localStorage.removeItem("walletconnect");
   localStorage.removeItem("WALLETCONNECT_DEEPLINK_CHOICE");
-  
+
   console.log("All authentication state cleared");
 };

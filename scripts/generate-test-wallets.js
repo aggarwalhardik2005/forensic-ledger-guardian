@@ -2,7 +2,7 @@
 
 /**
  * Wallet Generator for Forensic Ledger Guardian
- * 
+ *
  * This script is DISABLED for production use.
  * In production, use real wallet addresses from actual users.
  */
