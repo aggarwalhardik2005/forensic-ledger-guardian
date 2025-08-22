@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { roleManagementService } from "@/services/roleManagementService";
 import web3Service, { Role } from "@/services/web3Service";
 import { Shield, Database, Link, AlertCircle, CheckCircle } from "lucide-react";
+import AuthResetButton from "@/components/auth/AuthResetButton";
 
 const RoleDebugger = () => {
   const [dbRole, setDbRole] = useState<Role>(Role.None);
@@ -127,14 +128,17 @@ const RoleDebugger = () => {
                 <h3 className="font-semibold text-sm text-gray-700">
                   Role Status
                 </h3>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={checkRoles}
-                  disabled={loading}
-                >
-                  {loading ? "Checking..." : "Refresh"}
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={checkRoles}
+                    disabled={loading}
+                  >
+                    {loading ? "Checking..." : "Refresh"}
+                  </Button>
+                  <AuthResetButton variant="outline" size="sm" />
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

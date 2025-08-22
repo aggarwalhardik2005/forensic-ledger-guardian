@@ -41,22 +41,82 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  // DEV MODE: auto-login as officer
+  // Clear any development authentication data on app start
   useEffect(() => {
-    if (import.meta.env.MODE === "development") {
-      const localUser = localStorage.getItem("forensicLedgerUser");
-      if (localUser) {
-        setUser(JSON.parse(localUser));
-      } else {
-        import("./devAuth").then(({ DEV_OFFICER_USER }) => {
-          setUser(DEV_OFFICER_USER);
-          localStorage.setItem(
-            "forensicLedgerUser",
-            JSON.stringify(DEV_OFFICER_USER)
-          );
-        });
+    const storedUser = localStorage.getItem("forensicLedgerUser");
+    if (storedUser) {
+      try {
+        const userData = JSON.parse(storedUser);
+        // Clear development user data
+        if (
+          userData.id === "dev-officer" ||
+          userData.email === "officer@dev.local"
+        ) {
+          localStorage.removeItem("forensicLedgerUser");
+          console.log("Cleared development user data");
+        }
+      } catch (error) {
+        // Clear invalid data
+        localStorage.removeItem("forensicLedgerUser");
+        console.log("Cleared invalid user data");
       }
     }
+  }, []);
+
+  // DEV MODE: Disable auto-login to allow proper testing of authentication flow
+  useEffect(() => {
+    // Commenting out dev auto-login to fix production authentication issues
+    // if (import.meta.env.MODE === "development") {
+    //   const initDevMode = () => {
+    //     // Check if there's an active Supabase session first
+    //     if (supabase) {
+    //       supabase.auth.getSession().then(({ data }) => {
+    //         if (data.session) {
+    //           // User has active email session, don't override with dev user
+    //           return;
+    //         }
+    //         // No active session, check localStorage
+    //         const localUser = localStorage.getItem("forensicLedgerUser");
+    //         if (localUser) {
+    //           try {
+    //             const parsedUser = JSON.parse(localUser);
+    //             // Only use dev user if it's actually the dev user, not a real user
+    //             if (parsedUser.id === "dev-officer") {
+    //               setUser(parsedUser);
+    //             }
+    //           } catch (error) {
+    //             console.error("Error parsing stored user:", error);
+    //             localStorage.removeItem("forensicLedgerUser");
+    //           }
+    //         } else {
+    //           // No stored user, set dev user
+    //           import("./devAuth").then(({ DEV_OFFICER_USER }) => {
+    //             setUser(DEV_OFFICER_USER);
+    //             localStorage.setItem(
+    //               "forensicLedgerUser",
+    //               JSON.stringify(DEV_OFFICER_USER)
+    //             );
+    //           });
+    //         }
+    //       });
+    //     } else {
+    //       // No Supabase, use dev mode
+    //       const localUser = localStorage.getItem("forensicLedgerUser");
+    //       if (localUser) {
+    //         setUser(JSON.parse(localUser));
+    //       } else {
+    //         import("./devAuth").then(({ DEV_OFFICER_USER }) => {
+    //           setUser(DEV_OFFICER_USER);
+    //           localStorage.setItem(
+    //             "forensicLedgerUser",
+    //             JSON.stringify(DEV_OFFICER_USER)
+    //           );
+    //         });
+    //       }
+    //     }
+    //   };
+    //   initDevMode();
+    // }
   }, []);
 
   console.log("AuthProvider initialized");
@@ -70,6 +130,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       });
       return false;
     }
+
+    // Clear any existing dev/wallet user data before attempting email login
+    localStorage.removeItem("forensicLedgerUser");
+    setUser(null);
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -121,13 +185,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           await supabase.auth.signOut();
           return false;
         }
+      } else {
+        // Profile exists, login successful
+        toast({
+          title: "Login Successful",
+          description: `Welcome back, ${profile.name || email}`,
+        });
+        navigate("/dashboard");
+        return true;
       }
-
-      toast({
-        title: "Login Successful",
-        description: `Welcome back, ${email}`,
-      });
-      navigate("/dashboard");
     }
 
     return true;
@@ -160,6 +226,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     userRole: Role
   ): Promise<boolean> => {
     try {
+      // Clear any existing email-based session
+      if (supabase) {
+        await supabase.auth.signOut();
+      }
+
       // Create a helper function to get role title
       const getRoleTitle = (role: Role): string => {
         switch (role) {
@@ -264,7 +335,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       try {
         const { data, error } = await supabase
           .from("profiles")
-          .select("name, role, role_title, address")
+          .select("name, role, role_title, wallet_address")
           .eq("id", userId)
           .single();
 
@@ -279,7 +350,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           name: data.name,
           role: mapRoleStringToEnum(data.role),
           roleTitle: data.role_title,
-          address: data.address || undefined,
+          address: data.wallet_address || undefined,
         };
 
         setUser(fullUser);
@@ -356,10 +427,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   }, [loadUserProfile]);
 
   const logout = async () => {
-    if (!supabase) return;
-    await supabase.auth.signOut();
+    // Clear Supabase session if available
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
+
+    // Clear all user state
     setUser(null);
     localStorage.removeItem("forensicLedgerUser");
+
     toast({
       title: "Logged Out",
       description: "You have been logged out successfully",

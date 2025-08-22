@@ -17,7 +17,7 @@ export interface UserProfile {
   name: string;
   role: Role;
   role_title: string;
-  wallet_address?: string;
+  address?: string;
   is_court_admin: boolean;
 }
 
@@ -194,7 +194,7 @@ class RoleManagementService {
     try {
       const { error } = await supabase
         .from("profiles")
-        .update({ wallet_address: walletAddress.toLowerCase() })
+        .update({ address: walletAddress.toLowerCase() })
         .eq("id", userId);
 
       if (error) {
@@ -248,7 +248,8 @@ class RoleManagementService {
     if (!supabase) return false;
 
     try {
-      const { error } = await supabase.from("profiles").insert([
+      // First, try to insert the profile
+      const { error: insertError } = await supabase.from("profiles").insert([
         {
           id: userId,
           email: email,
@@ -259,11 +260,25 @@ class RoleManagementService {
         },
       ]);
 
-      if (error) {
-        console.error("Error creating court admin profile:", error);
+      if (insertError) {
+        console.error("Error creating court admin profile:", insertError);
+
+        // If it's an RLS policy error, try to work around it
+        if (
+          insertError.code === "42501" ||
+          insertError.message?.includes("policy")
+        ) {
+          console.warn(
+            "RLS policy preventing profile creation. This might need database policy updates."
+          );
+          // For now, return false and handle it in the calling code
+          return false;
+        }
+
         return false;
       }
 
+      console.log("Court admin profile created successfully");
       return true;
     } catch (error) {
       console.error("Error creating court admin profile:", error);
