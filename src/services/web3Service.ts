@@ -524,13 +524,13 @@ const CONTRACT_ABI = [
 
 // Network-specific contract addresses
 const CONTRACT_ADDRESSES: Record<string, string> = {
-  "0xaa36a7": "0x0f98bcb53ff15fdc52168573c36436cf21a1466a", // Sepolia testnet
-  "0x7a69": "0x0f98bcb53ff15fdc52168573c36436cf21a1466a", // Anvil local
+  "0xaa36a7": "0xf95af9ef3f9cdbd39cc3847707285dc90022104a", // Sepolia testnet
+  "0x7a69": "0xf95af9ef3f9cdbd39cc3847707285dc90022104a", // Anvil local
   "0x1": "0x0000000000000000000000000000000000000000", // Mainnet (placeholder)
 };
 
 // Default contract address (Sepolia)
-const CONTRACT_ADDRESS = "0x0f98bcb53ff15fdc52168573c36436cf21a1466a";
+const CONTRACT_ADDRESS = "0xf95af9ef3f9cdbd39cc3847707285dc90022104a";
 
 export enum Role {
   None = 0,
@@ -967,7 +967,10 @@ class Web3Service {
           errorMessage = "This FIR has already been promoted to a case.";
         } else if (err.reason.includes("Unauthorized role")) {
           errorMessage =
-            "You don't have permission to create cases. Only Officers can create cases.";
+            "You don't have permission to create cases. Only Court can create cases.";
+        } else if (err.reason.includes("Only Court can perform this action")) {
+          errorMessage =
+            "You don't have permission to create cases. Only Court can create cases.";
         } else if (err.reason.includes("System is in emergency lock")) {
           errorMessage = "The system is currently locked for maintenance.";
         } else {
@@ -1469,6 +1472,86 @@ class Web3Service {
       }
     } catch (error) {
       console.error("resetUserRole: Error resetting role:", error);
+      return false;
+    }
+  }
+
+  // Method to synchronize database role with blockchain role
+  public async syncUserRole(
+    userAddress?: string,
+    desiredRole?: Role
+  ): Promise<boolean> {
+    if (!this.contract || !this.account) return false;
+
+    try {
+      const targetAddress = userAddress || this.account;
+      console.log(`syncUserRole: Syncing role for ${targetAddress}`);
+
+      // Check if current user can set roles (must be owner or Court)
+      const isOwner = await this.isContractOwner();
+      const currentUserRole = await this.getUserRole();
+
+      if (!isOwner && currentUserRole !== Role.Court) {
+        console.log(
+          "syncUserRole: Only contract owner or Court can sync roles"
+        );
+        return false;
+      }
+
+      // Get database role if no desired role specified
+      let targetRole = desiredRole;
+      if (!targetRole) {
+        try {
+          const { roleManagementService } = await import(
+            "@/services/roleManagementService"
+          );
+          targetRole = await roleManagementService.getRoleForWallet(
+            targetAddress
+          );
+        } catch (error) {
+          console.error("syncUserRole: Error getting database role:", error);
+          return false;
+        }
+      }
+
+      if (targetRole === Role.None) {
+        console.log("syncUserRole: No role to sync");
+        return false;
+      }
+
+      // Get current blockchain role
+      const blockchainRole = await this.contract.getGlobalRole(targetAddress);
+      const currentBlockchainRole = this.toNumber(blockchainRole) as Role;
+
+      console.log(
+        `syncUserRole: Current blockchain role: ${this.getRoleString(
+          currentBlockchainRole
+        )}`
+      );
+      console.log(
+        `syncUserRole: Target role: ${this.getRoleString(targetRole)}`
+      );
+
+      if (currentBlockchainRole === targetRole) {
+        console.log("syncUserRole: Roles already match, no sync needed");
+        return true;
+      }
+
+      // Sync the role
+      const success = await this.setGlobalRole(targetAddress, targetRole);
+      if (success) {
+        console.log(
+          `syncUserRole: Successfully synced role for ${targetAddress} to ${this.getRoleString(
+            targetRole
+          )}`
+        );
+        return true;
+      } else {
+        console.log(`syncUserRole: Failed to sync role for ${targetAddress}`);
+        return false;
+      }
+    } catch (error) {
+      console.error("syncUserRole: Error syncing role:", error);
       return false;
     }
   }
