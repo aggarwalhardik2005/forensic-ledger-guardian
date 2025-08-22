@@ -332,7 +332,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     if (roleInt === null || roleInt === undefined) {
       return Role.None;
     }
-    
+
     switch (roleInt) {
       case 1:
         return Role.Court;

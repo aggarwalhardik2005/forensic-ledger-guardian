@@ -777,7 +777,13 @@ class Web3Service {
 
     try {
       const roleRaw = await this.contract.getGlobalRole(this.account);
-      return this.toNumber(roleRaw) as Role;
+      const role = this.toNumber(roleRaw) as Role;
+      console.log(
+        `getUserRole: Account ${this.account} has role ${this.getRoleString(
+          role
+        )}`
+      );
+      return role;
     } catch (error) {
       console.error("Error getting user role:", error);
       return Role.None;
@@ -793,6 +799,19 @@ class Web3Service {
     } catch (error) {
       console.error(`Error getting user role for case ${caseId}:`, error);
       return Role.None;
+    }
+  }
+
+  // Check if the current user is the contract owner
+  public async isContractOwner(): Promise<boolean> {
+    if (!this.contract || !this.account) return false;
+
+    try {
+      const owner = await this.contract.owner();
+      return owner.toLowerCase() === this.account.toLowerCase();
+    } catch (error) {
+      console.error("Error checking contract owner:", error);
+      return false;
     }
   }
 
@@ -1311,16 +1330,52 @@ class Web3Service {
     try {
       console.log("Setting up test environment...");
 
-      // Set current user as Officer role for testing
+      // Check if user has a valid role
       const currentRole = await this.getUserRole();
-      if (currentRole === Role.None) {
-        console.log("Setting current user as Officer role");
-        await this.setGlobalRole(this.account, Role.Officer);
-      }
+      console.log("Current user role:", this.getRoleString(currentRole));
 
-      return true;
+      // DO NOT automatically assign roles - this should be done by administrators only
+      // Users should have their roles assigned through proper channels
+
+      return currentRole !== Role.None;
     } catch (error) {
       console.error("Error setting up test environment:", error);
+      return false;
+    }
+  }
+
+  // Method for administrators to initialize roles properly
+  public async initializeAdminRole(): Promise<boolean> {
+    if (!this.contract || !this.account) return false;
+
+    try {
+      console.log("Checking if user can initialize admin role...");
+
+      // Check if the current user is the contract owner
+      const isOwner = await this.isContractOwner();
+      if (!isOwner) {
+        console.log(
+          "User is not the contract owner, cannot initialize admin role"
+        );
+        return false;
+      }
+
+      // Check current role
+      const currentRole = await this.getUserRole();
+      if (currentRole === Role.None) {
+        console.log("Contract owner detected, setting up Court role...");
+        await this.setGlobalRole(this.account, Role.Court);
+        console.log("Admin role initialized successfully");
+        return true;
+      } else {
+        console.log(
+          "User already has a role:",
+          this.getRoleString(currentRole)
+        );
+        return true;
+      }
+    } catch (error) {
+      console.error("Error initializing admin role:", error);
       return false;
     }
   }

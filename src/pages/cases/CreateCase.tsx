@@ -205,22 +205,15 @@ const CreateCase = () => {
       console.log("User role:", web3Service.getRoleString(userRole));
 
       if (userRole !== Role.Officer) {
-        // Try to set up test environment if user has no role
+        // Handle users with no role or insufficient permissions
         if (userRole === Role.None) {
-          console.log(
-            "User has no role, attempting to set up test environment..."
-          );
-          const setupSuccess = await web3Service.setupTestEnvironment();
-          if (!setupSuccess) {
-            toast({
-              title: "Setup Failed",
-              description:
-                "Could not set up the test environment. Please contact an administrator.",
-              variant: "destructive",
-            });
-            return;
-          }
-          console.log("Test environment setup successful");
+          toast({
+            title: "Unauthorized Access",
+            description:
+              "You don't have permission to create cases. Please contact an administrator to get proper role assignment.",
+            variant: "destructive",
+          });
+          return;
         } else {
           toast({
             title: "Insufficient Permissions",

@@ -120,11 +120,60 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({
       setBalance("0.0");
       console.log("Web3Context: Account disconnected");
     } else {
-      setAccount(accounts[0]);
+      const newAccount = accounts[0];
+      console.log("Web3Context: Account changed to:", newAccount);
+      setAccount(newAccount);
       setIsConnected(true);
+
+      // Reset role to None initially, then fetch the actual role
+      setUserRole(Role.None);
+
       // Update role when account changes
-      web3Service.getUserRole().then(setUserRole);
-      console.log("Web3Context: Account changed to:", accounts[0]);
+      web3Service
+        .getUserRole()
+        .then(async (role) => {
+          console.log(
+            "Web3Context: User role for new account:",
+            web3Service.getRoleString(role)
+          );
+
+          // If user has no role but is the contract owner, offer to initialize
+          if (role === Role.None) {
+            try {
+              const isOwner = await web3Service.isContractOwner();
+              if (isOwner) {
+                console.log(
+                  "Web3Context: New account is contract owner, initializing admin role..."
+                );
+                const initSuccess = await web3Service.initializeAdminRole();
+                if (initSuccess) {
+                  const newRole = await web3Service.getUserRole();
+                  setUserRole(newRole);
+                  console.log(
+                    "Web3Context: Admin role initialized for new account, role:",
+                    web3Service.getRoleString(newRole)
+                  );
+                } else {
+                  setUserRole(Role.None);
+                }
+              } else {
+                setUserRole(Role.None);
+              }
+            } catch (error) {
+              console.error(
+                "Web3Context: Error checking owner status for new account:",
+                error
+              );
+              setUserRole(Role.None);
+            }
+          } else {
+            setUserRole(role);
+          }
+        })
+        .catch((error) => {
+          console.error("Web3Context: Error fetching user role:", error);
+          setUserRole(Role.None);
+        });
     }
   }, []);
 
@@ -179,13 +228,49 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({
             setAccount(currentAccount);
             setIsConnected(true);
 
-            // Get user role
-            const role = await web3Service.getUserRole();
-            console.log(
-              "Web3Context: User role:",
-              web3Service.getRoleString(role)
-            );
-            setUserRole(role);
+            // Get user role with proper error handling
+            try {
+              const role = await web3Service.getUserRole();
+              console.log(
+                "Web3Context: User role:",
+                web3Service.getRoleString(role)
+              );
+
+              // If user has no role but is the contract owner, offer to initialize
+              if (role === Role.None) {
+                const isOwner = await web3Service.isContractOwner();
+                if (isOwner) {
+                  console.log(
+                    "Web3Context: Contract owner detected, initializing admin role..."
+                  );
+                  const initSuccess = await web3Service.initializeAdminRole();
+                  if (initSuccess) {
+                    const newRole = await web3Service.getUserRole();
+                    setUserRole(newRole);
+                    console.log(
+                      "Web3Context: Admin role initialized, new role:",
+                      web3Service.getRoleString(newRole)
+                    );
+                  } else {
+                    setUserRole(Role.None);
+                    console.log("Web3Context: Failed to initialize admin role");
+                  }
+                } else {
+                  setUserRole(Role.None);
+                  console.log(
+                    "Web3Context: User has no role assigned and is not contract owner"
+                  );
+                }
+              } else {
+                setUserRole(role);
+              }
+            } catch (roleError) {
+              console.error(
+                "Web3Context: Error fetching user role:",
+                roleError
+              );
+              setUserRole(Role.None);
+            }
 
             // Fetch balance
             refreshBalance();
@@ -249,13 +334,68 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({
         setAccount(account);
         setIsConnected(true);
 
-        // Get user role
-        const role = await web3Service.getUserRole();
-        console.log(
-          "Web3Context: User role after connection:",
-          web3Service.getRoleString(role)
-        );
-        setUserRole(role);
+        // Get user role with proper error handling
+        try {
+          const role = await web3Service.getUserRole();
+          console.log(
+            "Web3Context: User role after connection:",
+            web3Service.getRoleString(role)
+          );
+
+          // If user has no role but is the contract owner, offer to initialize
+          if (role === Role.None) {
+            const isOwner = await web3Service.isContractOwner();
+            if (isOwner) {
+              console.log(
+                "Web3Context: Contract owner detected, initializing admin role..."
+              );
+              const initSuccess = await web3Service.initializeAdminRole();
+              if (initSuccess) {
+                const newRole = await web3Service.getUserRole();
+                setUserRole(newRole);
+                toast({
+                  title: "Admin Role Initialized",
+                  description: `Welcome, contract owner! You now have ${web3Service.getRoleString(
+                    newRole
+                  )} privileges.`,
+                });
+              } else {
+                setUserRole(Role.None);
+                toast({
+                  title: "Initialization Failed",
+                  description:
+                    "Failed to initialize admin role. Please try again.",
+                  variant: "destructive",
+                });
+              }
+            } else {
+              setUserRole(Role.None);
+              toast({
+                title: "No Role Assigned",
+                description:
+                  "Your wallet is connected but you don't have a role assigned. Please contact an administrator for access.",
+                variant: "default",
+              });
+            }
+          } else {
+            setUserRole(role);
+            toast({
+              title: "Role Confirmed",
+              description: `Welcome! You are logged in as ${web3Service.getRoleString(
+                role
+              )}.`,
+            });
+          }
+        } catch (roleError) {
+          console.error("Web3Context: Error fetching user role:", roleError);
+          setUserRole(Role.None);
+          toast({
+            title: "Role Check Failed",
+            description:
+              "Could not determine your role. Please try reconnecting or contact support.",
+            variant: "destructive",
+          });
+        }
 
         // Fetch balance
         await refreshBalance();
