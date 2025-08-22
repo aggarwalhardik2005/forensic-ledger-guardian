@@ -17,6 +17,7 @@ import { useWeb3 } from "@/contexts/Web3Context";
 import { useToast } from "@/hooks/use-toast";
 import { Role } from "@/services/web3Service";
 import ForgotPasswordForm from "./ForgotPasswordForm";
+import AuthResetButton from "./AuthResetButton";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -36,9 +37,8 @@ const LoginForm = () => {
       const success = await login(email, password);
       console.log("Login success:", success);
 
-      if (success) {
-        navigate("/dashboard");
-      }
+      // Don't navigate here - let the AuthContext handle navigation
+      // The login function already handles navigation internally
     } catch (error) {
       console.log("error:", error);
       toast({
@@ -57,7 +57,6 @@ const LoginForm = () => {
     try {
       await connectWallet();
 
-      // Check if wallet was successfully connected
       // Wait a moment for state to update after connection
       setTimeout(async () => {
         try {
@@ -67,22 +66,17 @@ const LoginForm = () => {
               toast({
                 title: "No Role Assigned",
                 description:
-                  "Your wallet doesn't have a role assigned yet. Redirecting to setup...",
-                variant: "default",
+                  "Your wallet doesn't have a role assigned yet. Please contact an administrator.",
+                variant: "destructive",
               });
               setIsLoading(false);
-              // Redirect to bootstrap/admin setup page
-              navigate("/bootstrap");
               return;
             }
 
             // Now authenticate with the wallet
             const success = await loginWithWallet(account, userRole);
 
-            if (success) {
-              // Success toast is handled in loginWithWallet
-              // Navigate will also be handled there
-            } else {
+            if (!success) {
               toast({
                 title: "Authentication failed",
                 description: "Could not authenticate with the connected wallet",
@@ -135,21 +129,6 @@ const LoginForm = () => {
           <CardDescription>
             Enter your credentials to access your account
           </CardDescription>
-
-          {/* Demo accounts info */}
-          <div className="mt-2 p-2 bg-forensic-50 rounded text-xs">
-            <p className="font-semibold text-forensic-600 mb-1">
-              Demo Accounts:
-            </p>
-            <p className="text-forensic-500">court@example.com / court123</p>
-            <p className="text-forensic-500">
-              officer@example.com / officer123
-            </p>
-            <p className="text-forensic-500">
-              forensic@example.com / forensic123
-            </p>
-            <p className="text-forensic-500">lawyer@example.com / lawyer123</p>
-          </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin}>
@@ -248,10 +227,18 @@ const LoginForm = () => {
             </div>
           </form>
         </CardContent>
-        <CardFooter className="justify-center">
+        <CardFooter className="flex flex-col items-center space-y-2">
           <p className="text-sm text-forensic-500">
             Don't have access? Contact your administrator.
           </p>
+          {import.meta.env.MODE === "development" && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">
+                Having login issues?
+              </span>
+              <AuthResetButton variant="ghost" size="sm" />
+            </div>
+          )}
         </CardFooter>
       </Card>
     </div>
