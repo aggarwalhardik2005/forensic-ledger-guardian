@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   name TEXT NOT NULL,
   role INTEGER NOT NULL DEFAULT 0,
   role_title TEXT NOT NULL DEFAULT 'None',
-  address TEXT, -- Renamed from wallet_address for consistency
+  address TEXT, -- Renamed from address for consistency
   is_court_admin BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS profiles (
 -- 2. Create role_assignments table for wallet-to-role mapping
 CREATE TABLE IF NOT EXISTS role_assignments (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  wallet_address TEXT UNIQUE NOT NULL,
+  address TEXT UNIQUE NOT NULL,
   role INTEGER NOT NULL,
   role_name TEXT NOT NULL,
   assigned_by TEXT NOT NULL,
@@ -38,7 +38,7 @@ GRANT ALL ON role_assignments TO anon;
 -- 5. Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_profiles_email ON profiles(email);
 CREATE INDEX IF NOT EXISTS idx_profiles_address ON profiles(address);
-CREATE INDEX IF NOT EXISTS idx_role_assignments_wallet_address ON role_assignments(wallet_address);
+CREATE INDEX IF NOT EXISTS idx_role_assignments_address ON role_assignments(address);
 CREATE INDEX IF NOT EXISTS idx_role_assignments_active ON role_assignments(is_active);
 
 -- 6. Create function to automatically update updated_at timestamp
@@ -81,7 +81,7 @@ FROM profiles p;
 CREATE OR REPLACE VIEW active_role_assignments AS
 SELECT 
   ra.id,
-  ra.wallet_address,
+  ra.address,
   ra.role,
   ra.role_name,
   ra.assigned_by,

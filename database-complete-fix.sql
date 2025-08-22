@@ -16,13 +16,13 @@ DROP POLICY IF EXISTS "Only court admins can update role assignments" ON role_as
 ALTER TABLE profiles DISABLE ROW LEVEL SECURITY;
 ALTER TABLE role_assignments DISABLE ROW LEVEL SECURITY;
 
--- Step 3: Fix column name if needed (wallet_address -> address in profiles)
+-- Step 3: Fix column name if needed (address -> address in profiles)
 DO $$
 BEGIN
-    -- Check if wallet_address column exists and rename it to address
+    -- Check if address column exists and rename it to address
     IF EXISTS (SELECT 1 FROM information_schema.columns 
-               WHERE table_name = 'profiles' AND column_name = 'wallet_address') THEN
-        ALTER TABLE profiles RENAME COLUMN wallet_address TO address;
+               WHERE table_name = 'profiles' AND column_name = 'address') THEN
+        ALTER TABLE profiles RENAME COLUMN address TO address;
     END IF;
 END $$;
 
@@ -32,7 +32,7 @@ ADD COLUMN IF NOT EXISTS address TEXT,
 ADD COLUMN IF NOT EXISTS is_court_admin BOOLEAN DEFAULT FALSE;
 
 -- Step 5: Update indexes
-DROP INDEX IF EXISTS idx_profiles_wallet_address;
+DROP INDEX IF EXISTS idx_profiles_address;
 CREATE INDEX IF NOT EXISTS idx_profiles_address ON profiles(address);
 
 -- Step 6: Grant permissions
@@ -64,10 +64,10 @@ BEGIN
 
     -- Test role_assignments table access  
     BEGIN
-        INSERT INTO role_assignments (wallet_address, role, role_name, assigned_by) 
+        INSERT INTO role_assignments (address, role, role_name, assigned_by) 
         VALUES ('0xtest', 1, 'Test Role', 'test');
         result := result || 'Role_assignments INSERT: OK, ';
-        DELETE FROM role_assignments WHERE wallet_address = '0xtest';
+        DELETE FROM role_assignments WHERE address = '0xtest';
         result := result || 'Role_assignments DELETE: OK';
     EXCEPTION
         WHEN OTHERS THEN

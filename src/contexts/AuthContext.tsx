@@ -335,7 +335,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       try {
         const { data, error } = await supabase
           .from("profiles")
-          .select("name, role, role_title, wallet_address")
+          .select("name, role, role_title, address")
           .eq("id", userId)
           .single();
 
@@ -350,7 +350,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           name: data.name,
           role: mapRoleStringToEnum(data.role),
           roleTitle: data.role_title,
-          address: data.wallet_address || undefined,
+          address: data.address || undefined,
         };
 
         setUser(fullUser);

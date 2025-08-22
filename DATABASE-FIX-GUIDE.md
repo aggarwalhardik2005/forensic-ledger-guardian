@@ -57,7 +57,7 @@ Profiles INSERT: OK, Profiles DELETE: OK, Role_assignments INSERT: OK, Role_assi
 
 ## Files Updated in Code:
 
-- `roleManagementService.ts` - Fixed column names (`wallet_address` → `address`)
+- `roleManagementService.ts` - Fixed column names (`address` → `address`)
 - Database schema simplified
 
 ## Security Note:

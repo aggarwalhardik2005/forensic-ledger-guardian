@@ -526,9 +526,9 @@ const OwnerBootstrap = () => {
                 {roleAssignments.map((assignment) => (
                   <TableRow key={assignment.id}>
                     <TableCell className="font-mono text-sm">
-                      {assignment.wallet_address.substring(0, 6)}...
-                      {assignment.wallet_address.substring(
-                        assignment.wallet_address.length - 4
+                      {assignment.address.substring(0, 6)}...
+                      {assignment.address.substring(
+                        assignment.address.length - 4
                       )}
                     </TableCell>
                     <TableCell>{assignment.role_name}</TableCell>
@@ -542,9 +542,7 @@ const OwnerBootstrap = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() =>
-                          handleRevokeRole(assignment.wallet_address)
-                        }
+                        onClick={() => handleRevokeRole(assignment.address)}
                         className="text-red-600 hover:text-red-700"
                       >
                         <Trash2 className="h-4 w-4" />

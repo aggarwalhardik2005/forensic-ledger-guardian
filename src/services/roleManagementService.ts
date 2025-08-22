@@ -3,7 +3,7 @@ import { Role } from "@/services/web3Service";
 
 export interface RoleAssignment {
   id: string;
-  wallet_address: string;
+  address: string;
   role: Role;
   role_name: string;
   assigned_by: string;
@@ -34,8 +34,8 @@ class RoleManagementService {
     try {
       const { data, error } = await supabase
         .from("role_assignments")
-        .select("wallet_address")
-        .eq("wallet_address", walletAddress.toLowerCase())
+        .select("address")
+        .eq("address", walletAddress.toLowerCase())
         .eq("is_active", true)
         .single();
 
@@ -64,7 +64,7 @@ class RoleManagementService {
       const { data, error } = await supabase
         .from("role_assignments")
         .select("role")
-        .eq("wallet_address", walletAddress.toLowerCase())
+        .eq("address", walletAddress.toLowerCase())
         .eq("is_active", true)
         .single();
 
@@ -105,7 +105,7 @@ class RoleManagementService {
 
       const { error } = await supabase.from("role_assignments").insert([
         {
-          wallet_address: walletAddress.toLowerCase(),
+          address: walletAddress.toLowerCase(),
           role: role,
           role_name: roleName,
           assigned_by: assignedBy,
@@ -135,7 +135,7 @@ class RoleManagementService {
       const { error } = await supabase
         .from("role_assignments")
         .update({ is_active: false })
-        .eq("wallet_address", walletAddress.toLowerCase());
+        .eq("address", walletAddress.toLowerCase());
 
       if (error) {
         console.error("Error revoking wallet assignment:", error);
