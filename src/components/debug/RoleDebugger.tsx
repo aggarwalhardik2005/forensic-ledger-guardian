@@ -15,7 +15,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { roleManagementService } from "@/services/roleManagementService";
 import web3Service, { Role } from "@/services/web3Service";
-import { Shield, Database, Link, AlertCircle, CheckCircle, Settings } from "lucide-react";
+import {
+  Shield,
+  Database,
+  Link,
+  AlertCircle,
+  CheckCircle,
+  Settings,
+} from "lucide-react";
 import AuthResetButton from "@/components/auth/AuthResetButton";
 
 const RoleDebugger = () => {
@@ -24,8 +31,8 @@ const RoleDebugger = () => {
   const [isAssigned, setIsAssigned] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
-  const [contractOwner, setContractOwner] = useState<string>('');
-  const [targetAddress, setTargetAddress] = useState('');
+  const [contractOwner, setContractOwner] = useState<string>("");
+  const [targetAddress, setTargetAddress] = useState("");
   const [targetRole, setTargetRole] = useState<Role>(Role.None);
   const [showAdminTools, setShowAdminTools] = useState(false);
   const { account, userRole } = useWeb3();
@@ -52,7 +59,7 @@ const RoleDebugger = () => {
       // Check ownership status
       const owner = await web3Service.getContractOwner();
       const isOwnerCheck = await web3Service.isContractOwner();
-      setContractOwner(owner || '');
+      setContractOwner(owner || "");
       setIsOwner(isOwnerCheck);
     } catch (error) {
       console.error("Error checking roles:", error);
@@ -107,7 +114,7 @@ const RoleDebugger = () => {
       toast({
         title: "Error",
         description: "Please enter an address",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -125,14 +132,14 @@ const RoleDebugger = () => {
         toast({
           title: "Failed",
           description: "Failed to reset role",
-          variant: "destructive"
+          variant: "destructive",
         });
       }
     } catch (error) {
       toast({
         title: "Error",
         description: "Error resetting role",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -144,32 +151,37 @@ const RoleDebugger = () => {
       toast({
         title: "Error",
         description: "Please enter an address",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
 
     setLoading(true);
     try {
-      const success = await web3Service.setGlobalRole(targetAddress, targetRole);
+      const success = await web3Service.setGlobalRole(
+        targetAddress,
+        targetRole
+      );
       if (success) {
         toast({
           title: "Success",
-          description: `Role set to ${web3Service.getRoleString(targetRole)} for ${targetAddress}`,
+          description: `Role set to ${web3Service.getRoleString(
+            targetRole
+          )} for ${targetAddress}`,
         });
         await checkRoles(); // Refresh the data
       } else {
         toast({
           title: "Failed",
           description: "Failed to set role",
-          variant: "destructive"
+          variant: "destructive",
         });
       }
     } catch (error) {
       toast({
         title: "Error",
         description: "Error setting role",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -345,7 +357,9 @@ const RoleDebugger = () => {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="text-gray-600">Contract Owner:</span>
-                  <p className="font-mono text-xs mt-1">{contractOwner || 'Unknown'}</p>
+                  <p className="font-mono text-xs mt-1">
+                    {contractOwner || "Unknown"}
+                  </p>
                 </div>
                 <div>
                   <span className="text-gray-600">You are Owner:</span>
@@ -374,7 +388,7 @@ const RoleDebugger = () => {
                     {showAdminTools ? "Hide" : "Show"}
                   </Button>
                 </div>
-                
+
                 {showAdminTools && (
                   <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
                     <div className="space-y-2">
@@ -386,14 +400,16 @@ const RoleDebugger = () => {
                         onChange={(e) => setTargetAddress(e.target.value)}
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="targetRole">Role to Set</Label>
                       <select
                         id="targetRole"
                         className="w-full p-2 border rounded-md"
                         value={targetRole}
-                        onChange={(e) => setTargetRole(Number(e.target.value) as Role)}
+                        onChange={(e) =>
+                          setTargetRole(Number(e.target.value) as Role)
+                        }
                       >
                         <option value={Role.None}>None</option>
                         <option value={Role.Court}>Court</option>
@@ -402,7 +418,7 @@ const RoleDebugger = () => {
                         <option value={Role.Lawyer}>Lawyer</option>
                       </select>
                     </div>
-                    
+
                     <div className="flex gap-2">
                       <Button
                         onClick={handleSetRole}
@@ -422,20 +438,16 @@ const RoleDebugger = () => {
                         Reset to None
                       </Button>
                     </div>
-                    
+
                     <div className="flex gap-2">
                       <Button
-                        onClick={() => setTargetAddress(account || '')}
+                        onClick={() => setTargetAddress(account || "")}
                         variant="outline"
                         size="sm"
                       >
                         Use My Address
                       </Button>
-                      <Button
-                        onClick={checkRoles}
-                        variant="outline"
-                        size="sm"
-                      >
+                      <Button onClick={checkRoles} variant="outline" size="sm">
                         Refresh All
                       </Button>
                     </div>
