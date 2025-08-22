@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS profiles (
 -- Create role_assignments table for wallet-to-role mapping
 CREATE TABLE IF NOT EXISTS role_assignments (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  wallet_address TEXT UNIQUE NOT NULL,
+  address TEXT UNIQUE NOT NULL,
   role INTEGER NOT NULL,
   role_name TEXT NOT NULL,
   assigned_by TEXT NOT NULL,
@@ -49,7 +49,7 @@ GRANT ALL ON role_assignments TO authenticated, anon, service_role;
 CREATE INDEX IF NOT EXISTS idx_profiles_email ON profiles(email);
 CREATE INDEX IF NOT EXISTS idx_profiles_address ON profiles(address);
 CREATE INDEX IF NOT EXISTS idx_profiles_role ON profiles(role);
-CREATE INDEX IF NOT EXISTS idx_role_assignments_wallet_address ON role_assignments(wallet_address);
+CREATE INDEX IF NOT EXISTS idx_role_assignments_address ON role_assignments(address);
 CREATE INDEX IF NOT EXISTS idx_role_assignments_active ON role_assignments(is_active);
 
 -- Auto-update timestamp function
@@ -91,12 +91,12 @@ BEGIN
 
     -- Test role_assignments table
     BEGIN
-        INSERT INTO role_assignments (wallet_address, role, role_name, assigned_by) 
+        INSERT INTO role_assignments (address, role, role_name, assigned_by) 
         VALUES ('0xtest123', 1, 'Court Official', 'test@example.com');
         
-        UPDATE role_assignments SET is_active = false WHERE wallet_address = '0xtest123';
+        UPDATE role_assignments SET is_active = false WHERE address = '0xtest123';
         
-        DELETE FROM role_assignments WHERE wallet_address = '0xtest123';
+        DELETE FROM role_assignments WHERE address = '0xtest123';
         
         test_result := test_result || 'ROLE_ASSIGNMENTS OK';
     EXCEPTION

@@ -328,6 +328,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
+  const mapRoleIntToEnum = (roleInt: number | null | undefined): Role => {
+    if (roleInt === null || roleInt === undefined) {
+      return Role.None;
+    }
+    
+    switch (roleInt) {
+      case 1:
+        return Role.Court;
+      case 2:
+        return Role.Officer;
+      case 3:
+        return Role.Forensic;
+      case 4:
+        return Role.Lawyer;
+      default:
+        return Role.None;
+    }
+  };
+
   const loadUserProfile = React.useCallback(
     async (userId: string, email: string) => {
       if (!supabase) return null;
@@ -348,7 +367,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           id: userId,
           email,
           name: data.name,
-          role: mapRoleStringToEnum(data.role),
+          role: mapRoleIntToEnum(data.role),
           roleTitle: data.role_title,
           address: data.address || undefined,
         };
