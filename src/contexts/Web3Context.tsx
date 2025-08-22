@@ -392,6 +392,7 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({
 export { Web3Context };
 
 // Custom hook to use the Web3 context
+// eslint-disable-next-line react-refresh/only-export-components
 export const useWeb3 = () => {
   const context = useContext(Web3Context);
   if (context === undefined) {

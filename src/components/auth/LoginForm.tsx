@@ -57,7 +57,6 @@ const LoginForm = () => {
     try {
       await connectWallet();
 
-      // Check if wallet was successfully connected
       // Wait a moment for state to update after connection
       setTimeout(async () => {
         try {
@@ -67,22 +66,17 @@ const LoginForm = () => {
               toast({
                 title: "No Role Assigned",
                 description:
-                  "Your wallet doesn't have a role assigned yet. Redirecting to setup...",
-                variant: "default",
+                  "Your wallet doesn't have a role assigned yet. Please contact an administrator.",
+                variant: "destructive",
               });
               setIsLoading(false);
-              // Redirect to bootstrap/admin setup page
-              navigate("/bootstrap");
               return;
             }
 
             // Now authenticate with the wallet
             const success = await loginWithWallet(account, userRole);
 
-            if (success) {
-              // Success toast is handled in loginWithWallet
-              // Navigate will also be handled there
-            } else {
+            if (!success) {
               toast({
                 title: "Authentication failed",
                 description: "Could not authenticate with the connected wallet",
