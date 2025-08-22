@@ -162,7 +162,7 @@ contract ForensicChain {
     string memory title,
     string memory description,
     string[] memory tags
-) external notLocked onlyRole(Role.Officer) {
+) external notLocked onlyCourt {
     require(cases[caseId].createdBy == address(0), "Case already exists");
     require(firs[firId].filedBy != address(0), "FIR not found");
     require(!firs[firId].promotedToCase, "FIR already promoted");

@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabaseClient";
 import { Role } from "@/services/web3Service";
+import { roleManagementService } from "@/services/roleManagementService";
 // DEV MODE: Only import devAuth in component scope to avoid Fast Refresh error
 
 export interface User {
@@ -40,23 +41,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  // DEV MODE: auto-login as officer
+  // Clear any development user data on initialization
   useEffect(() => {
-    if (import.meta.env.MODE === "development") {
-      const localUser = localStorage.getItem("forensicLedgerUser");
-      if (localUser) {
-        setUser(JSON.parse(localUser));
-      } else {
-        import("./devAuth").then(({ DEV_OFFICER_USER }) => {
-          setUser(DEV_OFFICER_USER);
-          localStorage.setItem(
-            "forensicLedgerUser",
-            JSON.stringify(DEV_OFFICER_USER)
-          );
-        });
+    const storedUser = localStorage.getItem("forensicLedgerUser");
+    if (storedUser) {
+      try {
+        const userData = JSON.parse(storedUser);
+        // Clear development user data and any invalid data
+        if (
+          userData.id === "dev-officer" ||
+          userData.email === "officer@dev.local" ||
+          userData.address === "0xdevOfficer"
+        ) {
+          localStorage.removeItem("forensicLedgerUser");
+          console.log("Cleared development user data");
+        }
+      } catch (error) {
+        // Clear invalid data
+        localStorage.removeItem("forensicLedgerUser");
+        console.log("Cleared invalid user data");
       }
     }
   }, []);
+
+  useEffect(() => {}, []);
 
   console.log("AuthProvider initialized");
 
@@ -69,12 +77,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       });
       return false;
     }
+
+    // Clear any existing dev/wallet user data before attempting email login
+    localStorage.removeItem("forensicLedgerUser");
+    sessionStorage.removeItem("forensicLedgerUser");
+    setUser(null);
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+
     console.log("Login response:", data);
     console.log("Login error:", error);
+
     if (error) {
       toast({
         title: "Login Failed",
@@ -84,16 +100,72 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       return false;
     }
 
-    toast({
-      title: "Login Successful",
-      description: `Welcome back, ${email}`,
-    });
-
     if (data.user) {
-      await loadUserProfile(data.user.id, email);
+      const profile = await loadUserProfile(data.user.id, email);
+
+      // If this is the first login and no profile exists, create court admin profile
+      if (!profile) {
+        const isFirstUser = await checkIfFirstUser();
+        if (isFirstUser) {
+          const created = await roleManagementService.createCourtAdminProfile(
+            data.user.id,
+            email,
+            "Court Administrator"
+          );
+
+          if (created) {
+            await loadUserProfile(data.user.id, email);
+            toast({
+              title: "Welcome!",
+              description:
+                "Court administrator profile created. Please set up wallet addresses for other roles.",
+            });
+            navigate("/bootstrap");
+            return true;
+          }
+        } else {
+          toast({
+            title: "Access Denied",
+            description:
+              "Your account does not have access to this system. Please contact the administrator.",
+            variant: "destructive",
+          });
+          await supabase.auth.signOut();
+          return false;
+        }
+      } else {
+        // Profile exists, login successful
+        toast({
+          title: "Login Successful",
+          description: `Welcome back, ${profile.name || email}`,
+        });
+        navigate("/dashboard");
+        return true;
+      }
     }
-    navigate("/dashboard");
+
     return true;
+  };
+
+  // Check if this is the first user in the system
+  const checkIfFirstUser = async (): Promise<boolean> => {
+    if (!supabase) return false;
+
+    try {
+      const { count, error } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true });
+
+      if (error) {
+        console.error("Error checking user count:", error);
+        return false;
+      }
+
+      return count === 0;
+    } catch (error) {
+      console.error("Error checking if first user:", error);
+      return false;
+    }
   };
 
   // Wallet-based authentication
@@ -102,18 +174,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     userRole: Role
   ): Promise<boolean> => {
     try {
-      // Validate that the user has a valid role (not a guest user)
-      if (userRole === Role.None) {
-        toast({
-          title: "Access Denied",
-          description:
-            "Your wallet address is not authorized to access this system. Please contact an administrator.",
-          variant: "destructive",
-        });
-        return false;
+      // Clear any existing email-based session
+      if (supabase) {
+        await supabase.auth.signOut();
       }
 
-      // Create a user object based on wallet address and role
+      // Create a helper function to get role title
       const getRoleTitle = (role: Role): string => {
         switch (role) {
           case Role.Court:
@@ -129,22 +195,45 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         }
       };
 
-      // Get the route path based on user role
-      const getRoleDashboardPath = (role: Role): string => {
-        // For now, all roles go to the main dashboard which will show role-specific content
-        // In the future, we could have separate dashboard routes if needed
-        return "/dashboard";
-      };
+      // Get role from database first to ensure consistency
+      const dbRole = await roleManagementService.getRoleForWallet(
+        walletAddress
+      );
+
+      // Use database role if available, otherwise fall back to blockchain role
+      const finalRole = dbRole !== Role.None ? dbRole : userRole;
+
+      // Validate that the user has a valid role
+      if (finalRole === Role.None) {
+        toast({
+          title: "Access Denied",
+          description:
+            "Your wallet address is not authorized to access this system. Please contact an administrator.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // If there's a mismatch between blockchain and database roles, warn the user
+      if (dbRole !== Role.None && dbRole !== userRole) {
+        toast({
+          title: "Role Mismatch Detected",
+          description: `Using database role: ${getRoleTitle(
+            dbRole
+          )}. Please ensure blockchain role is updated.`,
+          variant: "default",
+        });
+      }
 
       const walletUser: User = {
         id: `wallet-${walletAddress}`,
         email: `${walletAddress}@wallet.local`,
-        name: `${getRoleTitle(userRole)} (${walletAddress.substring(
+        name: `${getRoleTitle(finalRole)} (${walletAddress.substring(
           0,
           6
         )}...${walletAddress.substring(walletAddress.length - 4)})`,
-        role: userRole,
-        roleTitle: getRoleTitle(userRole),
+        role: finalRole,
+        roleTitle: getRoleTitle(finalRole),
         address: walletAddress,
       };
 
@@ -154,13 +243,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       toast({
         title: "Authentication Successful",
         description: `Welcome to the Forensic Ledger Guardian, ${getRoleTitle(
-          userRole
+          finalRole
         )}!`,
       });
 
       // Navigate to the appropriate dashboard
-      const dashboardPath = getRoleDashboardPath(userRole);
-      navigate(dashboardPath);
+      navigate("/dashboard");
       return true;
     } catch (error) {
       console.error("Wallet authentication error:", error);
@@ -188,6 +276,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
+  const mapRoleIntToEnum = (roleInt: number | null | undefined): Role => {
+    if (roleInt === null || roleInt === undefined) {
+      return Role.None;
+    }
+
+    switch (roleInt) {
+      case 1:
+        return Role.Court;
+      case 2:
+        return Role.Officer;
+      case 3:
+        return Role.Forensic;
+      case 4:
+        return Role.Lawyer;
+      default:
+        return Role.None;
+    }
+  };
+
   const loadUserProfile = React.useCallback(
     async (userId: string, email: string) => {
       if (!supabase) return null;
@@ -208,7 +315,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           id: userId,
           email,
           name: data.name,
-          role: mapRoleStringToEnum(data.role),
+          role: mapRoleIntToEnum(data.role),
           roleTitle: data.role_title,
           address: data.address || undefined,
         };
@@ -287,10 +394,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   }, [loadUserProfile]);
 
   const logout = async () => {
-    if (!supabase) return;
-    await supabase.auth.signOut();
+    // Clear Supabase session if available
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
+
+    // Clear all user state
     setUser(null);
     localStorage.removeItem("forensicLedgerUser");
+
     toast({
       title: "Logged Out",
       description: "You have been logged out successfully",
