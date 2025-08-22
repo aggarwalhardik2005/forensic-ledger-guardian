@@ -174,7 +174,7 @@ const CreateCase = () => {
     };
 
     const caseId = generateCaseId();
-    const firId = "FF-2023-120"; // Hardcoded for now
+    const firId = "FF-2025-C"; // Hardcoded for now
 
     try {
       // Pre-checks before case creation
@@ -467,12 +467,7 @@ const CreateCase = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="caseNumber">Case Number</Label>
-                    <Input
-                      id="caseNumber"
-                      value="FF-2023-120-C"
-                      disabled
-                      className="bg-forensic-50"
-                    />
+                    <Input id="caseNumber" className="bg-forensic-50" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="caseType">Case Type</Label>
