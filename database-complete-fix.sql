@@ -83,7 +83,8 @@ SELECT
     'profiles' as table_name,
     column_name,
     data_type,
-    is_nullable
+    is_nullable,
+    ordinal_position
 FROM information_schema.columns 
 WHERE table_name = 'profiles'
 UNION ALL
@@ -91,7 +92,8 @@ SELECT
     'role_assignments' as table_name,
     column_name,
     data_type,
-    is_nullable
+    is_nullable,
+    ordinal_position
 FROM information_schema.columns 
 WHERE table_name = 'role_assignments'
 ORDER BY table_name, ordinal_position;
