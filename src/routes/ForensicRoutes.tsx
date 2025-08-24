@@ -4,7 +4,7 @@
 import React from 'react';
 import { Route } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
-import RoleProtectedRoute from '@/components/auth/RoleProtectedRoute';
+import SecureRoute from '@/components/auth/SecureRoute';
 import { Role } from '@/services/web3Service';
 
 // Forensic-specific pages
@@ -22,9 +22,9 @@ export const ForensicRoutes = () => (
       path="/evidence/analyze"
       element={
         <Layout>
-          <RoleProtectedRoute allowedRoles={[Role.Forensic]}>
+          <SecureRoute allowedRoles={[Role.Forensic]} requireAuth={true}>
             <EvidenceAnalysis />
-          </RoleProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -34,9 +34,9 @@ export const ForensicRoutes = () => (
       path="/technical/verify"
       element={
         <Layout>
-          <RoleProtectedRoute allowedRoles={[Role.Forensic]}>
+          <SecureRoute allowedRoles={[Role.Forensic]} requireAuth={true}>
             <TechnicalVerification />
-          </RoleProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -46,9 +46,9 @@ export const ForensicRoutes = () => (
       path="/forensic/reports"
       element={
         <Layout>
-          <RoleProtectedRoute allowedRoles={[Role.Forensic]}>
+          <SecureRoute allowedRoles={[Role.Forensic]} requireAuth={true}>
             <ForensicReports />
-          </RoleProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />

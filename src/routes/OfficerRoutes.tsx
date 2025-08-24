@@ -4,7 +4,7 @@
 import React from 'react';
 import { Route } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
-import RoleProtectedRoute from '@/components/auth/RoleProtectedRoute';
+import SecureRoute from '@/components/auth/SecureRoute';
 import { Role } from '@/services/web3Service';
 
 // Officer-specific pages
@@ -23,9 +23,9 @@ export const OfficerRoutes = () => (
       path="/fir/new"
       element={
         <Layout>
-          <RoleProtectedRoute allowedRoles={[Role.Officer]}>
+          <SecureRoute allowedRoles={[Role.Officer]} requireAuth={true}>
             <FIRManagement mode="create" />
-          </RoleProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -35,9 +35,9 @@ export const OfficerRoutes = () => (
       path="/cases/update"
       element={
         <Layout>
-          <RoleProtectedRoute allowedRoles={[Role.Officer]}>
+          <SecureRoute allowedRoles={[Role.Officer]} requireAuth={true}>
             <Cases />
-          </RoleProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -45,9 +45,9 @@ export const OfficerRoutes = () => (
       path="/cases/assigned"
       element={
         <Layout>
-          <RoleProtectedRoute allowedRoles={[Role.Officer]}>
+          <SecureRoute allowedRoles={[Role.Officer]} requireAuth={true}>
             <Cases />
-          </RoleProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -57,9 +57,9 @@ export const OfficerRoutes = () => (
       path="/evidence/confirm"
       element={
         <Layout>
-          <RoleProtectedRoute allowedRoles={[Role.Officer]}>
+          <SecureRoute allowedRoles={[Role.Officer]} requireAuth={true}>
             <EvidenceConfirmation />
-          </RoleProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -69,9 +69,9 @@ export const OfficerRoutes = () => (
       path="/officer/reports"
       element={
         <Layout>
-          <RoleProtectedRoute allowedRoles={[Role.Officer]}>
+          <SecureRoute allowedRoles={[Role.Officer]} requireAuth={true}>
             <OfficerReports />
-          </RoleProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />

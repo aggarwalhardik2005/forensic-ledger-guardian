@@ -7,6 +7,7 @@ import { Routes, Route } from "react-router-dom";
 import Layout from "./components/layout/Layout";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import { AuthProvider } from "./contexts/AuthContext";
 import { Web3Provider } from "./contexts/Web3Context";
 import OwnerBootstrap from "./components/admin/OwnerBootstrap";
 
@@ -37,44 +38,48 @@ const App: React.FC = () => {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Web3Provider>
-          <Toaster />
-          <Sonner />
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Index />} />
+          <AuthProvider>
+            <Toaster />
+            <Sonner />
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<Index />} />
 
-            {/* Bootstrap/Setup route for contract owner */}
-            <Route
-              path="/bootstrap"
-              element={
-                <Layout>
-                  <OwnerBootstrap />
-                </Layout>
-              }
-            />
+              {/* Bootstrap/Setup route for contract owner */}
+              <Route
+                path="/bootstrap"
+                element={
+                  <Layout>
+                    <OwnerBootstrap />
+                  </Layout>
+                }
+              />
 
-            {/* Debug route - should be behind feature flag in production */}
-            <Route
-              path="/debug/routes"
-              element={
-                <Layout>
-                  <RouteDebugInfo />
-                </Layout>
-              }
-            />
+              {/* Debug route - should be behind feature flag in production */}
+              {import.meta.env.MODE === "development" && (
+                <Route
+                  path="/debug/routes"
+                  element={
+                    <Layout>
+                      <RouteDebugInfo />
+                    </Layout>
+                  }
+                />
+              )}
 
-            {/* Shared Routes - accessible by all authenticated users */}
-            {SharedRoutes()}
+              {/* Shared Routes - accessible by all authenticated users */}
+              {SharedRoutes()}
 
-            {/* Role-specific Routes */}
-            {CourtRoutes()}
-            {OfficerRoutes()}
-            {ForensicRoutes()}
-            {LawyerRoutes()}
+              {/* Role-specific Routes */}
+              {CourtRoutes()}
+              {OfficerRoutes()}
+              {ForensicRoutes()}
+              {LawyerRoutes()}
 
-            {/* Catch-all route for 404 */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+              {/* Catch-all route for 404 */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthProvider>
         </Web3Provider>
       </TooltipProvider>
     </QueryClientProvider>

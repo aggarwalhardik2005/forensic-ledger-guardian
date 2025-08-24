@@ -4,8 +4,7 @@
 import React from 'react';
 import { Route } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
-import RoleProtectedRoute from '@/components/auth/RoleProtectedRoute';
+import SecureRoute from '@/components/auth/SecureRoute';
 import { Role } from '@/services/web3Service';
 
 // Shared pages
@@ -23,7 +22,6 @@ import MetaMaskHelp from '@/pages/help/MetaMaskHelp';
 import CaseDetail from '@/pages/cases/CaseDetail';
 import CreateCase from '@/pages/cases/CreateCase';
 import FIR from '@/pages/fir/Fir';
-import FIRManagement from '@/pages/officer/FIRManagement';
 
 /**
  * Routes accessible by all authenticated users
@@ -35,9 +33,9 @@ export const SharedRoutes = () => (
       path="/dashboard"
       element={
         <Layout>
-          <ProtectedRoute>
+          <SecureRoute requireAuth={true}>
             <Dashboard />
-          </ProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -47,9 +45,9 @@ export const SharedRoutes = () => (
       path="/dashboard/court"
       element={
         <Layout>
-          <RoleProtectedRoute allowedRoles={[Role.Court]}>
+          <SecureRoute allowedRoles={[Role.Court]} requireAuth={true}>
             <Dashboard />
-          </RoleProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -57,9 +55,9 @@ export const SharedRoutes = () => (
       path="/dashboard/officer"
       element={
         <Layout>
-          <RoleProtectedRoute allowedRoles={[Role.Officer]}>
+          <SecureRoute allowedRoles={[Role.Officer]} requireAuth={true}>
             <Dashboard />
-          </RoleProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -67,9 +65,9 @@ export const SharedRoutes = () => (
       path="/dashboard/forensic"
       element={
         <Layout>
-          <RoleProtectedRoute allowedRoles={[Role.Forensic]}>
+          <SecureRoute allowedRoles={[Role.Forensic]} requireAuth={true}>
             <Dashboard />
-          </RoleProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -77,9 +75,9 @@ export const SharedRoutes = () => (
       path="/dashboard/lawyer"
       element={
         <Layout>
-          <RoleProtectedRoute allowedRoles={[Role.Lawyer]}>
+          <SecureRoute allowedRoles={[Role.Lawyer]} requireAuth={true}>
             <Dashboard />
-          </RoleProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -89,9 +87,9 @@ export const SharedRoutes = () => (
       path="/cases"
       element={
         <Layout>
-          <ProtectedRoute>
+          <SecureRoute requireAuth={true}>
             <Cases />
-          </ProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -99,9 +97,9 @@ export const SharedRoutes = () => (
       path="/cases/:caseId"
       element={
         <Layout>
-          <ProtectedRoute>
+          <SecureRoute requireAuth={true}>
             <CaseDetail />
-          </ProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -111,9 +109,9 @@ export const SharedRoutes = () => (
       path="/cases/create"
       element={
         <Layout>
-          <RoleProtectedRoute allowedRoles={[Role.Court, Role.Officer]}>
+          <SecureRoute allowedRoles={[Role.Court, Role.Officer]} requireAuth={true}>
             <CreateCase />
-          </RoleProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -123,9 +121,9 @@ export const SharedRoutes = () => (
       path="/evidence"
       element={
         <Layout>
-          <ProtectedRoute>
+          <SecureRoute requireAuth={true}>
             <Evidence />
-          </ProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -133,9 +131,9 @@ export const SharedRoutes = () => (
       path="/upload"
       element={
         <Layout>
-          <ProtectedRoute>
+          <SecureRoute requireAuth={true}>
             <Upload />
-          </ProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -143,9 +141,9 @@ export const SharedRoutes = () => (
       path="/verify"
       element={
         <Layout>
-          <ProtectedRoute>
+          <SecureRoute requireAuth={true}>
             <Verify />
-          </ProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -155,9 +153,9 @@ export const SharedRoutes = () => (
       path="/fir"
       element={
         <Layout>
-          <ProtectedRoute>
+          <SecureRoute requireAuth={true}>
             <FIR />
-          </ProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -167,9 +165,9 @@ export const SharedRoutes = () => (
       path="/help"
       element={
         <Layout>
-          <ProtectedRoute>
+          <SecureRoute requireAuth={true}>
             <Help />
-          </ProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -177,9 +175,9 @@ export const SharedRoutes = () => (
       path="/help/faq"
       element={
         <Layout>
-          <ProtectedRoute>
+          <SecureRoute requireAuth={true}>
             <FAQ />
-          </ProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -187,9 +185,9 @@ export const SharedRoutes = () => (
       path="/help/metamask"
       element={
         <Layout>
-          <ProtectedRoute>
+          <SecureRoute requireAuth={true}>
             <MetaMaskHelp />
-          </ProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -199,9 +197,9 @@ export const SharedRoutes = () => (
       path="/settings"
       element={
         <Layout>
-          <ProtectedRoute>
+          <SecureRoute requireAuth={true}>
             <Settings />
-          </ProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -211,9 +209,9 @@ export const SharedRoutes = () => (
       path="/activity"
       element={
         <Layout>
-          <ProtectedRoute>
+          <SecureRoute requireAuth={true}>
             <Activity />
-          </ProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -223,9 +221,9 @@ export const SharedRoutes = () => (
       path="/wallet"
       element={
         <Layout>
-          <ProtectedRoute>
+          <SecureRoute requireAuth={true}>
             <WalletManagement />
-          </ProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />

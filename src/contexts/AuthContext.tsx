@@ -8,28 +8,21 @@ import React, {
 } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/supabaseClient";
+import authService, { AuthUser } from "@/services/authService";
 import { Role } from "@/services/web3Service";
-import { getRoleTitle } from "@/config/roles";
-import { roleManagementService } from "@/services/roleManagementService";
-// DEV MODE: Only import devAuth in component scope to avoid Fast Refresh error
 
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: Role;
-  roleTitle: string;
-  address?: string;
-}
+// Re-export for backward compatibility
+export type User = AuthUser;
 
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
-  loginWithWallet: (walletAddress: string, userRole: Role) => Promise<boolean>;
+  loginWithWallet: (walletAddress: string) => Promise<boolean>;
   logout: () => Promise<void>;
   isLoggedIn: boolean;
   isLoading: boolean;
+  hasPermission: (action: string, resource: string) => boolean;
+  canAccessRole: (role: Role) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -42,311 +35,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  // Clear any development user data on initialization
+  // Initialize authentication state
   useEffect(() => {
-    const storedUser = localStorage.getItem("forensicLedgerUser");
-    if (storedUser) {
-      try {
-        const userData = JSON.parse(storedUser);
-        // Clear development user data and any invalid data
-        if (
-          userData.id === "dev-officer" ||
-          userData.email === "officer@dev.local" ||
-          userData.address === "0xdevOfficer"
-        ) {
-          localStorage.removeItem("forensicLedgerUser");
-          console.log("Cleared development user data");
-        }
-      } catch (error) {
-        // Clear invalid data
-        localStorage.removeItem("forensicLedgerUser");
-        console.log("Cleared invalid user data");
-      }
-    }
-  }, []);
-
-  useEffect(() => {}, []);
-
-  console.log("AuthProvider initialized");
-
-  const login = async (email: string, password: string): Promise<boolean> => {
-    if (!supabase) {
-      toast({
-        title: "Application Not Configured",
-        description: "Supabase environment variables are missing.",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    // Clear any existing dev/wallet user data before attempting email login
-    localStorage.removeItem("forensicLedgerUser");
-    sessionStorage.removeItem("forensicLedgerUser");
-    setUser(null);
-
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    console.log("Login response:", data);
-    console.log("Login error:", error);
-
-    if (error) {
-      toast({
-        title: "Login Failed",
-        description: error.message,
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    if (data.user) {
-      const profile = await loadUserProfile(data.user.id, email);
-
-      // If this is the first login and no profile exists, create court admin profile
-      if (!profile) {
-        const isFirstUser = await checkIfFirstUser();
-        if (isFirstUser) {
-          const created = await roleManagementService.createCourtAdminProfile(
-            data.user.id,
-            email,
-            "Court Administrator"
-          );
-
-          if (created) {
-            await loadUserProfile(data.user.id, email);
-            toast({
-              title: "Welcome!",
-              description:
-                "Court administrator profile created. Please set up wallet addresses for other roles.",
-            });
-            navigate("/bootstrap");
-            return true;
-          }
-        } else {
-          toast({
-            title: "Access Denied",
-            description:
-              "Your account does not have access to this system. Please contact the administrator.",
-            variant: "destructive",
-          });
-          await supabase.auth.signOut();
-          return false;
-        }
-      } else {
-        // Profile exists, login successful
-        toast({
-          title: "Login Successful",
-          description: `Welcome back, ${profile.name || email}`,
-        });
-        navigate("/dashboard");
-        return true;
-      }
-    }
-
-    return true;
-  };
-
-  // Check if this is the first user in the system
-  const checkIfFirstUser = async (): Promise<boolean> => {
-    if (!supabase) return false;
-
-    try {
-      const { count, error } = await supabase
-        .from("profiles")
-        .select("*", { count: "exact", head: true });
-
-      if (error) {
-        console.error("Error checking user count:", error);
-        return false;
-      }
-
-      return count === 0;
-    } catch (error) {
-      console.error("Error checking if first user:", error);
-      return false;
-    }
-  };
-
-  // Wallet-based authentication
-  const loginWithWallet = async (
-    walletAddress: string,
-    userRole: Role
-  ): Promise<boolean> => {
-    try {
-      // Clear any existing email-based session
-      if (supabase) {
-        await supabase.auth.signOut();
-      }
-
-      // Create a helper function to get role title
-      // Get role from database first to ensure consistency
-      const dbRole = await roleManagementService.getRoleForWallet(
-        walletAddress
-      );
-
-      // Use database role if available, otherwise fall back to blockchain role
-      const finalRole = dbRole !== Role.None ? dbRole : userRole;
-
-      // Validate that the user has a valid role
-      if (finalRole === Role.None) {
-        toast({
-          title: "Access Denied",
-          description:
-            "Your wallet address is not authorized to access this system. Please contact an administrator.",
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      // If there's a mismatch between blockchain and database roles, warn the user
-      if (dbRole !== Role.None && dbRole !== userRole) {
-        toast({
-          title: "Role Mismatch Detected",
-          description: `Using database role: ${getRoleTitle(
-            dbRole
-          )}. Please ensure blockchain role is updated.`,
-          variant: "default",
-        });
-      }
-
-      const walletUser: User = {
-        id: `wallet-${walletAddress}`,
-        email: `${walletAddress}@wallet.local`,
-        name: `${getRoleTitle(finalRole)} (${walletAddress.substring(
-          0,
-          6
-        )}...${walletAddress.substring(walletAddress.length - 4)})`,
-        role: finalRole,
-        roleTitle: getRoleTitle(finalRole),
-        address: walletAddress,
-      };
-
-      setUser(walletUser);
-      localStorage.setItem("forensicLedgerUser", JSON.stringify(walletUser));
-
-      toast({
-        title: "Authentication Successful",
-        description: `Welcome to the Forensic Ledger Guardian, ${getRoleTitle(
-          finalRole
-        )}!`,
-      });
-
-      // Navigate to the appropriate dashboard
-      navigate("/dashboard");
-      return true;
-    } catch (error) {
-      console.error("Wallet authentication error:", error);
-      toast({
-        title: "Authentication Failed",
-        description: "Could not authenticate with wallet. Please try again.",
-        variant: "destructive",
-      });
-      return false;
-    }
-  };
-
-  const mapRoleStringToEnum = (roleString: string): Role => {
-    switch (roleString.toLowerCase()) {
-      case "court":
-        return Role.Court;
-      case "officer":
-        return Role.Officer;
-      case "forensic":
-        return Role.Forensic;
-      case "lawyer":
-        return Role.Lawyer;
-      default:
-        return Role.None;
-    }
-  };
-
-  const mapRoleIntToEnum = (roleInt: number | null | undefined): Role => {
-    if (roleInt === null || roleInt === undefined) {
-      return Role.None;
-    }
-
-    switch (roleInt) {
-      case 1:
-        return Role.Court;
-      case 2:
-        return Role.Officer;
-      case 3:
-        return Role.Forensic;
-      case 4:
-        return Role.Lawyer;
-      default:
-        return Role.None;
-    }
-  };
-
-  const loadUserProfile = React.useCallback(
-    async (userId: string, email: string) => {
-      if (!supabase) return null;
-
-      try {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("name, role, role_title, address")
-          .eq("id", userId)
-          .single();
-
-        if (error) {
-          console.error("Error loading profile:", error);
-          return null;
-        }
-
-        const fullUser: User = {
-          id: userId,
-          email,
-          name: data.name,
-          role: mapRoleIntToEnum(data.role),
-          roleTitle: data.role_title,
-          address: data.address || undefined,
-        };
-
-        setUser(fullUser);
-        localStorage.setItem("forensicLedgerUser", JSON.stringify(fullUser));
-        return fullUser;
-      } catch (error) {
-        console.error("Unexpected error loading user profile:", error);
-        return null;
-      }
-    },
-    []
-  );
-
-  useEffect(() => {
-    if (import.meta.env.MODE === "development" || !supabase) {
-      setIsLoading(false);
-      return;
-    }
-
     const initAuth = async () => {
       try {
-        const { data, error } = await supabase.auth.getSession();
-        console.log("Loading user profile:", { data, error });
-
-        if (error) {
-          console.warn(
-            "Session error (possibly expired refresh token):",
-            error
-          );
-          // Clear any invalid session data
-          localStorage.removeItem("forensicLedgerUser");
-          setUser(null);
-        } else if (data.session?.user) {
-          await loadUserProfile(
-            data.session.user.id,
-            data.session.user.email || ""
-          );
+        const storedUser = await authService.initializeFromStorage();
+        if (storedUser) {
+          setUser(storedUser);
         }
       } catch (error) {
         console.error("Error initializing auth:", error);
-        // Clear any invalid session data
-        localStorage.removeItem("forensicLedgerUser");
-        setUser(null);
       } finally {
         setIsLoading(false);
       }
@@ -354,46 +52,121 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
     initAuth();
 
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log("Auth state change:", event, session);
+    // Subscribe to auth state changes
+    const unsubscribe = authService.subscribe((authUser) => {
+      setUser(authUser);
+    });
 
-        if (event === "SIGNED_OUT" || event === "TOKEN_REFRESHED") {
-          if (!session) {
-            setUser(null);
-            localStorage.removeItem("forensicLedgerUser");
-          }
-        }
+    return unsubscribe;
+  }, []);
 
-        if (session?.user) {
-          await loadUserProfile(session.user.id, session.user.email || "");
-        } else if (!session) {
-          setUser(null);
-          localStorage.removeItem("forensicLedgerUser");
+  const login = async (email: string, password: string): Promise<boolean> => {
+    setIsLoading(true);
+    try {
+      const result = await authService.loginWithEmail(email, password);
+      
+      if (result.success && result.user) {
+        setUser(result.user);
+        
+        toast({
+          title: "Login Successful",
+          description: `Welcome back, ${result.user.name}`,
+        });
+
+        if (result.requiresSetup) {
+          navigate("/bootstrap");
+        } else {
+          navigate("/dashboard");
         }
+        
+        return true;
+      } else {
+        toast({
+          title: "Login Failed",
+          description: result.error || "Invalid credentials",
+          variant: "destructive",
+        });
+        return false;
       }
-    );
+    } catch (error) {
+      console.error("Login error:", error);
+      toast({
+        title: "Login Failed",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    return () => {
-      listener.subscription.unsubscribe();
-    };
-  }, [loadUserProfile]);
+  const loginWithWallet = async (walletAddress: string): Promise<boolean> => {
+    setIsLoading(true);
+    try {
+      const result = await authService.loginWithWallet(walletAddress);
+      
+      if (result.success && result.user) {
+        setUser(result.user);
+        
+        toast({
+          title: "Authentication Successful",
+          description: `Welcome, ${result.user.roleTitle}!`,
+        });
+
+        if (result.requiresSetup) {
+          navigate("/bootstrap");
+        } else {
+          navigate("/dashboard");
+        }
+        
+        return true;
+      } else {
+        toast({
+          title: "Authentication Failed",
+          description: result.error || "Wallet not authorized",
+          variant: "destructive",
+        });
+        return false;
+      }
+    } catch (error) {
+      console.error("Wallet authentication error:", error);
+      toast({
+        title: "Authentication Failed",
+        description: "Could not authenticate with wallet",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const logout = async () => {
-    // Clear Supabase session if available
-    if (supabase) {
-      await supabase.auth.signOut();
+    try {
+      await authService.logout();
+      setUser(null);
+      
+      toast({
+        title: "Logged Out",
+        description: "You have been logged out successfully",
+      });
+      
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Still navigate to home even if logout fails
+      setUser(null);
+      navigate("/");
     }
+  };
 
-    // Clear all user state
-    setUser(null);
-    localStorage.removeItem("forensicLedgerUser");
+  const hasPermission = (action: string, resource: string): boolean => {
+    return authService.hasPermission(action, resource);
+  };
 
-    toast({
-      title: "Logged Out",
-      description: "You have been logged out successfully",
-    });
-    navigate("/");
+  const canAccessRole = (role: Role): boolean => {
+    return authService.canAccessRole(role);
   };
 
   return (
@@ -405,6 +178,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         logout,
         isLoggedIn: !!user,
         isLoading,
+        hasPermission,
+        canAccessRole,
       }}
     >
       {children}

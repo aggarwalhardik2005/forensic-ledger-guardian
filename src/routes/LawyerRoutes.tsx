@@ -4,7 +4,7 @@
 import React from 'react';
 import { Route } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
-import RoleProtectedRoute from '@/components/auth/RoleProtectedRoute';
+import SecureRoute from '@/components/auth/SecureRoute';
 import { Role } from '@/services/web3Service';
 
 // Lawyer-specific pages
@@ -24,9 +24,9 @@ export const LawyerRoutes = () => (
       path="/legal/docs"
       element={
         <Layout>
-          <RoleProtectedRoute allowedRoles={[Role.Lawyer]}>
+          <SecureRoute allowedRoles={[Role.Lawyer]} requireAuth={true}>
             <LegalDocumentation />
-          </RoleProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -36,9 +36,9 @@ export const LawyerRoutes = () => (
       path="/verify/custody"
       element={
         <Layout>
-          <RoleProtectedRoute allowedRoles={[Role.Lawyer, Role.Court]}>
+          <SecureRoute allowedRoles={[Role.Lawyer, Role.Court]} requireAuth={true}>
             <ChainOfCustodyVerification />
-          </RoleProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -48,9 +48,9 @@ export const LawyerRoutes = () => (
       path="/cases/prepare"
       element={
         <Layout>
-          <RoleProtectedRoute allowedRoles={[Role.Lawyer]}>
+          <SecureRoute allowedRoles={[Role.Lawyer]} requireAuth={true}>
             <CourtPreparation />
-          </RoleProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -60,9 +60,9 @@ export const LawyerRoutes = () => (
       path="/clients"
       element={
         <Layout>
-          <RoleProtectedRoute allowedRoles={[Role.Lawyer]}>
+          <SecureRoute allowedRoles={[Role.Lawyer]} requireAuth={true}>
             <ClientManagement />
-          </RoleProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -70,9 +70,9 @@ export const LawyerRoutes = () => (
       path="/meetings"
       element={
         <Layout>
-          <RoleProtectedRoute allowedRoles={[Role.Lawyer]}>
+          <SecureRoute allowedRoles={[Role.Lawyer]} requireAuth={true}>
             <ClientManagement view="meetings" />
-          </RoleProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -82,9 +82,9 @@ export const LawyerRoutes = () => (
       path="/legal/reports"
       element={
         <Layout>
-          <RoleProtectedRoute allowedRoles={[Role.Lawyer]}>
+          <SecureRoute allowedRoles={[Role.Lawyer]} requireAuth={true}>
             <LegalReports />
-          </RoleProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />

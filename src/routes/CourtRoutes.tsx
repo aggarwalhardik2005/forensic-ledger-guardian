@@ -4,7 +4,7 @@
 import React from 'react';
 import { Route } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
-import RoleProtectedRoute from '@/components/auth/RoleProtectedRoute';
+import SecureRoute from '@/components/auth/SecureRoute';
 import { Role } from '@/services/web3Service';
 
 // Court-specific pages
@@ -25,9 +25,9 @@ export const CourtRoutes = () => (
       path="/users/manage"
       element={
         <Layout>
-          <RoleProtectedRoute allowedRoles={[Role.Court]}>
+          <SecureRoute allowedRoles={[Role.Court]} requireAuth={true}>
             <UserManagement />
-          </RoleProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -35,9 +35,9 @@ export const CourtRoutes = () => (
       path="/users/add"
       element={
         <Layout>
-          <RoleProtectedRoute allowedRoles={[Role.Court]}>
+          <SecureRoute allowedRoles={[Role.Court]} requireAuth={true}>
             <AddUser />
-          </RoleProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -47,9 +47,9 @@ export const CourtRoutes = () => (
       path="/users/roles"
       element={
         <Layout>
-          <RoleProtectedRoute allowedRoles={[Role.Court]}>
+          <SecureRoute allowedRoles={[Role.Court]} requireAuth={true}>
             <RoleManagement />
-          </RoleProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -59,9 +59,9 @@ export const CourtRoutes = () => (
       path="/settings/security"
       element={
         <Layout>
-          <RoleProtectedRoute allowedRoles={[Role.Court]}>
+          <SecureRoute allowedRoles={[Role.Court]} requireAuth={true}>
             <SystemConfiguration />
-          </RoleProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -71,9 +71,9 @@ export const CourtRoutes = () => (
       path="/reports"
       element={
         <Layout>
-          <RoleProtectedRoute allowedRoles={[Role.Court]}>
+          <SecureRoute allowedRoles={[Role.Court]} requireAuth={true}>
             <ReportsAnalytics />
-          </RoleProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
@@ -83,9 +83,9 @@ export const CourtRoutes = () => (
       path="/cases/approval"
       element={
         <Layout>
-          <RoleProtectedRoute allowedRoles={[Role.Court]}>
+          <SecureRoute allowedRoles={[Role.Court]} requireAuth={true}>
             <CasesApproval />
-          </RoleProtectedRoute>
+          </SecureRoute>
         </Layout>
       }
     />
