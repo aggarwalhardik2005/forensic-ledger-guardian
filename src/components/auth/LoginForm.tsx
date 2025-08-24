@@ -55,26 +55,15 @@ const LoginForm = () => {
     setIsLoading(true);
 
     try {
+      // First connect to MetaMask
       await connectWallet();
 
-      // Wait a moment for state to update after connection
+      // Wait for Web3Context to update state
       setTimeout(async () => {
         try {
-          if (isConnected && account && userRole !== undefined) {
-            // Check if user has a valid role before attempting authentication
-            if (userRole === Role.None) {
-              toast({
-                title: "No Role Assigned",
-                description:
-                  "Your wallet doesn't have a role assigned yet. Please contact an administrator.",
-                variant: "destructive",
-              });
-              setIsLoading(false);
-              return;
-            }
-
-            // Now authenticate with the wallet
-            const success = await loginWithWallet(account, userRole);
+          if (isConnected && account) {
+            // Now authenticate with the wallet using simplified flow
+            const success = await loginWithWallet(account);
 
             if (!success) {
               toast({
@@ -86,8 +75,7 @@ const LoginForm = () => {
           } else {
             toast({
               title: "Connection incomplete",
-              description:
-                "Wallet connection was not completed properly. Please ensure MetaMask is installed and unlocked.",
+              description: "Please ensure MetaMask is installed and unlocked.",
               variant: "destructive",
             });
           }
@@ -106,8 +94,7 @@ const LoginForm = () => {
       console.error("MetaMask login error:", error);
       toast({
         title: "Connection failed",
-        description:
-          "Could not connect to MetaMask. Please ensure MetaMask is installed and try again.",
+        description: "Could not connect to MetaMask. Please ensure MetaMask is installed and try again.",
         variant: "destructive",
       });
       setIsLoading(false);

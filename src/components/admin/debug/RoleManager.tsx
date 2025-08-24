@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useWeb3 } from "../../hooks/useWeb3";
-import web3Service, { Role } from "../../services/web3Service";
+import { useWeb3 } from "@/hooks/useWeb3";
+import web3Service, { Role } from "@/services/web3Service";
 
 interface RoleManagerProps {
   onClose?: () => void;

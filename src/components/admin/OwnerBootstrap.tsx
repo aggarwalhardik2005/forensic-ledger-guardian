@@ -33,7 +33,7 @@ import {
   RoleAssignment,
 } from "@/services/roleManagementService";
 import { Shield, Crown, UserPlus, CheckCircle, Trash2 } from "lucide-react";
-import RoleDebugger from "@/components/debug/RoleDebugger";
+import RoleDebugger from "@/components/admin/debug/RoleDebugger";
 
 const OwnerBootstrap = () => {
   const [isOwner, setIsOwner] = useState(false);

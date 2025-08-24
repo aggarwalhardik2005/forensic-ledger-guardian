@@ -32,7 +32,7 @@ import {
   Settings,
 } from "lucide-react";
 import { error } from "console";
-import RoleManager from "@/components/debug/RoleManager";
+import RoleManager from "@/components/admin/debug/RoleManager";
 import { useWeb3 } from "@/hooks/useWeb3";
 
 const CreateCase = () => {
