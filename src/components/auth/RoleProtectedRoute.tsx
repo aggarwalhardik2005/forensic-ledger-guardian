@@ -2,6 +2,7 @@ import React from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Role } from "@/services/web3Service";
+import { getRoleTitle } from "@/config/roles";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShieldAlert } from "lucide-react";
 
@@ -68,22 +69,6 @@ const RoleProtectedRoute: React.FC<RoleProtectedRouteProps> = ({
   }
 
   return <>{children}</>;
-};
-
-// Helper function to get role title
-const getRoleTitle = (role: Role): string => {
-  switch (role) {
-    case Role.Court:
-      return "Court Official";
-    case Role.Officer:
-      return "Police Officer";
-    case Role.Forensic:
-      return "Forensic Expert";
-    case Role.Lawyer:
-      return "Legal Counsel";
-    default:
-      return "Unknown Role";
-  }
 };
 
 export default RoleProtectedRoute;

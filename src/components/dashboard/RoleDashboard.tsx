@@ -2,6 +2,7 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Role } from '@/services/web3Service';
+import { getRoleConfig } from '@/config/roles';
 import { Badge } from '@/components/ui/badge';
 import ForensicDashboard from './roles/ForensicDashboard';
 import CourtDashboard from './roles/CourtDashboard';
@@ -15,18 +16,12 @@ const RoleDashboard = () => {
     return <div>Please login to view your dashboard</div>;
   }
 
-  const renderRoleBadge = () => {
-    const roleColors: Record<Role, string> = {
-      [Role.None]: 'bg-gray-500',
-      [Role.Court]: 'bg-forensic-court text-white',
-      [Role.Officer]: 'bg-forensic-800 text-white',
-      [Role.Forensic]: 'bg-forensic-accent text-white',
-      [Role.Lawyer]: 'bg-forensic-warning text-forensic-900',
-    };
+  const roleConfig = getRoleConfig(user.role);
 
+  const renderRoleBadge = () => {
     return (
-      <Badge className={`${roleColors[user.role]} px-3 py-1`}>
-        {user.roleTitle}
+      <Badge className={`${roleConfig.bgColor} text-white px-3 py-1`}>
+        {roleConfig.title}
       </Badge>
     );
   };

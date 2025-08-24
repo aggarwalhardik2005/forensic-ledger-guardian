@@ -1,5 +1,5 @@
 import React from "react";
-import RoleDebugger from "@/components/debug/RoleDebugger";
+import RoleDebugger from "@/components/admin/debug/RoleDebugger";
 
 const DebugPage: React.FC = () => {
   return (

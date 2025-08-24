@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabaseClient";
 import { Role } from "@/services/web3Service";
+import { getRoleTitle } from "@/config/roles";
 import { roleManagementService } from "@/services/roleManagementService";
 // DEV MODE: Only import devAuth in component scope to avoid Fast Refresh error
 
@@ -180,21 +181,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       }
 
       // Create a helper function to get role title
-      const getRoleTitle = (role: Role): string => {
-        switch (role) {
-          case Role.Court:
-            return "Court Official";
-          case Role.Officer:
-            return "Police Officer";
-          case Role.Forensic:
-            return "Forensic Expert";
-          case Role.Lawyer:
-            return "Legal Counsel";
-          default:
-            return "Unauthorized User";
-        }
-      };
-
       // Get role from database first to ensure consistency
       const dbRole = await roleManagementService.getRoleForWallet(
         walletAddress
