@@ -64,13 +64,13 @@ const App: React.FC = () => {
             />
 
             {/* Shared Routes - accessible by all authenticated users */}
-            <SharedRoutes />
+            {SharedRoutes()}
 
             {/* Role-specific Routes */}
-            <CourtRoutes />
-            <OfficerRoutes />
-            <ForensicRoutes />
-            <LawyerRoutes />
+            {CourtRoutes()}
+            {OfficerRoutes()}
+            {ForensicRoutes()}
+            {LawyerRoutes()}
 
             {/* Catch-all route for 404 */}
             <Route path="*" element={<NotFound />} />
