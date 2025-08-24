@@ -123,3 +123,16 @@ COMMIT;
 
 -- After running this script, test it with:
 -- SELECT test_database_setup();
+
+
+--Evidence Database
+create table evidence (
+    id bigserial primary key,
+    case_id text not null,
+    evidence_id text not null,
+    cid text not null,
+    key_encrypted text not null,
+    iv_encrypted text not null,
+    hash_original text not null,
+    unique(case_id, evidence_id)
+);
