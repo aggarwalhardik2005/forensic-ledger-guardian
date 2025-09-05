@@ -402,6 +402,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Built with ❤️ for the justice system by [Aarav Mahajan](https://github.com/aaravmahajanofficial)**
+**Built with ❤️ for the justice system by [Forensic Ledger Guardian Team](https://github.com/aaravmahajanofficial)**
 
 For questions, support, or feature requests, please [open an issue](https://github.com/aaravmahajanofficial/forensic-ledger-guardian/issues) or contact the maintainers.
