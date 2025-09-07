@@ -7,10 +7,8 @@ contract ForensicChain {
 
     struct Evidence {
         string evidenceId;          
-        string cidEncrypted;        
-        string hashEncrypted;       
-        string hashOriginal;       
-        bytes encryptionKeyHash;    
+        string cid;        
+        string hashOriginal; 
         EvidenceType evidenceType;  
         address submittedBy;        
         bool confirmed;             
@@ -43,8 +41,14 @@ contract ForensicChain {
 
     mapping(address => Role) public globalRoles;                               
     mapping(string => FIR) public firs;                                         
+
+    // New: store FIR evidence separately until FIR is promoted to a case
+    mapping(string => mapping(uint256 => Evidence)) public firEvidenceMapping;
+    mapping(string => uint256) public firEvidenceCount;
+
     mapping(string => Case) public cases;                                       
     mapping(string => mapping(address => Role)) public caseRoles;              
+
     mapping(string => mapping(address => bool)) public evidenceConfirmed;       
     mapping(bytes32 => bool) public usedCIDHash;                               
     mapping(string => address[]) public caseAuditTrail;                         
@@ -52,16 +56,14 @@ contract ForensicChain {
     mapping(string => mapping(uint256 => Evidence)) public caseEvidenceMapping;
     string[] public caseIds;
 
-    event EvidenceSubmitted(string indexed caseId, string evidenceId, string cidEncrypted, address submitter);
+    event EvidenceSubmitted(string indexed caseId, string evidenceId, string cid, address submitter);
     event EvidenceAccessed(string indexed caseId, uint256 indexed index, address accessor);
     event EvidenceConfirmed(string indexed caseId, uint256 indexed index, address confirmer);
-    event EncryptionKeyUpdated(string indexed caseId, uint256 indexed index, bytes keyHash);
     event CaseCreated(string indexed caseId, string indexed firId, address creator);
     event CaseStatusChanged(string indexed caseId, bool statusSealed, bool open);
     event RoleAssigned(string indexed caseId, address indexed user, Role role);
     event FIRFiled(string indexed firId, address indexed filedBy);
 
- 
     modifier onlyRole(Role role) {
         require(globalRoles[msg.sender] == role, "Unauthorized role");
         _;
@@ -114,30 +116,30 @@ contract ForensicChain {
         emit FIRFiled(firId, msg.sender);
     }
 
+    /**
+     * Submit evidence to an FIR (only before promotion)
+     * Evidence will be stored off the case until FIR is promoted.
+     */
     function submitFIREvidence(
         string memory firId,
         string memory evidenceId,
-        string memory cidEncrypted,
-        string memory hashEncrypted,
+        string memory cid,
         string memory hashOriginal,
-        bytes memory encryptionKeyHash,
         EvidenceType evidenceType
     ) external notLocked {
         require(globalRoles[msg.sender] == Role.Officer || globalRoles[msg.sender] == Role.Forensic, "Unauthorized");
         require(firs[firId].filedBy != address(0), "FIR not found");
+        // Must not be promoted yet (we store evidence to FIR while pending)
         require(!firs[firId].promotedToCase, "FIR already promoted to case");
-        bytes32 unique = keccak256(abi.encodePacked(cidEncrypted, hashEncrypted));
+
+        bytes32 unique = keccak256(abi.encodePacked(cid));
         require(!usedCIDHash[unique], "Duplicate evidence detected");
 
-        string memory caseId = firs[firId].associatedCaseId;
-        require(bytes(caseId).length != 0, "No associated case found");
-
+        // Create Evidence in memory, preserving empty chainOfCustody
         Evidence memory e = Evidence({
             evidenceId: evidenceId,
-            cidEncrypted: cidEncrypted,
-            hashEncrypted: hashEncrypted,
+            cid: cid,
             hashOriginal: hashOriginal,
-            encryptionKeyHash: encryptionKeyHash,
             evidenceType: evidenceType,
             submittedBy: msg.sender,
             confirmed: false,
@@ -145,9 +147,15 @@ contract ForensicChain {
             chainOfCustody: new address[](0)
         });
 
-        _addNewEvidence(caseId, e);
+        // Store under FIR mapping
+        uint256 idx = firEvidenceCount[firId];
+        firEvidenceMapping[firId][idx] = e;
+        firEvidenceCount[firId] = idx + 1;
+
         usedCIDHash[unique] = true;
-        emit EvidenceSubmitted(caseId, evidenceId, cidEncrypted, msg.sender);
+
+        // Emit EvidenceSubmitted using firId in the caseId position (minimal change)
+        emit EvidenceSubmitted(firId, evidenceId, cid, msg.sender);
     }
 
     function _addNewEvidence(string memory caseId, Evidence memory e) internal {
@@ -156,33 +164,78 @@ contract ForensicChain {
         c.evidenceCount++;
     }
 
+    /**
+     * Promote an FIR to a Case.
+     * After creating the case, migrate all FIR evidence into the case.
+     */
     function createCaseFromFIR(
-    string memory caseId,
-    string memory firId,
-    string memory title,
-    string memory description,
-    string[] memory tags
-) external notLocked onlyCourt {
-    require(cases[caseId].createdBy == address(0), "Case already exists");
-    require(firs[firId].filedBy != address(0), "FIR not found");
-    require(!firs[firId].promotedToCase, "FIR already promoted");
+        string memory caseId,
+        string memory firId,
+        string memory title,
+        string memory description,
+        string[] memory tags
+    ) external notLocked onlyCourt {
+        require(cases[caseId].createdBy == address(0), "Case already exists");
+        require(firs[firId].filedBy != address(0), "FIR not found");
+        require(!firs[firId].promotedToCase, "FIR already promoted");
 
-    Case storage c = cases[caseId];
-    c.caseId = caseId;
-    c.title = title;
-    c.description = description;
-    c.createdBy = msg.sender;
-    c.seal = false;
-    c.open = true;
-    c.tags = tags;
-    c.evidenceCount = 0;
+        // Initialize case
+        Case storage c = cases[caseId];
+        c.caseId = caseId;
+        c.title = title;
+        c.description = description;
+        c.createdBy = msg.sender;
+        c.seal = false;
+        c.open = true;
+        c.tags = tags;
+        c.evidenceCount = 0;
 
-    firs[firId].promotedToCase = true;
-    firs[firId].associatedCaseId = caseId;
-    caseIds.push(caseId);
+        // Migrate FIR evidence into the newly created case
+        uint256 fCount = firEvidenceCount[firId];
+        for (uint256 i = 0; i < fCount; i++) {
+            // Read FIR evidence from storage
+            Evidence storage fe = firEvidenceMapping[firId][i];
 
-    emit CaseCreated(caseId, firId, msg.sender);
-}
+            // Copy chainOfCustody to memory
+            uint256 custodyLen = fe.chainOfCustody.length;
+            address[] memory custody = new address[](custodyLen);
+            for (uint256 j = 0; j < custodyLen; j++) {
+                custody[j] = fe.chainOfCustody[j];
+            }
+
+            // Construct memory Evidence preserving fields
+            Evidence memory newE = Evidence({
+                evidenceId: fe.evidenceId,
+                cid: fe.cid,
+                hashOriginal: fe.hashOriginal,
+                evidenceType: fe.evidenceType,
+                submittedBy: fe.submittedBy,
+                confirmed: fe.confirmed,
+                submittedAt: fe.submittedAt,
+                chainOfCustody: custody
+            });
+
+            // Add to case
+            _addNewEvidence(caseId, newE);
+
+            // Emit EvidenceSubmitted for case so off-chain indexers see it as case evidence
+            emit EvidenceSubmitted(caseId, fe.evidenceId, fe.cid, fe.submittedBy);
+
+            // delete old storage entry to free space
+            delete firEvidenceMapping[firId][i];
+        }
+
+        // Clear FIR evidence count
+        firEvidenceCount[firId] = 0;
+
+        // Mark FIR promoted and link case id
+        firs[firId].promotedToCase = true;
+        firs[firId].associatedCaseId = caseId;
+
+        caseIds.push(caseId);
+
+        emit CaseCreated(caseId, firId, msg.sender);
+    }
 
     function assignCaseRole(string memory caseId, address user, Role role) external notLocked onlyCourt {
         require(role != Role.None, "Cannot assign None role");
@@ -194,10 +247,8 @@ contract ForensicChain {
     function submitCaseEvidence(
         string memory caseId,
         string memory evidenceId,
-        string memory cidEncrypted,
-        string memory hashEncrypted,
+        string memory cid,
         string memory hashOriginal,
-        bytes memory encryptionKeyHash,
         EvidenceType evidenceType
     ) external notLocked onlyCaseAssigned(caseId) caseOpen(caseId) {
         require(
@@ -205,15 +256,13 @@ contract ForensicChain {
             "Unauthorized role to submit evidence"
         );
 
-        bytes32 unique = keccak256(abi.encodePacked(cidEncrypted, hashEncrypted));
+        bytes32 unique = keccak256(abi.encodePacked(cid));
         require(!usedCIDHash[unique], "Duplicate evidence detected");
 
         Evidence memory e = Evidence({
             evidenceId: evidenceId,
-            cidEncrypted: cidEncrypted,
-            hashEncrypted: hashEncrypted,
+            cid: cid,
             hashOriginal: hashOriginal,
-            encryptionKeyHash: encryptionKeyHash,
             evidenceType: evidenceType,
             submittedBy: msg.sender,
             confirmed: false,
@@ -223,12 +272,12 @@ contract ForensicChain {
 
         _addNewEvidence(caseId, e);
         usedCIDHash[unique] = true;
-        emit EvidenceSubmitted(caseId, evidenceId, cidEncrypted, msg.sender);
+        emit EvidenceSubmitted(caseId, evidenceId, cid, msg.sender);
     }
 
     function confirmCaseEvidence(string memory caseId, uint256 index) external notLocked onlyCaseAssigned(caseId) {
-        Evidence storage e = caseEvidenceMapping[caseId][index];
         require(index < cases[caseId].evidenceCount, "Invalid evidence index");
+        Evidence storage e = caseEvidenceMapping[caseId][index];
         require(!e.confirmed, "Evidence already confirmed");
         require(e.submittedBy != msg.sender, "Cannot self-confirm evidence");
         e.confirmed = true;
@@ -260,16 +309,15 @@ contract ForensicChain {
         emit CaseStatusChanged(caseId, c.seal, false);
     }
 
-    function accessEvidence(string memory caseId, uint256 index, bytes memory keyHash) 
+    function accessEvidence(string memory caseId, uint256 index) 
         external onlyCaseAssigned(caseId) returns (string memory) {
-        Evidence storage e = caseEvidenceMapping[caseId][index];
         require(index < cases[caseId].evidenceCount, "Invalid evidence index");
-        require(keccak256(keyHash) == keccak256(e.encryptionKeyHash), "Invalid encryption key hash");
+        Evidence storage e = caseEvidenceMapping[caseId][index];
 
         evidenceAccessed[caseId][index][msg.sender] = true;
         e.chainOfCustody.push(msg.sender);
         emit EvidenceAccessed(caseId, index, msg.sender);
-        return e.cidEncrypted; // Return CID for off-chain retrieval
+        return e.cid; // Return CID for off-chain retrieval
     }
 
     function verifyEvidence(string memory caseId, uint256 index, string memory providedHash) 
@@ -278,15 +326,6 @@ contract ForensicChain {
         require(index < cases[caseId].evidenceCount, "Invalid evidence index");
         return keccak256(abi.encodePacked(providedHash)) == keccak256(abi.encodePacked(e.hashOriginal));
     }
-
-    function updateEncryptionKey(string memory caseId, uint256 index, bytes memory newKeyHash) 
-        external onlyCourt {
-        Evidence storage e = caseEvidenceMapping[caseId][index];
-        require(index < cases[caseId].evidenceCount, "Invalid evidence index");
-        e.encryptionKeyHash = newKeyHash;
-        emit EncryptionKeyUpdated(caseId, index, newKeyHash);
-    }
-
 
     function getMyRoleInCase(string memory caseId) external view returns (Role) {
         return caseRoles[caseId][msg.sender];
@@ -316,3 +355,7 @@ contract ForensicChain {
         return allCases;
     }
 }
+
+
+
+
