@@ -42,9 +42,9 @@ contract ForensicChain {
     mapping(address => Role) public globalRoles;                               
     mapping(string => FIR) public firs;                                         
 
-    // New: store FIR evidence separately until FIR is promoted to a case
-    mapping(string => mapping(uint256 => Evidence)) public firEvidenceMapping;
-    mapping(string => uint256) public firEvidenceCount;
+    mapping(string => mapping(uint256 => Evidence)) public evidenceMapping;
+    mapping(string => mapping(string => uint256)) private evidenceIndex; 
+    mapping(string => uint256) public evidenceCount;
 
     mapping(string => Case) public cases;                                       
     mapping(string => mapping(address => Role)) public caseRoles;              
@@ -53,7 +53,7 @@ contract ForensicChain {
     mapping(bytes32 => bool) public usedCIDHash;                               
     mapping(string => address[]) public caseAuditTrail;                         
     mapping(string => mapping(uint => mapping(address => bool))) public evidenceAccessed; 
-    mapping(string => mapping(uint256 => Evidence)) public caseEvidenceMapping;
+   
     string[] public caseIds;
 
     event EvidenceSubmitted(string indexed caseId, string evidenceId, string cid, address submitter);
@@ -148,9 +148,9 @@ contract ForensicChain {
         });
 
         // Store under FIR mapping
-        uint256 idx = firEvidenceCount[firId];
-        firEvidenceMapping[firId][idx] = e;
-        firEvidenceCount[firId] = idx + 1;
+        uint256 idx = evidenceCount[firId];
+        evidenceMapping[firId][idx] = e;
+        evidenceCount[firId] = idx + 1;
 
         usedCIDHash[unique] = true;
 
@@ -160,7 +160,8 @@ contract ForensicChain {
 
     function _addNewEvidence(string memory caseId, Evidence memory e) internal {
         Case storage c = cases[caseId];
-        caseEvidenceMapping[caseId][c.evidenceCount] = e;
+        evidenceMapping[caseId][c.evidenceCount] = e;
+        evidenceIndex[caseId][e.evidenceId] = c.evidenceCount;
         c.evidenceCount++;
     }
 
@@ -191,10 +192,10 @@ contract ForensicChain {
         c.evidenceCount = 0;
 
         // Migrate FIR evidence into the newly created case
-        uint256 fCount = firEvidenceCount[firId];
+        uint256 fCount = evidenceCount[firId];
         for (uint256 i = 0; i < fCount; i++) {
             // Read FIR evidence from storage
-            Evidence storage fe = firEvidenceMapping[firId][i];
+            Evidence storage fe = evidenceMapping[firId][i];
 
             // Copy chainOfCustody to memory
             uint256 custodyLen = fe.chainOfCustody.length;
@@ -222,11 +223,11 @@ contract ForensicChain {
             emit EvidenceSubmitted(caseId, fe.evidenceId, fe.cid, fe.submittedBy);
 
             // delete old storage entry to free space
-            delete firEvidenceMapping[firId][i];
+            delete evidenceMapping[firId][i];
         }
 
         // Clear FIR evidence count
-        firEvidenceCount[firId] = 0;
+        evidenceCount[firId] = 0;
 
         // Mark FIR promoted and link case id
         firs[firId].promotedToCase = true;
@@ -275,15 +276,17 @@ contract ForensicChain {
         emit EvidenceSubmitted(caseId, evidenceId, cid, msg.sender);
     }
 
-    function confirmCaseEvidence(string memory caseId, uint256 index) external notLocked onlyCaseAssigned(caseId) {
-        require(index < cases[caseId].evidenceCount, "Invalid evidence index");
-        Evidence storage e = caseEvidenceMapping[caseId][index];
-        require(!e.confirmed, "Evidence already confirmed");
-        require(e.submittedBy != msg.sender, "Cannot self-confirm evidence");
+    function confirmEvidence(string memory containerId, uint256 index) external notLocked {
+        require(index < evidenceCount[containerId], "Invalid evidence index");
+        Evidence storage e = evidenceMapping[containerId][index];
+        require(!e.confirmed, "Already confirmed");
+        require(e.submittedBy != msg.sender, "Cannot self-confirm");
         e.confirmed = true;
         e.chainOfCustody.push(msg.sender);
-        emit EvidenceConfirmed(caseId, index, msg.sender);
+        emit EvidenceConfirmed(containerId, index, msg.sender);
     }
+
+
 
     function sealCase(string memory caseId) external onlyCourt {
         Case storage c = cases[caseId];
@@ -312,7 +315,7 @@ contract ForensicChain {
     function accessEvidence(string memory caseId, uint256 index) 
         external onlyCaseAssigned(caseId) returns (string memory) {
         require(index < cases[caseId].evidenceCount, "Invalid evidence index");
-        Evidence storage e = caseEvidenceMapping[caseId][index];
+        Evidence storage e = evidenceMapping[caseId][index];
 
         evidenceAccessed[caseId][index][msg.sender] = true;
         e.chainOfCustody.push(msg.sender);
@@ -322,7 +325,7 @@ contract ForensicChain {
 
     function verifyEvidence(string memory caseId, uint256 index, string memory providedHash) 
         external view onlyCaseAssigned(caseId) returns (bool) {
-        Evidence memory e = caseEvidenceMapping[caseId][index];
+        Evidence memory e = evidenceMapping[caseId][index];
         require(index < cases[caseId].evidenceCount, "Invalid evidence index");
         return keccak256(abi.encodePacked(providedHash)) == keccak256(abi.encodePacked(e.hashOriginal));
     }
@@ -343,9 +346,16 @@ contract ForensicChain {
         return firs[firId];
     }
 
-    function getEvidence(string memory caseId, uint256 index) external view returns (Evidence memory) {
-        return caseEvidenceMapping[caseId][index];
+    function getEvidence(string memory containerId, uint256 index) external view returns (Evidence memory) {
+        return evidenceMapping[containerId][index];
     }
+
+    function getEvidenceById(string memory containerId, string memory evidenceId) external view returns (Evidence memory) {
+        uint256 index = evidenceIndex[containerId][evidenceId];
+        require(index < evidenceCount[containerId], "Evidence not found");
+        return evidenceMapping[containerId][index];
+    }
+
 
     function getAllCases() external view returns (Case[] memory) {
         Case[] memory allCases = new Case[](caseIds.length);
