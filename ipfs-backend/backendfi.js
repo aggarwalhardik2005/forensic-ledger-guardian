@@ -88,11 +88,12 @@ app.post("/fir/:firId/upload", upload.single("file"), async (req, res) => {
 
     // Store only key/IV off-chain for retrieval
     const { error } = await supabase.from("evidence").insert([{
-      fir_id: firId,
+      container_id: firId,
       evidence_id: evidenceId,
-      key_encrypted: keyEncrypted,
+      key_encrypted: keyEncrypted, 
       iv_encrypted: ivEncrypted
     }]);
+
     if (error) return res.status(500).json({ error: error.message });
 
     // Store CID & hash on-chain
@@ -159,11 +160,12 @@ app.post("/case/:caseId/upload", upload.single("file"), async (req, res) => {
     const ivEncrypted = iv.toString("hex");
 
     await supabase.from("evidence").insert([{
-      case_id: caseId,
+      container_id: caseId,
       evidence_id: evidenceId,
       key_encrypted: keyEncrypted,
       iv_encrypted: ivEncrypted
     }]);
+
 
     const tx = await contract.submitCaseEvidence(caseId, evidenceId, cid, hashOriginal, evidenceType);
     await tx.wait();
@@ -180,7 +182,7 @@ app.post("/case/:caseId/upload", upload.single("file"), async (req, res) => {
 app.post("/case/:containerId/confirm", async (req, res) => {
   try {
     const { containerId, index } = req.body;
-    if (!containerIdId || index === undefined) return res.status(400).json({ error: "caseId and index required" });
+    if (!containerId || index === undefined) return res.status(400).json({ error: "caseId and index required" });
 
     const tx = await contract.confirmEvidence(containerId, index);
     await tx.wait();
@@ -216,7 +218,7 @@ app.get("/retrieve/:containerId/:evidenceId", async (req, res) => {
     const evidenceOnChain = await contract.getEvidenceById(containerId, evidenceId); 
     const cid = evidenceOnChain.cid;
     const hashOriginal = evidenceOnChain.hashOriginal;
-    // evidenceOnChain = { cid, hashOriginal, ... }
+
 
     //Fetch encrypted file from IPFS
     const fileResp = await axios.get(`https://${process.env.PINATA_GATEWAY}/ipfs/${cid}`, { responseType: "arraybuffer" });
