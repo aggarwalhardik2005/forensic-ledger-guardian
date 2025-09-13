@@ -144,3 +144,6 @@ These roles determine who can do what in the system.
 * Integrates **IPFS for file storage**, keeping blockchain lightweight.
 * Fully **auditable**, transparent, and immutable.
 
+The key is a random 256-bit value, unique for every file.
+
+The IV (initialization vector) ensures that encrypting the same file twice won’t produce the same ciphertext.
