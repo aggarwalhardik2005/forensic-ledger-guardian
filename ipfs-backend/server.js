@@ -1,10 +1,14 @@
-const express = require("express");
-const multer = require("multer");
-const axios = require("axios");
-const dotenv = require("dotenv");
-const FormData = require("form-data");
-const cors = require("cors");
-const path = require("path");
+import express from 'express';
+import multer from 'multer';
+import axios from 'axios';
+import dotenv from 'dotenv';
+import FormData from 'form-data';
+import cors from 'cors';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Load environment variables
 dotenv.config();
@@ -13,7 +17,11 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:8080', 'http://127.0.0.1:5173', 'http://127.0.0.1:8080'],
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type']
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -119,7 +127,7 @@ app.get("/retrieve/:cid", async (req, res) => {
 });
 
 
-const PORT = process.env.PORT || 4001;
+const PORT = process.env.PORT || 4000;
 const server = app.listen(PORT, () => {
   console.log(`Backend running at http://localhost:${PORT}`);
   console.log('Environment:', process.env.NODE_ENV || 'development');
