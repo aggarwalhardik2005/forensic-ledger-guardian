@@ -18,6 +18,11 @@ import {
 } from "lucide-react";
 import { cn } from '@/lib/utils';
 import web3Service, { Case, EvidenceType } from '@/services/web3Service';
+import { useWeb3 } from '@/contexts/Web3Context';
+
+// Backend URL for IPFS + server-side on-chain submission. Override with Vite env `VITE_IPFS_BACKEND_URL` if present.
+const IPFS_BACKEND_URL = (import.meta.env && (import.meta.env.VITE_IPFS_BACKEND_URL as string)) || 'http://localhost:4000';
+
 
 const EvidenceUpload = () => {
   const [cases, setCases] = useState<Case[]>([]);
@@ -31,14 +36,49 @@ const EvidenceUpload = () => {
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+ 
+
+  const { isConnected } = useWeb3();
 
   useEffect(() => {
     const fetchCases = async () => {
-      const allCases = await web3Service.getAllCases();
-      setCases(allCases);
+      // Create a dummy default case for development or when web3 is not connected
+      const DEFAULT_CASE: Case = {
+        caseId: 'DEFAULT-CASE',
+        title: 'Default Case (Demo)',
+        description: 'Auto-generated default case for evidence upload during development',
+        createdBy: '0x0000000000000000000000000000000000000000',
+        seal: false,
+        open: true,
+        tags: ['default', 'demo'],
+        evidenceCount: 0,
+      };
+
+      if (!isConnected) {
+        console.log('Web3 not connected, using default case');
+        setCases([DEFAULT_CASE]);
+        setSelectedCase(DEFAULT_CASE.caseId);
+        return;
+      }
+
+      try {
+        const allCases = await web3Service.getAllCases();
+        if (!allCases || allCases.length === 0) {
+          console.log('No cases found, using default case');
+          setCases([DEFAULT_CASE]);
+          setSelectedCase(DEFAULT_CASE.caseId);
+        } else {
+          setCases(allCases);
+        }
+      } catch (error) {
+        console.error('Error fetching cases:', error);
+        // Fall back to default case on error
+        setCases([DEFAULT_CASE]);
+        setSelectedCase(DEFAULT_CASE.caseId);
+      }
     };
     fetchCases();
-  }, []);
+  }, [isConnected]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -86,6 +126,7 @@ const EvidenceUpload = () => {
       return;
     }
     
+ 
     setIsUploading(true);
     
     try {
@@ -93,40 +134,51 @@ const EvidenceUpload = () => {
         const file = files[i];
         const progress = Math.round(((i + 1) / files.length) * 100);
         setUploadProgress(progress);
-        
+
         const hash = await calculateHash(file);
         const evidenceId = `${selectedCase}-${Date.now()}-${i}`;
-        
-        const success = await web3Service.submitCaseEvidence(
-          selectedCase,
-          evidenceId,
-          "", // cidEncrypted
-          hash, // hashEncrypted
-          hash, // hashOriginal
-          "", // encryptionKeyHash
-          evidenceType
-        );
 
-        if (!success) {
-          throw new Error(`Failed to submit evidence for file ${file.name}`);
+        // Prepare form data for backend upload which handles encryption, pinning to Pinata,
+        // off-chain storage (Supabase) and on-chain recording using a server wallet.
+        const form = new FormData();
+        form.append('file', file, file.name);
+        form.append('evidenceId', evidenceId);
+        form.append('evidenceType', String(evidenceType));
+        form.append('caseId', selectedCase);
+
+        // Use the simple backend upload route used by the local dev server
+        // (server.js accepts POST /upload with form fields: file, caseId, evidenceId, evidenceType)
+        const resp = await fetch(`${IPFS_BACKEND_URL}/upload`, {
+          method: 'POST',
+          body: form,
+        });
+
+        if (!resp.ok) {
+          const text = await resp.text();
+          throw new Error(text || `Upload failed for ${file.name}`);
         }
+
+        const data = await resp.json();
+        // data.cid contains the Pinata CID returned by backend
+        console.log('Uploaded to IPFS backend, cid:', data.cid);
       }
-      
+
       toast({
-        title: "Evidence submitted successfully",
-        description: `${files.length} file(s) uploaded and registered on the blockchain`,
-        variant: "default"
+        title: 'Evidence uploaded',
+        description: `${files.length} file(s) uploaded to IPFS and recorded on-chain via backend`,
+        variant: 'default',
       });
-      
+
       // Reset form
       setFiles([]);
       setDescription('');
       setUploadProgress(0);
     } catch (error) {
+      console.error('Upload error:', error);
       toast({
-        title: "Upload failed",
-        description: "There was a problem uploading your evidence",
-        variant: "destructive"
+        title: 'Upload failed',
+        description: (error as Error).message || 'There was a problem uploading your evidence',
+        variant: 'destructive',
       });
     } finally {
       setIsUploading(false);
