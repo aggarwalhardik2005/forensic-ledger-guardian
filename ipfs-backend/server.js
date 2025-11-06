@@ -1,6 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import axios from 'axios';
+import { CID } from 'multiformats/cid';
 import dotenv from 'dotenv';
 import FormData from 'form-data';
 import cors from 'cors';
@@ -10,7 +11,6 @@ import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Load environment variables
 dotenv.config();
 
 // Initialize Express app
@@ -114,6 +114,10 @@ app.post("/upload", (req, res, next) => {
 
 app.get("/retrieve/:cid", async (req, res) => {
   const { cid } = req.params;
+
+  if (!validateCid(cid)) {
+    return res.status(400).json({ error: "Invalid CID" });
+  }
   try {
     const url = `https://gateway.pinata.cloud/ipfs/${cid}`; 
     const response = await axios.get(url, { responseType: "arraybuffer" });
