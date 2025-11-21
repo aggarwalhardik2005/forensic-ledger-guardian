@@ -39,14 +39,15 @@ const ForgotPasswordForm = ({ onBack }: { onBack: () => void }) => {
         description: "Check your inbox for password reset instructions",
       });
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err instanceof z.ZodError) {
         setError(err.errors[0].message);
       } else {
-        setError(err.message || "An unexpected error occurred. Please try again.");
+        const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred. Please try again.";
+        setError(errorMessage);
         toast({
           title: "Password reset failed",
-          description: err.message || "An error occurred while sending the recovery email",
+          description: errorMessage,
           variant: "destructive",
         });
       }

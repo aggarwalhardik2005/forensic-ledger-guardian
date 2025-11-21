@@ -367,7 +367,7 @@ const Activity = () => {
             <CalendarComponent
               mode="range"
               selected={dateRange}
-              onSelect={(range) => setDateRange(range as any)}
+              onSelect={(range) => setDateRange(range || { from: undefined, to: undefined })}
               initialFocus
             />
             <div className="p-3 border-t border-forensic-100 flex justify-between">

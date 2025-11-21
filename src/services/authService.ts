@@ -417,12 +417,12 @@ class AuthService {
       'role' in data &&
       'roleTitle' in data &&
       'authType' in data &&
-      typeof (data as any).id === 'string' &&
-      typeof (data as any).email === 'string' &&
-      typeof (data as any).name === 'string' &&
-      typeof (data as any).role === 'number' &&
-      typeof (data as any).roleTitle === 'string' &&
-      ((data as any).authType === 'email' || (data as any).authType === 'wallet')
+      typeof (data as Record<string, unknown>).id === 'string' &&
+      typeof (data as Record<string, unknown>).email === 'string' &&
+      typeof (data as Record<string, unknown>).name === 'string' &&
+      typeof (data as Record<string, unknown>).role === 'number' &&
+      typeof (data as Record<string, unknown>).roleTitle === 'string' &&
+      ((data as Record<string, unknown>).authType === 'email' || (data as Record<string, unknown>).authType === 'wallet')
     );
   }
 

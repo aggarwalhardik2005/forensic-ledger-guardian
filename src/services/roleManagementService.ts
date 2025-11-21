@@ -278,7 +278,6 @@ class RoleManagementService {
         return false;
       }
 
-      console.log("Court admin profile created successfully");
       return true;
     } catch (error) {
       console.error("Error creating court admin profile:", error);

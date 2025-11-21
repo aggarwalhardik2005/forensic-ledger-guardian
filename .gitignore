@@ -132,3 +132,18 @@ dist
 *.jpg
 *.jpeg
 *.png
+
+# Python virtual environments
+venv/
+env/
+ENV/
+*.pyc
+__pycache__/
+
+# Experiment directories
+aes_tamper_test/
+sha256_tamper_experiment/
+scallability/
+
+# Machine-specific files
+*-DESKTOP-*.js

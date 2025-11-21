@@ -28,7 +28,7 @@ export class UnifiedRoleService {
     return getRoleTitle(role);
   }
 
-  isValidRole(role: any): role is Role {
+  isValidRole(role: unknown): role is Role {
     return isValidRole(role);
   }
 

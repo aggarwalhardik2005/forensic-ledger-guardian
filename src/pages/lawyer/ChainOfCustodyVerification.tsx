@@ -49,6 +49,10 @@ const ChainOfCustodyVerification = () => {
   
   const { evidence, verifyEvidence } = useEvidenceManager();
   
+  // Generate mock block number once per component instance
+  // eslint-disable-next-line react-hooks/purity
+  const mockBlockNumber = React.useMemo(() => Math.floor(Math.random() * 9000000) + 1000000, []);
+  
   useEffect(() => {
     if (evidenceIdParam && evidenceIdParam !== evidenceId) {
       setEvidenceId(evidenceIdParam);
@@ -466,7 +470,7 @@ const ChainOfCustodyVerification = () => {
                     </div>
                     <div>
                       <div className="text-sm text-forensic-500">Block Number</div>
-                      <div className="font-mono text-xs">{Math.floor(Math.random() * 9000000) + 1000000}</div>
+                      <div className="font-mono text-xs">{mockBlockNumber}</div>
                     </div>
                   </div>
                   <div className="mt-2 text-xs text-forensic-500">
