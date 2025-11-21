@@ -30,14 +30,9 @@ const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const { user } = useAuth();
-  const [isOpen, setIsOpen] = useState(!isMobile);
-
-  // Close sidebar on mobile when route changes
-  useEffect(() => {
-    if (isMobile) {
-      setIsOpen(false);
-    }
-  }, [location.pathname, isMobile]);
+  
+  // Sidebar is closed on mobile, open on desktop
+  const isOpen = !isMobile;
 
   // Get role-specific navigation items
   const roleNavigation = user ? getRoleNavigation(user.role) : [];

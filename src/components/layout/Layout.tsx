@@ -10,15 +10,8 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const isMobile = useIsMobile();
-
-  // Auto-collapse sidebar on mobile devices
-  useEffect(() => {
-    if (isMobile) {
-      setSidebarCollapsed(true);
-    }
-  }, [isMobile]);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(isMobile);
 
   const toggleSidebar = () => setSidebarCollapsed(!sidebarCollapsed);
 

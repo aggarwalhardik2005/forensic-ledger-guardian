@@ -11,8 +11,6 @@ export const clearAllAuthData = (): void => {
   // Clear any wallet connection data if needed
   localStorage.removeItem("walletconnect");
   localStorage.removeItem("WALLETCONNECT_DEEPLINK_CHOICE");
-
-  console.log("All authentication data cleared");
 };
 
 /**

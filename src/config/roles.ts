@@ -288,8 +288,8 @@ export const getRoleNavigation = (role: Role): NavigationItem[] => {
   return ROLE_NAVIGATION[role] || [];
 };
 
-export const isValidRole = (role: any): role is Role => {
-  return Object.values(Role).includes(role);
+export const isValidRole = (role: unknown): role is Role => {
+  return Object.values(Role).includes(role as Role);
 };
 
 export const getRoleTitle = (role: Role): string => {

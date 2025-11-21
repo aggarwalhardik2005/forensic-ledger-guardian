@@ -30,10 +30,6 @@ const MetaMaskStatusComponent: React.FC<MetaMaskStatusComponentProps> = ({
   const { isConnected, chainId, networkName, isCorrectNetwork, switchNetwork } =
     useWeb3();
 
-  useEffect(() => {
-    checkMetaMaskStatus();
-  }, []);
-
   const checkMetaMaskStatus = async () => {
     if (typeof window.ethereum !== "undefined") {
       setIsMetaMaskInstalled(true);
@@ -52,6 +48,11 @@ const MetaMaskStatusComponent: React.FC<MetaMaskStatusComponentProps> = ({
       setIsMetaMaskUnlocked(false);
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    checkMetaMaskStatus();
+  }, []);
 
   const installMetaMask = () => {
     window.open("https://metamask.io/download/", "_blank");

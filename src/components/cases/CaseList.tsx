@@ -24,8 +24,19 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from '@/contexts/AuthContext';
 
+// Case data type
+type CaseData = {
+  id: string;
+  title: string;
+  status: string;
+  date: string;
+  filedBy: string;
+  evidenceCount: number;
+  tags: string[];
+};
+
 // Mock data for cases
-const mockCases = [
+const mockCases: CaseData[] = [
   {
     id: "FF-2023-089",
     title: "Tech Corp Data Breach",
@@ -67,7 +78,7 @@ const mockCases = [
 const CaseList: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [cases, setCases] = React.useState<any[]>([]);
+  const [cases, setCases] = React.useState<CaseData[]>([]);
 
   React.useEffect(() => {
     try {

@@ -36,8 +36,19 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
+// User data type
+type UserData = {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+  status: string;
+  added: string;
+  caseCount: number;
+};
+
 // Mock user data
-const userData = [
+const userData: UserData[] = [
   {
     id: "0x1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T",
     name: "Michael Wong",
@@ -104,10 +115,10 @@ const userData = [
 ];
 
 interface EditUserDialogProps {
-  user: any;
+  user: UserData;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (updatedUser: any) => void;
+  onSave: (updatedUser: UserData) => void;
 }
 
 const EditUserDialog = ({ user, open, onOpenChange, onSave }: EditUserDialogProps) => {
@@ -178,7 +189,7 @@ const EditUserDialog = ({ user, open, onOpenChange, onSave }: EditUserDialogProp
 };
 
 interface ChangeRoleDialogProps {
-  user: any;
+  user: UserData;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (userId: string, roleId: number) => void;
@@ -256,7 +267,7 @@ const UserManagement = () => {
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [users, setUsers] = useState(userData);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [changeRoleDialogOpen, setChangeRoleDialogOpen] = useState(false);
@@ -314,7 +325,7 @@ const UserManagement = () => {
     }
   };
 
-  const handleEditUser = (updatedUser: any) => {
+  const handleEditUser = (updatedUser: UserData) => {
     setUsers(users.map(user => user.id === updatedUser.id ? updatedUser : user));
     toast({
       title: "User Updated",
@@ -373,7 +384,7 @@ const UserManagement = () => {
     });
   };
 
-  const handleViewCases = (user: any) => {
+  const handleViewCases = (user: UserData) => {
     toast({
       title: "View Cases",
       description: `Viewing cases assigned to ${user.name}.`

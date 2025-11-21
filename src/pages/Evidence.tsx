@@ -109,14 +109,14 @@ const Evidence = () => {
     }
   };
 
-  const handleView = (evidence: any) => {
+  const handleView = (evidence: EvidenceItem) => {
     toast({
       title: "Viewing Evidence",
       description: `Viewing ${evidence.name}`
     });
   };
 
-  const handleVerify = (evidence: any) => {
+  const handleVerify = (evidence: EvidenceItem) => {
     toast({
       title: "Verifying Evidence",
       description: `Started verification process for ${evidence.name}`
@@ -124,14 +124,14 @@ const Evidence = () => {
     navigate('/verify');
   };
 
-  const handleDownload = (evidence: any) => {
+  const handleDownload = (evidence: EvidenceItem) => {
     toast({
       title: "Downloading Evidence",
       description: `Started downloading ${evidence.name}`
     });
   };
 
-  const viewChainOfCustody = (evidence: any) => {
+  const viewChainOfCustody = (evidence: EvidenceItem) => {
     toast({
       title: "Chain of Custody",
       description: `Viewing chain of custody for ${evidence.id}`
