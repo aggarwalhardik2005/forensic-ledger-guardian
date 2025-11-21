@@ -31,6 +31,26 @@ Please read and follow our [Code of Conduct](CODE_OF_CONDUCT.md) to ensure a wel
 
 ### Setting Up Development Environment
 
+#### Option 1: Using Dev Containers (Recommended) 🐳
+
+The easiest way to get started with a fully configured environment:
+
+1. **Prerequisites:**
+   - Docker Desktop
+   - Visual Studio Code
+   - Dev Containers extension (`ms-vscode-remote.remote-containers`)
+
+2. **Steps:**
+   - Fork and clone the repository
+   - Open the folder in VS Code
+   - Press `F1` → `Dev Containers: Reopen in Container`
+   - Wait for setup to complete automatically
+   - All dependencies, tools, and extensions are pre-installed!
+
+3. **Learn more:** See [`.devcontainer/README.md`](.devcontainer/README.md) for details
+
+#### Option 2: Local Setup 💻
+
 1. Fork the repository
 2. Clone your fork:
    ```bash
@@ -40,10 +60,20 @@ Please read and follow our [Code of Conduct](CODE_OF_CONDUCT.md) to ensure a wel
 3. Install dependencies:
    ```bash
    npm install
-   cd ipfs_backend/ipfs-backend && npm install
+   cd ipfs-backend && npm install
    ```
-4. Set up environment variables (see README.md)
-5. Start development servers
+4. Set up environment variables:
+   ```bash
+   cp .env.example .env
+   cp ipfs-backend/.env.example ipfs-backend/.env
+   # Edit .env files with your configuration
+   ```
+5. Install Foundry:
+   ```bash
+   curl -L https://foundry.paradigm.xyz | bash
+   foundryup
+   ```
+6. Start development servers (see README.md)
 
 ## Development Process
 
