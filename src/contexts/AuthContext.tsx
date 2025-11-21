@@ -169,8 +169,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     return authService.canAccessRole(role);
   };
 
+  // React 19: Render context directly without Provider
   return (
-    <AuthContext.Provider
+    <AuthContext
       value={{
         user,
         login,
@@ -183,7 +184,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       }}
     >
       {children}
-    </AuthContext.Provider>
+    </AuthContext>
   );
 };
 

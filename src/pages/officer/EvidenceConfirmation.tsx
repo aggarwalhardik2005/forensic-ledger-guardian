@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { CheckCircle, FileCheck, Shield, Filter, Search, FileText, Eye, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

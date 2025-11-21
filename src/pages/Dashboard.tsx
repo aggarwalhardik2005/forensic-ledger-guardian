@@ -1,5 +1,3 @@
-
-import React from 'react';
 import { Navigate } from 'react-router-dom';
 import RoleDashboard from '@/components/dashboard/RoleDashboard';
 import { useAuth } from '@/contexts/AuthContext';

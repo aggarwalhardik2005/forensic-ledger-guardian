@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Card, 
@@ -185,7 +185,7 @@ const LegalDocumentation = () => {
   });
 
   // Filter documents based on search term and filters
-  const filterDocuments = () => {
+  const filterDocuments = useCallback(() => {
     setLoading(true);
     
     let filtered = [...documents];
@@ -212,12 +212,12 @@ const LegalDocumentation = () => {
     
     setFilteredDocuments(filtered);
     setLoading(false);
-  };
+  }, [searchTerm, statusFilter, typeFilter, documents]);
 
   // Update filters
   React.useEffect(() => {
     filterDocuments();
-  }, [searchTerm, statusFilter, typeFilter, documents]);
+  }, [filterDocuments]);
 
   // Reset form
   const resetForm = () => {

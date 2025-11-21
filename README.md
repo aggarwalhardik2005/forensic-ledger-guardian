@@ -358,6 +358,12 @@ We welcome contributions from the community! Please read our [Contributing Guide
 - Write comprehensive tests for new features
 - Document all public APIs and functions
 - Ensure responsive design for UI components
+- Use React 19.2 modern patterns and hooks (see our React Expert agent in `.github/agents/`)
+
+### Development Tools
+
+The project includes GitHub Copilot custom agents to accelerate development:
+- **React Expert Agent**: Specialized in React 19.2, modern hooks, Server Components, and TypeScript patterns
 
 ### Bug Reports
 

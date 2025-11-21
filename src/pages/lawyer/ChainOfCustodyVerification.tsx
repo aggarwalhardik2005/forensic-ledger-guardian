@@ -57,7 +57,7 @@ const ChainOfCustodyVerification = () => {
     if (evidenceIdParam && evidenceIdParam !== evidenceId) {
       setEvidenceId(evidenceIdParam);
     }
-  }, [evidenceIdParam]);
+  }, [evidenceIdParam, evidenceId]);
   
   useEffect(() => {
     if (evidenceId) {

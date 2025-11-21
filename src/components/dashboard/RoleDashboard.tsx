@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Role } from '@/services/web3Service';
 import { getRoleConfig } from '@/config/roles';
