@@ -137,7 +137,7 @@ Then rebuild container.
 ### Change Node Version
 Edit `.devcontainer/Dockerfile`:
 ```dockerfile
-FROM mcr.microsoft.com/devcontainers/javascript-node:1-18-bookworm
+FROM mcr.microsoft.com/devcontainers/javascript-node:1-20-bookworm
 # Change 20 to desired version
 ```
 

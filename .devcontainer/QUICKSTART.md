@@ -61,7 +61,7 @@ After the container starts:
 
 ## 🎮 Step 4: Start Development
 
-Open two terminals in VS Code (`Ctrl+Shift+` / `Cmd+Shift+`):
+Open two terminals in VS Code (`` Ctrl+Shift+` `` / `` Cmd+Shift+` ``):
 
 **Terminal 1 - Frontend:**
 ```bash
