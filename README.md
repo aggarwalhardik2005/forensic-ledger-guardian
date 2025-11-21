@@ -131,6 +131,25 @@ Our platform addresses these challenges by:
 
 ## 🚀 Installation & Setup
 
+### 🐳 Option 1: Using Dev Containers (Recommended)
+
+The fastest way to get started! Everything is pre-configured in a containerized environment.
+
+**Prerequisites:**
+- Docker Desktop
+- Visual Studio Code
+- Dev Containers extension (`ms-vscode-remote.remote-containers`)
+
+**Steps:**
+1. Clone and open the repository in VS Code
+2. Press `F1` → `Dev Containers: Reopen in Container`
+3. Wait for the container to build and dependencies to install
+4. Configure `.env` files and start coding!
+
+📚 See [`.devcontainer/README.md`](.devcontainer/README.md) for detailed instructions.
+
+### 💻 Option 2: Local Development Setup
+
 ### Prerequisites
 
 - **Node.js** (v18.0.0 or higher)
