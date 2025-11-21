@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { Activity } from 'lucide-react';
 import PlaceholderPage from '@/components/shared/PlaceholderPage';
 

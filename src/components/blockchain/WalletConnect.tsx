@@ -1,4 +1,3 @@
-import React from "react";
 import { Button } from "@/components/ui/button";
 import { useWeb3 } from "@/hooks/useWeb3";
 import {

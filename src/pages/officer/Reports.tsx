@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { BarChart2, FileDown, FileText, Calendar, BarChart } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

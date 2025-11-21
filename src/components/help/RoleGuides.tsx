@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { Role } from '@/services/web3Service';
 
 interface RoleGuidesProps {

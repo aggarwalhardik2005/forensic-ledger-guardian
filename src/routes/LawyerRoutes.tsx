@@ -1,7 +1,6 @@
 /**
  * Route definitions for Lawyer role
  */
-import React from 'react';
 import { Route } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import SecureRoute from '@/components/auth/SecureRoute';

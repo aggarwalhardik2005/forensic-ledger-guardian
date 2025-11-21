@@ -1,4 +1,3 @@
-import React from "react";
 import { useWeb3 } from "@/hooks/useWeb3";
 import { Role } from "@/services/web3Service";
 import { Navigate } from "react-router-dom";
