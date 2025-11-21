@@ -625,8 +625,9 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({
     return userRole >= requiredRole;
   };
 
+  // React 19: Render context directly without Provider
   return (
-    <Web3Context.Provider
+    <Web3Context
       value={{
         isConnected,
         account,
@@ -646,7 +647,7 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({
       }}
     >
       {children}
-    </Web3Context.Provider>
+    </Web3Context>
   );
 };
 
