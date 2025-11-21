@@ -197,6 +197,32 @@ Closes #[issue number]
 
 Report security vulnerabilities privately to the maintainers. Do not create public issues for security problems.
 
+## Custom Agents
+
+The project includes GitHub Copilot custom agents to assist with specialized development tasks:
+
+### Available Agents
+
+- **React Expert** (`.github/agents/react-expert.md`) - Expert in React 19.2 features, modern hooks, Server Components, Actions, and TypeScript patterns
+
+### Using Custom Agents
+
+When working on React frontend code, you can leverage the React Expert agent for:
+- Implementing React 19.2 features (`<Activity>`, `useEffectEvent()`, `cacheSignal`)
+- Using modern hooks (`use()`, `useFormStatus`, `useOptimistic`, `useActionState`)
+- TypeScript integration and type-safe patterns
+- Performance optimization and accessibility
+- Form handling with Actions API
+
+### Creating New Agents
+
+If you need to add a new custom agent:
+1. Create a markdown file in `.github/agents/` directory
+2. Include YAML frontmatter with `description` and `tools` fields
+3. Write comprehensive instructions and code examples
+4. Test the agent with relevant tasks
+5. Update this documentation
+
 ## Documentation
 
 ### Code Documentation
