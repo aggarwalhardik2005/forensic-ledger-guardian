@@ -20,18 +20,18 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useEvidenceManager } from '@/hooks/useEvidenceManager';
+import { useEvidenceManager, EvidenceItem } from '@/hooks/useEvidenceManager';
 
-// Format bytes to human-readable size
-const formatBytes = (bytes: number) => {
-  if (bytes === 0) return '0 Bytes';
+// // Format bytes to human-readable size
+// const formatBytes = (bytes: number) => {
+//   if (bytes === 0) return '0 Bytes';
   
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
+//   const k = 1024;
+//   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+//   const i = Math.floor(Math.log(bytes) / Math.log(k));
   
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-};
+//   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+// };
 
 // Format evidence type for display
 const formatType = (type: string) => {
@@ -51,7 +51,7 @@ const Evidence = () => {
   const [sortOrder, setSortOrder] = useState('newest');
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { evidence, loading, refreshEvidence } = useEvidenceManager();
+  const { evidence, loading, refreshEvidence, downloadEvidence } = useEvidenceManager();
 
   // Get unique case IDs for the filter dropdown
   const uniqueCaseIds = [...new Set(evidence.map(item => item.caseId))];
@@ -90,8 +90,6 @@ const Evidence = () => {
           return dateB - dateA;
         case 'oldest':
           return dateA - dateB;
-        case 'size':
-          return b.size - a.size;
         case 'name':
           return a.name.localeCompare(b.name);
         default:
@@ -125,10 +123,7 @@ const Evidence = () => {
   };
 
   const handleDownload = (evidence: EvidenceItem) => {
-    toast({
-      title: "Downloading Evidence",
-      description: `Started downloading ${evidence.name}`
-    });
+    downloadEvidence(evidence);
   };
 
   const viewChainOfCustody = (evidence: EvidenceItem) => {
@@ -267,9 +262,9 @@ const Evidence = () => {
                   </div>
                   
                   <div className="mt-3 md:mt-0 flex items-center space-x-3">
-                    <div className="text-sm text-forensic-500">
+                    {/* <div className="text-sm text-forensic-500">
                       {formatBytes(evidence.size)}
-                    </div>
+                    </div> */}
                     
                     <Button 
                       size="sm" 
