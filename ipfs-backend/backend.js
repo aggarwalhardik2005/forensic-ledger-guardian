@@ -4,6 +4,7 @@ import axios from "axios";
 import dotenv from "dotenv";
 import FormData from "form-data";
 import crypto from "crypto";
+import cors from 'cors';
 import { createClient } from "@supabase/supabase-js";
 import { ethers } from "ethers";
 import fs from 'fs';
@@ -20,9 +21,34 @@ const ForensicChainABI = JSON.parse(fs.readFileSync(abiPath, 'utf-8'));
 
 const app = express();
 const upload = multer();
+
+// CORS: allow local frontend origins during development
+app.use(cors({
+  origin: [
+    'http://localhost:4000',
+    'http://localhost:5173',
+    'http://localhost:8080',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:8080'
+  ],
+  methods: ['GET','POST','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization'],
+  credentials: true
+}));
+
+// Handle preflight quickly for all routes
+app.options('*', cors());
+
 app.use(express.json());
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+// Prefer service role key for server-side writes. If missing, log a clear
+// warning so maintainers can set the correct env var.
+const _supabaseUrl = process.env.SUPABASE_URL || '';
+const _supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_KEY || '';
+if (!_supabaseUrl || !_supabaseKey) {
+  console.warn('Supabase URL or Key missing. Supabase writes will likely fail. Make sure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_KEY) are set.');
+}
+const supabase = createClient(_supabaseUrl, _supabaseKey);
 
 const provider = new ethers.JsonRpcProvider(process.env.SEPOLIA_RPC_URL);
 const wallet = new ethers.Wallet(process.env.SEPOLIA_PRIVATE_KEY, provider);
@@ -98,7 +124,10 @@ app.post("/fir/:firId/upload", upload.single("file"), async (req, res) => {
       iv_encrypted: ivEncrypted,
       hash_original: hashOriginal
     }]);
-    if (error) return res.status(500).json({ error: error.message });
+    if (error) {
+      console.error('Supabase insert failed:', error);
+      return res.status(500).json({ error: 'Failed to store metadata in Supabase', details: error });
+    }
 
     // Store on-chain
     const tx = await contract.submitFIREvidence(firId, evidenceId, cid, hashOriginal, evidenceType);
