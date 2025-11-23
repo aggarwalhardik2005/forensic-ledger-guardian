@@ -69,10 +69,10 @@ export const useEvidenceManager = (caseId?: string) => {
         }
 
         // Fetch evidence from Supabase
-        const query = supabase.from('evidence').select('*');
+        const query = supabase.from('evidence1').select('*');
         
         // If caseId is provided, filter by case_id
-        const finalQuery = caseId ? query.eq('case_id', caseId) : query;
+        const finalQuery = caseId ? query.eq('container_id', caseId) : query;
         
         const { data, error } = await finalQuery;
         
@@ -85,7 +85,7 @@ export const useEvidenceManager = (caseId?: string) => {
           id: item.evidence_id,
           name: item.original_filename || 'Unknown Evidence',
           type: 'application', // Default type - can be updated based on your data
-          caseId: item.case_id,
+          caseId: item.container_id,
           submittedBy: 'Unknown User', // Can be enriched from user profiles if needed
           submittedDate: item.created_at || new Date().toISOString(),
           // size: 0, // Size not stored in current schema
@@ -130,9 +130,9 @@ export const useEvidenceManager = (caseId?: string) => {
       const iv = Math.random().toString(36).substring(2, 34);
       
       // Insert into Supabase
-      const { error } = await supabase.from('evidence').insert([
+      const { error } = await supabase.from('evidence1').insert([
         {
-          case_id: caseId,
+          container_id: caseId,
           evidence_id: evidenceId,
           cid: cid,
           key_encrypted: encryptionKey, // Should be encrypted in production
