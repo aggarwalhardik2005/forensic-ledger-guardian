@@ -214,43 +214,106 @@ export const useEvidenceManager = (caseId?: string) => {
         throw new Error('CID not available for this evidence');
       }
 
-      // Construct the Pinata gateway URL
+      // Fetch key_encrypted and iv_encrypted from Supabase
+      const { data, error } = await supabase
+        .from('evidence1')
+        .select('key_encrypted, iv_encrypted')
+        .eq('container_id', evidence.caseId)
+        .eq('evidence_id', evidence.id)
+        .single();
+
+      if (error || !data) {
+        throw new Error('Failed to fetch decryption keys from Supabase');
+      }
+
+      // Download encrypted file from IPFS
       const pinataGatewayUrl = `https://gateway.pinata.cloud/ipfs/${evidence.cidEncrypted}`;
-      
-      // Use fetch to download the file
       const response = await fetch(pinataGatewayUrl);
-      
       if (!response.ok) {
         throw new Error(`Failed to download evidence: ${response.statusText}`);
       }
+      const encryptedBlob = await response.blob();
+      const encryptedArrayBuffer = await encryptedBlob.arrayBuffer();
 
-      // Get the file blob
-      const blob = await response.blob();
-      
-      // Create a temporary URL for the blob
-      const url = window.URL.createObjectURL(blob);
-      
-      // Create a temporary anchor element to trigger download
+      // Use master password from Vite environment variable only (frontend)
+      const masterPassword = import.meta.env.VITE_MASTER_PASSWORD;
+      if (!masterPassword) {
+        throw new Error('VITE_MASTER_PASSWORD not set in environment');
+      }
+
+      // Helper: hex to Uint8Array
+      function hexToBytes(hex) {
+        const bytes = new Uint8Array(hex.length / 2);
+        for (let i = 0; i < bytes.length; i++) {
+          bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
+        }
+        return bytes;
+      }
+
+      // 1. Hash master password to get key (SHA-256, matches backend)
+      async function sha256(message) {
+        const msgBuffer = new TextEncoder().encode(message);
+        const hashBuffer = await window.crypto.subtle.digest('SHA-256', msgBuffer);
+        return new Uint8Array(hashBuffer);
+      }
+      const masterKeyBytes = await sha256(masterPassword);
+      const iv = hexToBytes(data.iv_encrypted);
+      const keyEncrypted = hexToBytes(data.key_encrypted);
+
+      // 2. Decrypt AES key
+      const masterKey = await window.crypto.subtle.importKey(
+        'raw',
+        masterKeyBytes,
+        { name: 'AES-CBC', length: 256 },
+        false,
+        ['decrypt']
+      );
+      let decryptedKeyBuffer;
+      try {
+        decryptedKeyBuffer = await window.crypto.subtle.decrypt(
+          { name: 'AES-CBC', iv },
+          masterKey,
+          keyEncrypted
+        );
+      } catch (err) {
+        throw new Error('Failed to decrypt AES key. Check master password and key/iv values.');
+      }
+      const aesKey = await window.crypto.subtle.importKey(
+        'raw',
+        decryptedKeyBuffer,
+        { name: 'AES-CBC', length: 256 },
+        false,
+        ['decrypt']
+      );
+
+      // 3. Decrypt file
+      let decryptedFileBuffer;
+      try {
+        decryptedFileBuffer = await window.crypto.subtle.decrypt(
+          { name: 'AES-CBC', iv },
+          aesKey,
+          encryptedArrayBuffer
+        );
+      } catch (err) {
+        throw new Error('Failed to decrypt evidence file. Key/IV may be incorrect.');
+      }
+      const decryptedBlob = new Blob([decryptedFileBuffer], { type: encryptedBlob.type });
+
+      // Download decrypted file
+      const url = window.URL.createObjectURL(decryptedBlob);
       const link = document.createElement('a');
       link.href = url;
       link.download = evidence.name || `${evidence.id}.bin`;
-      
-      // Append to body, click, and remove
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
-      // Clean up the URL
       window.URL.revokeObjectURL(url);
-      
-      // Track the download activity
+
       trackActivity('view', evidence.id);
-      
       toast({
         title: "Download Complete",
-        description: `${evidence.name} has been downloaded successfully`,
+        description: `${evidence.name} has been downloaded and decrypted successfully`,
       });
-      
       return true;
     } catch (error) {
       console.error("Failed to download evidence:", error);
