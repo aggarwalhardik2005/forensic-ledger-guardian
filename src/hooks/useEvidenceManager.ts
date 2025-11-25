@@ -214,10 +214,10 @@ export const useEvidenceManager = (caseId?: string) => {
         throw new Error('CID not available for this evidence');
       }
 
-      // Fetch key_encrypted and iv_encrypted from Supabase
+      // Fetch key_encrypted, iv_encrypted, and hash_original from Supabase
       const { data, error } = await supabase
         .from('evidence1')
-        .select('key_encrypted, iv_encrypted')
+        .select('key_encrypted, iv_encrypted, hash_original')
         .eq('container_id', evidence.caseId)
         .eq('evidence_id', evidence.id)
         .single();
@@ -297,9 +297,27 @@ export const useEvidenceManager = (caseId?: string) => {
       } catch (err) {
         throw new Error('Failed to decrypt evidence file. Key/IV may be incorrect.');
       }
-      const decryptedBlob = new Blob([decryptedFileBuffer], { type: encryptedBlob.type });
+
+      // 4. Integrity verification: compute SHA-256 hash and compare
+      async function sha256Hex(buffer) {
+        const hashBuffer = await window.crypto.subtle.digest('SHA-256', buffer);
+        // Convert ArrayBuffer to hex string
+        return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+      }
+      const computedHash = await sha256Hex(decryptedFileBuffer);
+      if (computedHash !== data.hash_original) {
+        toast({
+          title: "Integrity Check Failed",
+          description: "Evidence file hash does not match. Download blocked.",
+          variant: "destructive"
+        });
+        return false;
+      } else {
+        console.log("Evidence integrity verified: hash matches Database record.");
+      }
 
       // Download decrypted file
+      const decryptedBlob = new Blob([decryptedFileBuffer], { type: encryptedBlob.type });
       const url = window.URL.createObjectURL(decryptedBlob);
       const link = document.createElement('a');
       link.href = url;
