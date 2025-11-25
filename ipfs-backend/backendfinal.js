@@ -388,7 +388,13 @@ app.get("/retrieve/:containerId/:evidenceId", async (req, res) => {
 
     // Verify hash
     const hashCheck = crypto.createHash("sha256").update(decrypted).digest("hex");
-    if (hashCheck !== hashOriginal) return res.status(400).json({ error: "File integrity check failed" });
+      if (hashCheck !== hashOriginal) {
+        console.error("Hash mismatch: evidence file may be tampered or corrupted.");
+        return res.status(403).json({ error: "Evidence integrity verification failed. Download not permitted." });
+      }
+      else{
+        console.log("Hash verified: evidence integrity intact.");
+      }
 
     // Try to get original filename from Pinata metadata
     let originalFilename = null;
