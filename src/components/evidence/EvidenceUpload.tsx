@@ -148,7 +148,8 @@ const EvidenceUpload = () => {
 
         // Use the simple backend upload route used by the local dev server
         // (server.js accepts POST /upload with form fields: file, caseId, evidenceId, evidenceType)
-        const resp = await fetch(`${IPFS_BACKEND_URL}/upload`, {
+
+        const resp = await fetch(`${IPFS_BACKEND_URL}/case/${selectedCase}/upload`, {
           method: 'POST',
           body: form,
         });
