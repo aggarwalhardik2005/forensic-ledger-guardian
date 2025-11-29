@@ -174,7 +174,11 @@ const CreateCase = () => {
     };
 
     const caseId = generateCaseId();
-    const firId = "FF-2025-C"; // Hardcoded for now
+    const partialID = "FF-2025-";
+    // Generate a random number (e.g., between 0 and 99999)
+    const randomNumber = Math.floor(Math.random() * 100000);
+    // Combine the base string and the random number
+    const firId = partialID + randomNumber; // Hardcoded for now
 
     try {
       // Pre-checks before case creation
@@ -354,7 +358,7 @@ const CreateCase = () => {
 
         toast({
           title: "Case Created",
-          description: `Case "${caseTitle}" has been successfully created.`,
+          description: `Case "${caseTitle}" has been successfully created.,`
         });
         navigate("/cases");
       } else {
@@ -391,7 +395,7 @@ const CreateCase = () => {
           errorDescription =
             "The specified FIR was not found. Please check the FIR ID.";
         } else {
-          errorDescription = `Error: ${err.reason}`;
+          `errorDescription = Error: ${err.reason}`;
         }
       }
 

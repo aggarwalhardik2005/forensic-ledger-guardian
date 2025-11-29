@@ -1,4 +1,4 @@
-
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,9 +16,7 @@ import {
   Search, 
   Filter, 
   ArrowUpDown, 
-  FileCheck, 
-  Shield, 
-  Clock 
+  FileCheck
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from '@/contexts/AuthContext';
