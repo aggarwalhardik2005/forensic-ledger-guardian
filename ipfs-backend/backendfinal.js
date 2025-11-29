@@ -93,6 +93,7 @@ if (!process.env.PINATA_JWT) {
 // Web3 initialization
 const provider = new ethers.JsonRpcProvider(process.env.SEPOLIA_RPC_URL);
 const wallet = new ethers.Wallet(process.env.SEPOLIA_PRIVATE_KEY, provider);
+console.log(wallet.address)
 const contract = new ethers.Contract(process.env.CONTRACT_ADDRESS, ForensicChainABI, wallet);
 
 const ALLOWED_MIME = [
@@ -429,181 +430,181 @@ app.get("/retrieve/:containerId/:evidenceId", async (req, res) => {
 });
 
 // 7. Generic Upload endpoint (for uncontainer-based uploads)
-app.post("/upload", (req, res, next) => {
-  upload.single("file")(req, res, (err) => {
-    if (err) {
-      console.error("Upload error:", err);
-      return res.status(400).json({ error: err.message });
-    }
-    next();
-  });
-}, async (req, res) => {
-  try {
-    console.log("Upload request body:", { body: req.body, file: req.file ? { originalname: req.file.originalname, mimetype: req.file.mimetype, size: req.file.size } : null });
+// app.post("/upload", (req, res, next) => {
+//   upload.single("file")(req, res, (err) => {
+//     if (err) {
+//       console.error("Upload error:", err);
+//       return res.status(400).json({ error: err.message });
+//     }
+//     next();
+//   });
+// }, async (req, res) => {
+//   try {
+//     console.log("Upload request body:", { body: req.body, file: req.file ? { originalname: req.file.originalname, mimetype: req.file.mimetype, size: req.file.size } : null });
 
-    if (!req.file) {
-      console.error("No file in request");
-      return res.status(400).json({ error: "No file uploaded" });
-    }
+//     if (!req.file) {
+//       console.error("No file in request");
+//       return res.status(400).json({ error: "No file uploaded" });
+//     }
 
-    // Check required fields
-    if (!req.body.caseId || !req.body.evidenceId || req.body.evidenceType === undefined) {
-      console.error("Missing required fields");
-      return res.status(400).json({ error: "Missing required fields (caseId, evidenceId, evidenceType)" });
-    }
+//     // Check required fields
+//     if (!req.body.caseId || !req.body.evidenceId || req.body.evidenceType === undefined) {
+//       console.error("Missing required fields");
+//       return res.status(400).json({ error: "Missing required fields (caseId, evidenceId, evidenceType)" });
+//     }
 
-    // Accept several possible flag names/values for requesting server-side encryption
-    // If the client does not provide any of these flags, default to encrypting on the server
-    // to ensure evidence is never stored unencrypted by accident.
-    const encryptCandidates = [req.body.encrypt, req.body.encrypted, req.body.shouldEncrypt, req.body.encryptFlag];
-    const explicitCandidate = encryptCandidates.find(v => v !== undefined && v !== null);
-    let shouldEncrypt;
-    if (explicitCandidate === undefined) {
-      // Default to server-side encryption when client doesn't explicitly opt-out
-      shouldEncrypt = true;
-    } else {
-      const sval = String(explicitCandidate).toLowerCase();
-      shouldEncrypt = ["true", "1", "yes", "on"].includes(sval);
-    }
-    console.log("Upload encryption requested:", shouldEncrypt, "(explicitCandidate:", explicitCandidate, ")");
+//     // Accept several possible flag names/values for requesting server-side encryption
+//     // If the client does not provide any of these flags, default to encrypting on the server
+//     // to ensure evidence is never stored unencrypted by accident.
+//     const encryptCandidates = [req.body.encrypt, req.body.encrypted, req.body.shouldEncrypt, req.body.encryptFlag];
+//     const explicitCandidate = encryptCandidates.find(v => v !== undefined && v !== null);
+//     let shouldEncrypt;
+//     if (explicitCandidate === undefined) {
+//       // Default to server-side encryption when client doesn't explicitly opt-out
+//       shouldEncrypt = true;
+//     } else {
+//       const sval = String(explicitCandidate).toLowerCase();
+//       shouldEncrypt = ["true", "1", "yes", "on"].includes(sval);
+//     }
+//     console.log("Upload encryption requested:", shouldEncrypt, "(explicitCandidate:", explicitCandidate, ")");
 
-    // If encrypt requested, perform server-side AES encryption and store key/iv
-    let fileBufferToUpload = req.file.buffer;
-    let keyEncrypted = req.body.key_encrypted || "";
-    let ivEncrypted = req.body.iv_encrypted || "";  
-    const originalBuffer = req.file.buffer;
+//     // If encrypt requested, perform server-side AES encryption and store key/iv
+//     let fileBufferToUpload = req.file.buffer;
+//     let keyEncrypted = req.body.key_encrypted || "";
+//     let ivEncrypted = req.body.iv_encrypted || "";  
+//     const originalBuffer = req.file.buffer;
 
-    if (shouldEncrypt) {
-      const key = crypto.randomBytes(32);
-      const iv = crypto.randomBytes(16);
-      const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
-      const encryptedFile = Buffer.concat([cipher.update(req.file.buffer), cipher.final()]);
-      fileBufferToUpload = encryptedFile;
+//     if (shouldEncrypt) {
+//       const key = crypto.randomBytes(32);
+//       const iv = crypto.randomBytes(16);
+//       const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
+//       const encryptedFile = Buffer.concat([cipher.update(req.file.buffer), cipher.final()]);
+//       fileBufferToUpload = encryptedFile;
 
-      // Encrypt AES key with master password
-      const masterKey = getMasterKeyOrThrow();
-      const keyCipher = crypto.createCipheriv("aes-256-cbc", masterKey, iv);
-      // assign to outer-scope variables (so they will be saved to Supabase)
-      keyEncrypted = Buffer.concat([keyCipher.update(key), keyCipher.final()]).toString("hex");
-      ivEncrypted = iv.toString("hex");
-      console.log("Generated key_encrypted length:", keyEncrypted.length, "iv_encrypted length:", ivEncrypted.length);
-    }
+//       // Encrypt AES key with master password
+//       const masterKey = getMasterKeyOrThrow();
+//       const keyCipher = crypto.createCipheriv("aes-256-cbc", masterKey, iv);
+//       // assign to outer-scope variables (so they will be saved to Supabase)
+//       keyEncrypted = Buffer.concat([keyCipher.update(key), keyCipher.final()]).toString("hex");
+//       ivEncrypted = iv.toString("hex");
+//       console.log("Generated key_encrypted length:", keyEncrypted.length, "iv_encrypted length:", ivEncrypted.length);
+//     }
 
-    // Prepare FormData for Pinata with metadata
-    const data = new FormData();
-    const uploadFilename = shouldEncrypt ? `${req.body.evidenceId}.bin` : req.file.originalname;
-    data.append("file", fileBufferToUpload, { filename: uploadFilename });
-    const pinataMetadata = { name: req.file.originalname };
-    data.append("pinataMetadata", JSON.stringify(pinataMetadata));
+//     // Prepare FormData for Pinata with metadata
+//     const data = new FormData();
+//     const uploadFilename = shouldEncrypt ? `${req.body.evidenceId}.bin` : req.file.originalname;
+//     data.append("file", fileBufferToUpload, { filename: uploadFilename });
+//     const pinataMetadata = { name: req.file.originalname };
+//     data.append("pinataMetadata", JSON.stringify(pinataMetadata));
 
-    const pinataResp = await axios.post(
-      "https://api.pinata.cloud/pinning/pinFileToIPFS",
-      data,
-      {
-        maxBodyLength: Infinity,
-        headers: {
-          Authorization: `Bearer ${process.env.PINATA_JWT}`,
-          ...data.getHeaders()
-        }
-      }
-    );
+//     const pinataResp = await axios.post(
+//       "https://api.pinata.cloud/pinning/pinFileToIPFS",
+//       data,
+//       {
+//         maxBodyLength: Infinity,
+//         headers: {
+//           Authorization: `Bearer ${process.env.PINATA_JWT}`,
+//           ...data.getHeaders()
+//         }
+//       }
+//     );
 
-    const cid = pinataResp.data?.IpfsHash;
-    console.log("Pinned to IPFS with CID:", cid);
+//     const cid = pinataResp.data?.IpfsHash;
+//     console.log("Pinned to IPFS with CID:", cid);
 
-    // Compute server-side SHA-256 of original (decrypted) file
-    const hashOriginal = crypto.createHash("sha256").update(originalBuffer).digest("hex");
+//     // Compute server-side SHA-256 of original (decrypted) file
+//     const hashOriginal = crypto.createHash("sha256").update(originalBuffer).digest("hex");
 
-    // Upsert to Supabase (if configured)
-    if (_supabaseUrl && _supabaseKey) {
-      try {
-        const upsertPayload = {
-          container_id: req.body.caseId,
-          evidence_id: req.body.evidenceId,
-          cid: cid,
-          key_encrypted: keyEncrypted,
-          iv_encrypted: ivEncrypted,
-          hash_original: hashOriginal,
-          original_filename: req.file.originalname
-        };
+//     // Upsert to Supabase (if configured)
+//     if (_supabaseUrl && _supabaseKey) {
+//       try {
+//         const upsertPayload = {
+//           container_id: req.body.caseId,
+//           evidence_id: req.body.evidenceId,
+//           cid: cid,
+//           key_encrypted: keyEncrypted,
+//           iv_encrypted: ivEncrypted,
+//           hash_original: hashOriginal,
+//           original_filename: req.file.originalname
+//         };
 
-        const { data: supaData, error: supaError } = await supabase
-          .from("evidence1")
-          .upsert(upsertPayload, { onConflict: ["container_id", "evidence_id"] })
-          .select();
+//         const { data: supaData, error: supaError } = await supabase
+//           .from("evidence1")
+//           .upsert(upsertPayload, { onConflict: ["container_id", "evidence_id"] })
+//           .select();
 
-        if (supaError) {
-          console.error("Supabase upsert failed:", supaError);
-          return res.status(500).json({ error: "Failed to store metadata in Supabase", details: supaError });
-        }
+//         if (supaError) {
+//           console.error("Supabase upsert failed:", supaError);
+//           return res.status(500).json({ error: "Failed to store metadata in Supabase", details: supaError });
+//         }
 
-        console.log("Supabase upsert succeeded:", supaData);
-      } catch (dbErr) {
-        console.error("Failed to store metadata:", dbErr);
-      }
-    }
+//         console.log("Supabase upsert succeeded:", supaData);
+//       } catch (dbErr) {
+//         console.error("Failed to store metadata:", dbErr);
+//       }
+//     }
 
-    // Return the CID and filename
-    res.json({ cid, filename: req.file.originalname, sha256: hashOriginal, encrypted: shouldEncrypt });
-  } catch (err) {
-    console.error("Pinata / upload error:", err.response?.data || err.message || err);
-    res.status(500).json({ error: "Upload failed", details: err.response?.data || err.message });
-  }
-});
+//     // Return the CID and filename
+//     res.json({ cid, filename: req.file.originalname, sha256: hashOriginal, encrypted: shouldEncrypt });
+//   } catch (err) {
+//     console.error("Pinata / upload error:", err.response?.data || err.message || err);
+//     res.status(500).json({ error: "Upload failed", details: err.response?.data || err.message });
+//   }
+// });
 
 // 8. Generic Retrieve endpoint (by CID only)
-app.get("/retrieve/:cid", async (req, res) => {
-  const { cid } = req.params;
+// app.get("/retrieve/:cid", async (req, res) => {
+//   const { cid } = req.params;
 
-  try {
-    // Try to get original filename from Pinata metadata (cached)
-    let originalFilename = null;
-    try {
-      originalFilename = await getPinnedFilenameFromPinata(cid);
-    } catch (metaErr) {
-      console.warn("Pinata metadata lookup failed for CID", cid, metaErr?.message || metaErr);
-      originalFilename = null;
-    }
+//   try {
+//     // Try to get original filename from Pinata metadata (cached)
+//     let originalFilename = null;
+//     try {
+//       originalFilename = await getPinnedFilenameFromPinata(cid);
+//     } catch (metaErr) {
+//       console.warn("Pinata metadata lookup failed for CID", cid, metaErr?.message || metaErr);
+//       originalFilename = null;
+//     }
 
-    // Stream the file bytes from Pinata gateway
-    const gatewayUrl = `https://gateway.pinata.cloud/ipfs/${cid}`;
-    const upstream = await axios.get(gatewayUrl, {
-      responseType: "stream",
-      maxBodyLength: Infinity,
-      maxContentLength: Infinity
-    });
+//     // Stream the file bytes from Pinata gateway
+//     const gatewayUrl = `https://gateway.pinata.cloud/ipfs/${cid}`;
+//     const upstream = await axios.get(gatewayUrl, {
+//       responseType: "stream",
+//       maxBodyLength: Infinity,
+//       maxContentLength: Infinity
+//     });
 
-    const contentType = upstream.headers["content-type"] || "application/octet-stream";
-    res.setHeader("Content-Type", contentType);
+//     const contentType = upstream.headers["content-type"] || "application/octet-stream";
+//     res.setHeader("Content-Type", contentType);
 
-    // If Pinata metadata didn't have a filename, fallback to extension from content-type
-    if (!originalFilename) {
-      const ext = mime.extension(contentType) || "bin";
-      originalFilename = `file_${cid}.${ext}`;
-    } else {
-      // Ensure filename has an extension
-      if (!/\.[a-zA-Z0-9]{1,8}$/.test(originalFilename)) {
-        const ext = mime.extension(contentType);
-        if (ext) originalFilename = `${originalFilename}.${ext}`;
-      }
-    }
+//     // If Pinata metadata didn't have a filename, fallback to extension from content-type
+//     if (!originalFilename) {
+//       const ext = mime.extension(contentType) || "bin";
+//       originalFilename = `file_${cid}.${ext}`;
+//     } else {
+//       // Ensure filename has an extension
+//       if (!/\.[a-zA-Z0-9]{1,8}$/.test(originalFilename)) {
+//         const ext = mime.extension(contentType);
+//         if (ext) originalFilename = `${originalFilename}.${ext}`;
+//       }
+//     }
 
-    originalFilename = sanitizeFilename(originalFilename);
+//     originalFilename = sanitizeFilename(originalFilename);
 
-    // Set Content-Disposition
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="${originalFilename}"; filename*=UTF-8''${encodeURIComponent(originalFilename)}`
-    );
+//     // Set Content-Disposition
+//     res.setHeader(
+//       "Content-Disposition",
+//       `attachment; filename="${originalFilename}"; filename*=UTF-8''${encodeURIComponent(originalFilename)}`
+//     );
 
-    // Stream upstream to client
-    await pipeline(upstream.data, res);
-  } catch (err) {
-    console.error("Retrieve error for CID", cid, err?.response?.status, err?.message || err);
-    const status = err.response?.status || 500;
-    res.status(status).json({ error: "Retrieve failed", details: err.message });
-  }
-});
+//     // Stream upstream to client
+//     await pipeline(upstream.data, res);
+//   } catch (err) {
+//     console.error("Retrieve error for CID", cid, err?.response?.status, err?.message || err);
+//     const status = err.response?.status || 500;
+//     res.status(status).json({ error: "Retrieve failed", details: err.message });
+//   }
+// });
 
 // 9. Sync endpoint - Verify off-chain vs on-chain evidence integrity
 app.get("/sync", async (req, res) => {
