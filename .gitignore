@@ -147,3 +147,20 @@ scallability/
 
 # Machine-specific files
 *-DESKTOP-*.js
+
+# Temp files generated upon contract deployment
+broadcast/
+
+# Foundry cache and output
+cache/
+out/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
