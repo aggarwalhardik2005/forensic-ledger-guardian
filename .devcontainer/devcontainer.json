@@ -53,29 +53,8 @@
     }
   },
 
-  // Forward ports for the application
-  "forwardPorts": [
-    5173,  // Vite dev server (frontend)
-    4000   // IPFS backend server
-  ],
-
-  // Port attributes
-  "portsAttributes": {
-    "5173": {
-      "label": "Frontend (Vite)",
-      "onAutoForward": "notify"
-    },
-    "4000": {
-      "label": "IPFS Backend",
-      "onAutoForward": "notify"
-    }
-  },
-
   // Use 'postCreateCommand' to run commands after the container is created
   "postCreateCommand": "bash .devcontainer/post-create.sh",
-
-  // Use 'postStartCommand' to run commands after the container starts
-  "postStartCommand": "echo '🚀 Dev environment ready! Run npm run dev to start the frontend, and cd ipfs-backend && npm start for the backend.'",
 
   // Set environment variables
   "remoteEnv": {
