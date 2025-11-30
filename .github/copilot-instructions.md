@@ -1,96 +1,107 @@
-# Forensic Ledger Guardian - AI Coding Instructions
+# Forensic Ledger Guardian - AI Agent Instructions
 
-Blockchain-powered forensic evidence management with React 19 frontend, Solidity smart contracts, IPFS storage, and Supabase backend.
+## Project Overview
 
-## Architecture
+Blockchain-powered forensic evidence management system with React frontend, Node.js IPFS backend, and Solidity smart contracts. Uses role-based access control (RBAC) for Court, Officer, Forensic, and Lawyer roles.
 
-- **Frontend**: React 19 + TypeScript + Vite + shadcn/ui + Tailwind CSS
-- **Smart Contracts**: Solidity 0.8.29 + Foundry (Sepolia testnet)
-- **Storage**: IPFS via Pinata (encrypted), Supabase for metadata/keys
-- **Backend**: Express.js IPFS service (`ipfs-backend/`)
+## Architecture & Data Flow
 
-**Data flow**: FIR → Case promotion → Evidence upload (encrypted) → IPFS + blockchain recording → Access control via smart contract
+```
+React App (src/) ←→ IPFS Backend (ipfs-backend/) ←→ Blockchain (ForensicChain.sol)
+                          ↓
+                    Supabase (Auth + Metadata)
+```
+
+- **Source of truth for roles**: Blockchain (`web3Service.getUserRole()`)
+- **Evidence storage**: Encrypted on IPFS via Pinata, hash recorded on-chain
+- **Authentication**: Dual auth via Supabase (email) or wallet connection
 
 ## Critical Patterns
 
-### Role-Based Access (blockchain is source of truth)
-```typescript
-// src/contexts/Web3Context.tsx - useWeb3 hook pattern
-const { userRole, isConnected, checkRoleAccess } = useWeb3();
-if (!checkRoleAccess(Role.Court)) return;
+### Role System (src/config/roles.ts)
 
-// src/components/auth/SecureRoute.tsx - protect routes
+Roles map to smart contract enum: `None=0, Court=1, Officer=2, Forensic=3, Lawyer=4`
+
+```typescript
+import { Role } from "@/services/web3Service";
+// Court has admin privileges and can access all routes
+```
+
+### Route Protection (src/routes/\*.tsx)
+
+All protected routes use `SecureRoute` wrapper with role-based access:
+
+```tsx
 <SecureRoute allowedRoles={[Role.Court, Role.Officer]} requireAuth={true}>
-  <ProtectedComponent />
+  <Component />
 </SecureRoute>
 ```
-Roles: `Court` (admin), `Officer` (FIR/evidence), `Forensic` (analysis), `Lawyer` (review)
 
-### React 19 Context Pattern
-```typescript
-// Use Context directly without .Provider wrapper (React 19)
-<Web3Context value={{ ...state }}>{children}</Web3Context>
-```
+Routes are organized by role in `src/routes/` - add new role-specific routes to the appropriate file.
 
-### Smart Contract Calls
+### Web3 Integration (src/contexts/Web3Context.tsx)
+
+- Contract address hardcoded in `src/services/web3Service.ts` (line ~533)
+- Target network: Sepolia (`0xaa36a7`)
+- Always refresh role from blockchain after wallet operations: `refreshRole()`
+
+### UI Components
+
+Uses shadcn/ui with Radix primitives in `src/components/ui/`. Follow existing patterns:
+
 ```typescript
-// src/services/web3Service.ts singleton pattern
-import web3Service, { Role, EvidenceType } from '@/services/web3Service';
-await web3Service.fileFIR(firId, description);
-await web3Service.createCaseFromFIR(caseId, firId, title, description, tags);
+import { cn } from "@/lib/utils"; // For className merging
+import { Button } from "@/components/ui/button";
 ```
 
 ## Development Commands
 
 ```bash
-# Frontend
-npm run dev        # Vite dev server (port 5173)
-npm run build      # Production build
-npm run lint       # ESLint
+npm run dev          # Start Vite dev server (port 8080)
+npm run build        # Production build
+npm run lint         # ESLint check
 
-# Smart Contracts
-forge build        # Compile
-forge test         # Test suite
+# Smart contracts (Foundry)
+forge build          # Compile contracts
+forge test           # Run Solidity tests
 forge script script/ForensicChain.s.sol --rpc-url $SEPOLIA_RPC_URL --broadcast
-
-# IPFS Backend
-cd ipfs-backend && npm start   # Express server (port 4000)
 ```
-
-## File Organization
-
-- `src/routes/{Role}Routes.tsx` - Role-specific route definitions with `SecureRoute` wrapper
-- `src/services/*.ts` - Singleton services (web3Service, ipfsService, authService)
-- `src/contexts/*.tsx` - React contexts (Web3Context is primary, uses React 19 pattern)
-- `src/components/ui/` - shadcn/ui components (modify via shadcn CLI)
-
-## Key Conventions
-
-1. **Blockchain authoritative**: Always validate roles/state against smart contract, not database
-2. **Evidence encryption**: All files encrypted (AES-256) before IPFS upload; keys stored encrypted in Supabase
-3. **Error handling**: Web3 operations can fail - always wrap in try/catch with toast notifications
-4. **Contract addresses**: Use env vars (`VITE_CONTRACT_ADDRESS`), never hardcode
-5. **Toast notifications**: Use `@/hooks/use-toast` for user feedback
 
 ## Environment Variables
 
-```env
-# Frontend (.env)
-VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_CONTRACT_ADDRESS, VITE_SEPOLIA_RPC_URL
+**Frontend (.env):**
 
-# Backend (ipfs-backend/.env)
-SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, PINATA_JWT, CONTRACT_ADDRESS, SEPOLIA_RPC_URL, SEPOLIA_PRIVATE_KEY, MASTER_PASSWORD
-```
+- `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` - Supabase connection
+- `VITE_IPFS_BACKEND_URL` - IPFS backend (default: http://localhost:4000)
+- `VITE_MASTER_PASSWORD` - Evidence encryption key
+
+**IPFS Backend (ipfs-backend/.env):**
+
+- `MASTER_PASSWORD` - Must match frontend for encryption
+- `PINATA_JWT` - Pinata IPFS gateway
+- `CONTRACT_ADDRESS`, `SEPOLIA_RPC_URL`, `SEPOLIA_PRIVATE_KEY` - Blockchain access
+
+## Key Files to Understand
+
+- `src/services/web3Service.ts` - All blockchain interactions (1600+ lines, contains ABI)
+- `src/config/roles.ts` - Role permissions and navigation config
+- `src/ForensicChain.sol` - Smart contract (FIR → Case → Evidence lifecycle)
+- `ipfs-backend/backendfinal.js` - Evidence upload/download with encryption
+
+## Domain Concepts
+
+1. **FIR (First Information Report)** - Filed by Officers, can be promoted to Case by Court
+2. **Case** - Created from FIR, contains evidence, can be sealed/closed
+3. **Evidence** - Uploaded to IPFS encrypted, hash stored on-chain, requires confirmation
+4. **Chain of Custody** - Immutable audit trail of evidence access recorded on blockchain
 
 ## Testing
 
-```bash
-# Smart contracts (Foundry)
-forge test              # Run all tests
-forge test -vvv         # Verbose output
-forge test --match-test testFileFIR  # Run specific test
-```
+- Smart contract tests: `test/ForensicChain.t.sol` (uses Foundry's forge-std)
+- No frontend test framework currently configured
 
-Smart contract tests in `test/ForensicChain.t.sol` use `vm.prank(address)` to simulate different roles.
+## Common Modifications
 
-Frontend: No test infrastructure currently configured. Component tests would use React Testing Library with Web3Provider wrapper.
+- **Add new page**: Create in `src/pages/`, add route in appropriate `src/routes/*.tsx`
+- **New smart contract function**: Update `ForensicChain.sol`, rebuild ABI, update `web3Service.ts`
+- **New UI component**: Follow shadcn patterns in `src/components/ui/`

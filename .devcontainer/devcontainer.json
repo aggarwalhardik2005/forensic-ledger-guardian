@@ -4,7 +4,7 @@
     "dockerfile": "Dockerfile",
     "context": ".."
   },
-  
+
   // Configure tool-specific properties
   "customizations": {
     "vscode": {
@@ -13,35 +13,22 @@
         // TypeScript & JavaScript
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
-        
+
         // React & Frontend
         "dsznajder.es7-react-js-snippets",
         "bradlc.vscode-tailwindcss",
-        
+
         // Solidity
         "NomicFoundation.hardhat-solidity",
-        "juanblanco.solidity",
-        
-        // Git
-        "eamodio.gitlens",
-        "mhutchie.git-graph",
-        
-        // Markdown
-        "yzhang.markdown-all-in-one",
-        
-        // General utilities
-        "christian-kohler.path-intellisense",
-        "formulahendry.auto-rename-tag",
-        "naumovs.color-highlight",
-        
+
         // Docker
         "ms-azuretools.vscode-docker",
-        
+
         // GitHub Copilot
         "GitHub.copilot",
         "GitHub.copilot-chat"
       ],
-      
+
       // VS Code settings
       "settings": {
         "typescript.tsdk": "node_modules/typescript/lib",
@@ -65,13 +52,13 @@
       }
     }
   },
-  
+
   // Forward ports for the application
   "forwardPorts": [
     5173,  // Vite dev server (frontend)
     4000   // IPFS backend server
   ],
-  
+
   // Port attributes
   "portsAttributes": {
     "5173": {
@@ -83,21 +70,21 @@
       "onAutoForward": "notify"
     }
   },
-  
+
   // Use 'postCreateCommand' to run commands after the container is created
   "postCreateCommand": "bash .devcontainer/post-create.sh",
-  
+
   // Use 'postStartCommand' to run commands after the container starts
   "postStartCommand": "echo '🚀 Dev environment ready! Run npm run dev to start the frontend, and cd ipfs-backend && npm start for the backend.'",
-  
+
   // Set environment variables
   "remoteEnv": {
     "NODE_ENV": "development"
   },
-  
+
   // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root
   "remoteUser": "node",
-  
+
   // Features to add to the dev container
   "features": {
     "ghcr.io/devcontainers/features/git:1": {
@@ -107,9 +94,8 @@
       "version": "latest"
     }
   },
-  
-  // Lifecycle scripts
-  "mounts": [
-    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/node/.ssh,readonly,type=bind,consistency=cached"
-  ]
+
+  // Lifecycle scripts - SSH keys mount (optional)
+  // Uses USERPROFILE on Windows, HOME on Linux/macOS
+  "mounts": []
 }
