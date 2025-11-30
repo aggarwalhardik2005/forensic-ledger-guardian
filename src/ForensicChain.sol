@@ -150,6 +150,7 @@ contract ForensicChain {
         // Store under FIR mapping
         uint256 idx = evidenceCount[firId];
         evidenceMapping[firId][idx] = e;
+        evidenceIndex[firId][evidenceId] = idx;
         evidenceCount[firId] = idx + 1;
 
         usedCIDHash[unique] = true;
@@ -277,7 +278,15 @@ contract ForensicChain {
     }
 
     function confirmEvidence(string memory containerId, uint256 index) external notLocked {
-        require(index < evidenceCount[containerId], "Invalid evidence index");
+        uint256 count = evidenceCount[containerId];
+
+        // If it's a case, prefer Case.evidenceCount
+        if (cases[containerId].createdBy != address(0)) {
+            count = cases[containerId].evidenceCount;
+        }
+
+        require(index < count, "Invalid evidence index");
+
         Evidence storage e = evidenceMapping[containerId][index];
         require(!e.confirmed, "Already confirmed");
         require(e.submittedBy != msg.sender, "Cannot self-confirm");
@@ -352,8 +361,14 @@ contract ForensicChain {
 
     function getEvidenceById(string memory containerId, string memory evidenceId) external view returns (Evidence memory) {
         uint256 index = evidenceIndex[containerId][evidenceId];
-        require(index < evidenceCount[containerId], "Evidence not found");
-        return evidenceMapping[containerId][index];
+        Evidence memory e = evidenceMapping[containerId][index];
+
+        require(
+            keccak256(bytes(e.evidenceId)) == keccak256(bytes(evidenceId)),
+            "Evidence not found"
+        );
+
+        return e;
     }
 
 
