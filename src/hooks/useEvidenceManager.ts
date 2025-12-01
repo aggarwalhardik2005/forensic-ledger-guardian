@@ -329,7 +329,7 @@ export const useEvidenceManager = (caseId?: string) => {
 
       trackActivity('view', evidence.id);
       toast({
-        title: "Download Complete",
+        title: "Integrity verified and Evidence Downloaded",
         description: `${evidence.name} has been downloaded and decrypted successfully`,
       });
       return true;
