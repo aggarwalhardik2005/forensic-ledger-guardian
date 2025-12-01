@@ -164,3 +164,6 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+# Config Files
+.fast-config.json
