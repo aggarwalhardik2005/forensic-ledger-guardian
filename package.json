@@ -8,7 +8,8 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "fast": "node scripts/fast.cjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
