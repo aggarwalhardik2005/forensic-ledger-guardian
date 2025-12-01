@@ -137,6 +137,14 @@ const ALLOWED_MIME = [
   "audio/wav",
 ];
 
+// Evidence type mapping
+const EvidenceType = {
+  Image: 0,
+  Video: 1,
+  Document: 2,
+  Other: 3,
+};
+
 // In-memory cache for Pinata metadata
 const filenameCache = new Map();
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
@@ -217,12 +225,37 @@ app.get("/", (req, res) => {
 // 1. File FIR
 app.post("/fir", async (req, res) => {
   try {
-    const { firId, description } = req.body;
-    if (!firId || !description)
-      return res.status(400).json({ error: "firId and description required" });
+    const { firId, description, complainant, suspect, location } = req.body;
+    if (!firId || !description || !complainant || !location)
+      return res.status(400).json({
+        error: "firId, description, complainant and location are required",
+      });
 
+    // File FIR on blockchain
     const tx = await contract.fileFIR(firId, description);
     await tx.wait();
+
+    // Upsert FIR in Supabase
+    const { error } = await supabase.from("fir").upsert(
+      [
+        {
+          fir_id: firId,
+          description: description,
+          filed_by: wallet.address,
+          complainant: complainant,
+          suspect: suspect,
+          location: location,
+        },
+      ],
+      { onConflict: ["fir_id"] }
+    );
+    if (error) {
+      console.error("Supabase FIR upsert failed:", error.message);
+      return res.status(500).json({
+        error: "Failed to store FIR in Supabase",
+        details: error.message,
+      });
+    }
 
     res.json({ message: "FIR filed successfully", firId });
   } catch (err) {
@@ -236,11 +269,15 @@ app.post("/fir/:firId/upload", upload.single("file"), async (req, res) => {
   try {
     const { firId } = req.params;
     console.log("UPLOAD: FIR ID =", firId);
-    console.log("UPLOAD: Raw FIR ID chars:", Array.from(firId).map(c => c.charCodeAt(0)));
-    const { evidenceId, evidenceType } = req.body;
+    console.log(
+      "UPLOAD: Raw FIR ID chars:",
+      Array.from(firId).map((c) => c.charCodeAt(0))
+    );
+    const { evidenceId, evidenceType, description } = req.body;
     const file = req.file;
-    const evidenceTypeNum = Number(evidenceType);
-    if (!Number.isInteger(evidenceTypeNum)) {
+    const evidenceTypeNum = EvidenceType[evidenceType];
+    console.log(evidenceType);
+    if (evidenceTypeNum === undefined) {
       return res.status(400).json({ error: "Invalid evidenceType" });
     }
 
@@ -301,13 +338,19 @@ app.post("/fir/:firId/upload", upload.single("file"), async (req, res) => {
         original_filename: file.originalname,
         key_encrypted: keyEncrypted,
         iv_encrypted: ivEncrypted,
+        description: description,
+        type: evidenceType,
+        submitted_by: wallet.address,
       },
     ]);
 
     if (error) return res.status(500).json({ error: error.message });
 
     console.log("FIR ID used in submit:", firId);
-    console.log("Raw FIR ID string (chars):", Array.from(firId).map(c => c.charCodeAt(0)));
+    console.log(
+      "Raw FIR ID string (chars):",
+      Array.from(firId).map((c) => c.charCodeAt(0))
+    );
     // Store CID & hash on-chain
     try {
       const tx = await contract.submitFIREvidence(
@@ -345,14 +388,20 @@ app.post("/fir/:firId/upload", upload.single("file"), async (req, res) => {
 app.post("/fir/:firId/promote", async (req, res) => {
   try {
     const { firId } = req.params;
-    const { caseId, title, description, tags } = req.body;
+    const { caseId, title, type, description, tags } = req.body;
 
-    if (!firId || !caseId || !title || !description)
+    if (!firId || !caseId || !title || !description || !type)
       return res.status(400).json({ error: "Missing required data" });
     console.log("PROMOTE: FIR ID =", firId);
-    console.log("PROMOTE: Raw FIR ID chars:", Array.from(firId).map(c => c.charCodeAt(0)));
+    console.log(
+      "PROMOTE: Raw FIR ID chars:",
+      Array.from(firId).map((c) => c.charCodeAt(0))
+    );
     console.log("PROMOTE: CASE ID =", caseId);
-    console.log("PROMOTE: Raw CASE ID chars:", Array.from(caseId).map(c => c.charCodeAt(0)));
+    console.log(
+      "PROMOTE: Raw CASE ID chars:",
+      Array.from(caseId).map((c) => c.charCodeAt(0))
+    );
     const tx = await contract.createCaseFromFIR(
       caseId,
       firId,
@@ -361,14 +410,52 @@ app.post("/fir/:firId/promote", async (req, res) => {
       tags || []
     );
     await tx.wait();
-    const { error:supaError} = await supabase
+    const { error: supaError } = await supabase
       .from("evidence1")
       .update({ container_id: caseId })
       .eq("container_id", firId);
 
+    const { data, select_error } = await supabase
+      .from("fir")
+      .select("filed_by")
+      .eq("fir_id", firId)
+      .single();
+
+    if (select_error) {
+      console.error(select_error);
+    } else {
+      console.log("Filed by:", data.filed_by); // ← access value here
+    }
+
+    // Upsert FIR in Supabase
+    const { error } = await supabase.from("cases").upsert(
+      [
+        {
+          case_id: firId,
+          title: title,
+          type: type,
+          description: description,
+          filed_by: data.filed_by,
+          tags: tags,
+        },
+      ],
+      { onConflict: ["case_id"] }
+    );
+
+    if (error) {
+      console.error("Supabase Case upsert failed:", error.message);
+      return res.status(500).json({
+        error: "Failed to store Case in Supabase",
+        details: error.message,
+      });
+    }
+
     if (supaError) {
       console.error("Supabase update failed:", supaError);
-      return res.status(500).json({ error: "FIR promoted but database update failed", details: supaError });
+      return res.status(500).json({
+        error: "FIR promoted but database update failed",
+        details: supaError,
+      });
     }
 
     console.log("Checking FIR & CASE evidence count after promotion...");
@@ -387,8 +474,8 @@ app.post("/case/:caseId/upload", upload.single("file"), async (req, res) => {
     const { caseId } = req.params;
     const { evidenceId, evidenceType } = req.body;
     const file = req.file;
-    const evidenceTypeNum = Number(evidenceType);
-    if (!Number.isInteger(evidenceTypeNum)) {
+    const evidenceTypeNum = EvidenceType[evidenceType];
+    if (evidenceTypeNum === undefined) {
       return res.status(400).json({ error: "Invalid evidenceType" });
     }
 
@@ -507,8 +594,7 @@ app.get("/retrieve/:containerId/:evidenceId", async (req, res) => {
       .eq("container_id", containerId)
       .eq("evidence_id", evidenceId)
       .single();
-    if (error || !data)
-      return res.status(404).json({error});
+    if (error || !data) return res.status(404).json({ error });
 
     const iv = Buffer.from(data.iv_encrypted, "hex");
     const masterKey = getMasterKeyOrThrow();
