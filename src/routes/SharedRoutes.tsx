@@ -120,7 +120,7 @@ export const SharedRoutes = () => (
       path="/cases/create"
       element={
         <Layout>
-          <SecureRoute allowedRoles={[Role.Court, Role.Officer]} requireAuth={true}>
+          <SecureRoute allowedRoles={[Role.Court]} requireAuth={true}>
             <CreateCase />
           </SecureRoute>
         </Layout>
