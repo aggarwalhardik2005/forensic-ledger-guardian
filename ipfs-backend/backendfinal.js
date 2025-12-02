@@ -270,8 +270,9 @@ app.post("/fir", async (req, res) => {
           fir_id: firId,
           title: incident.title,
           incident_type: incident.type,
-          incident_date: incident.date || null,
-          incident_time: incident.time || null,
+          incident_date: incident.date,
+          incident_time: incident.time,
+          incident_location: incident.location,
           description: description,
           location: location,
           filed_by: wallet.address,
@@ -289,18 +290,15 @@ app.post("/fir", async (req, res) => {
     }
 
     // 2. Upsert Complainant Info in Supabase
-    const { error: compError } = await supabase.from("complainant").upsert(
-      [
-        {
-          fir_id: firId,
-          name: complainant.name,
-          organization: complainant.organization || null,
-          contact_number: complainant.contactNumber,
-          email: complainant.email || null,
-        },
-      ],
-      { onConflict: ["fir_id"] }
-    );
+    const { error: compError } = await supabase.from("complainant").insert([
+      {
+        fir_id: firId,
+        name: complainant.name,
+        organization: complainant.organization || null,
+        contact_number: complainant.contactNumber,
+        email: complainant.email || null,
+      },
+    ]);
     if (compError) {
       console.error("Supabase complainant upsert failed:", compError.message);
       // Log but don't fail the request - FIR is already on blockchain
@@ -308,12 +306,12 @@ app.post("/fir", async (req, res) => {
 
     // 3. Upsert Suspect Info in Supabase (if provided)
     if (suspect && (suspect.name || suspect.type || suspect.additionalInfo)) {
-      const { error: suspectError } = await supabase.from("suspect").upsert(
+      const { error: suspectError } = await supabase.from("suspect").insert(
         [
           {
             fir_id: firId,
             name: suspect.name || "Unknown",
-            suspect_type: suspect.type || null,
+            type: suspect.type || null,
             additional_info: suspect.additionalInfo || null,
           },
         ],
@@ -342,7 +340,7 @@ app.post("/fir", async (req, res) => {
 
         const { error: witnessError } = await supabase
           .from("witness")
-          .upsert(witnessRecords, { onConflict: ["fir_id", "witness_index"] });
+          .insert(witnessRecords);
         if (witnessError) {
           console.error(
             "Supabase witness upsert failed:",
@@ -365,7 +363,8 @@ app.post("/fir", async (req, res) => {
           (suspect.name || suspect.type || suspect.additionalInfo)
         ),
         witnesses: witnesses
-          ? witnesses.filter((w) => w.name || w.contact_info || w.statement).length
+          ? witnesses.filter((w) => w.name || w.contact_info || w.statement)
+              .length
           : 0,
       },
     });

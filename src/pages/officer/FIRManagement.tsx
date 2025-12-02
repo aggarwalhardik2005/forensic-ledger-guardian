@@ -180,6 +180,8 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = "create" }) => {
           incident: {
             title,
             type: incidentType,
+            date: date || null,
+            time: time || null,
             location,
             description,
           },
@@ -354,6 +356,33 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = "create" }) => {
                       <XCircle className="h-3 w-3 mr-1" /> {errors.title}
                     </p>
                   )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium flex items-center">
+                      <Calendar className="h-4 w-4 mr-2 text-forensic-600" />
+                      Date of Incident
+                    </label>
+                    <Input
+                      type="date"
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium flex items-center">
+                      <MapPin className="h-4 w-4 mr-2 text-forensic-600" />
+                      Time of Incident
+                    </label>
+                    <Input
+                      type="time"
+                      value={time}
+                      onChange={(e) => setTime(e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -703,6 +732,15 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = "create" }) => {
                       <div>
                         <p className="text-sm text-forensic-500">Title</p>
                         <p className="font-medium">{title || "Not provided"}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-forensic-500">Date & Time</p>
+                        <p className="font-medium">
+                          {date
+                            ? new Date(date).toLocaleDateString()
+                            : "Not specified"}
+                          {time ? ` at ${time}` : ""}
+                        </p>
                       </div>
                       <div>
                         <p className="text-sm text-forensic-500">Location</p>
