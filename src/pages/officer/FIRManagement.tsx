@@ -22,6 +22,7 @@ import {
   ArrowRight,
   Send,
   XCircle,
+  Loader2,
 } from "lucide-react";
 import {
   Select,
@@ -33,6 +34,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
 
 interface FIRManagementProps {
   mode?: "view" | "create" | "edit";
@@ -54,6 +57,9 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = "create" }) => {
   const [step, setStep] = useState(1);
   const [formCompleted, setFormCompleted] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittedFirId, setSubmittedFirId] = useState<string | null>(null);
+  const [submittedDate, setSubmittedDate] = useState<string | null>(null);
 
   // Form fields
   const [title, setTitle] = useState("");
@@ -126,17 +132,108 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = "create" }) => {
     setErrors({});
   };
 
-  const handleCompleteForm = () => {
-    // Generate FIR ID (in real implementation this would be done on the backend)
-    const firId = "FF-2023-120";
+  const generateFirId = () => {
+    const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    const random = crypto
+      .getRandomValues(new Uint32Array(1))[0]
+      .toString(36)
+      .toUpperCase()
+      .slice(0, 5);
+    return `FIR-${date}-${random}`;
+  };
 
-    // In real implementation, this would validate and submit the form to the blockchain
-    setFormCompleted(true);
-    setStep(4); // Show success step
-    toast({
-      title: "FIR Created Successfully",
-      description: `Your FIR with ID ${firId} has been created.`,
-    });
+  const handleCompleteForm = async () => {
+    setIsSubmitting(true);
+
+    // Generate a unique FIR ID
+    const firId = generateFirId();
+
+    // Build the full description with all relevant details
+    const fullDescription = `
+      Title: ${title}
+      Incident Type: ${incidentType}
+      Date/Time: ${
+        date ? new Date(date).toLocaleDateString() : "Not specified"
+      } ${time || ""}
+      Description: ${description}
+      Suspect: ${suspectName || "Unknown"} (${suspectType || "Unknown type"})
+      Additional Suspect Info: ${suspectInfo || "None"}
+      Witnesses: ${
+        witnesses
+          .filter((w) => w.name)
+          .map((w) => `${w.name} - ${w.statement}`)
+          .join("; ") || "None"
+      }
+    `.trim();
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/fir`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          firId,
+          description: fullDescription,
+          location,
+          // Incident details
+          incident: {
+            title,
+            type: incidentType,
+            location,
+            description,
+          },
+          // Complainant information
+          complainant: {
+            name: complainantName,
+            organization: organization || null,
+            contactNumber,
+            email: email || null,
+          },
+          // Suspect information
+          suspect: {
+            name: suspectName || null,
+            type: suspectType || null,
+            additionalInfo: suspectInfo || null,
+          },
+          // Witnesses array
+          witnesses: witnesses.filter(
+            (w) => w.name || w.contact || w.statement
+          ),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to file FIR");
+      }
+
+      // Store the returned FIR ID and current date
+      setSubmittedFirId(data.firId || firId);
+      setSubmittedDate(new Date().toLocaleDateString());
+      setFormCompleted(true);
+      setStep(4); // Show success step
+
+      toast({
+        title: "FIR Created Successfully",
+        description: `Your FIR with ID ${
+          data.firId || firId
+        } has been filed on the blockchain.`,
+      });
+    } catch (error) {
+      console.error("FIR submission error:", error);
+      toast({
+        title: "FIR Submission Failed",
+        description:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -608,14 +705,6 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = "create" }) => {
                         <p className="font-medium">{title || "Not provided"}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-forensic-500">Date & Time</p>
-                        <p className="font-medium">
-                          {date && time
-                            ? `${new Date(date).toLocaleDateString()}, ${time}`
-                            : "Not provided"}
-                        </p>
-                      </div>
-                      <div>
                         <p className="text-sm text-forensic-500">Location</p>
                         <p className="font-medium">
                           {location || "Not provided"}
@@ -776,15 +865,29 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = "create" }) => {
                 </div>
               </CardContent>
               <CardFooter className="flex justify-between border-t border-forensic-100 pt-4">
-                <Button variant="outline" onClick={handlePreviousStep}>
+                <Button
+                  variant="outline"
+                  onClick={handlePreviousStep}
+                  disabled={isSubmitting}
+                >
                   Previous Step
                 </Button>
                 <Button
                   className="bg-forensic-800 hover:bg-forensic-800/90"
                   onClick={handleCompleteForm}
+                  disabled={isSubmitting}
                 >
-                  <Send className="mr-2 h-4 w-4" />
-                  Submit FIR
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Filing FIR...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="mr-2 h-4 w-4" />
+                      Submit FIR
+                    </>
+                  )}
                 </Button>
               </CardFooter>
             </Card>
@@ -802,34 +905,73 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = "create" }) => {
                 </h3>
                 <p className="text-forensic-600 mb-6 max-w-md">
                   Your First Information Report has been submitted successfully
-                  and assigned the ID <strong>FF-2023-120</strong>
+                  and recorded on the blockchain with ID{" "}
+                  <strong>{submittedFirId}</strong>
                 </p>
-                <div className="space-y-4">
+                <div className="space-y-4 w-full max-w-sm">
                   <div className="flex justify-between text-sm py-2 border-b border-forensic-100">
                     <span className="text-forensic-500">FIR Number:</span>
-                    <span className="font-medium">FF-2023-120</span>
+                    <span className="font-medium font-mono text-xs">
+                      {submittedFirId}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm py-2 border-b border-forensic-100">
+                    <span className="text-forensic-500">Title:</span>
+                    <span className="font-medium">{title}</span>
+                  </div>
+                  <div className="flex justify-between text-sm py-2 border-b border-forensic-100">
+                    <span className="text-forensic-500">Location:</span>
+                    <span className="font-medium">{location}</span>
+                  </div>
+                  <div className="flex justify-between text-sm py-2 border-b border-forensic-100">
+                    <span className="text-forensic-500">Complainant:</span>
+                    <span className="font-medium">{complainantName}</span>
                   </div>
                   <div className="flex justify-between text-sm py-2 border-b border-forensic-100">
                     <span className="text-forensic-500">Filed By:</span>
                     <span className="font-medium">
-                      {user?.name || "Officer Johnson"}
+                      {user?.name || "Officer"}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm py-2 border-b border-forensic-100">
-                    <span className="text-forensic-500">Date:</span>
+                    <span className="text-forensic-500">Date Filed:</span>
                     <span className="font-medium">
-                      {new Date().toLocaleDateString()}
+                      {submittedDate || new Date().toLocaleDateString()}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm py-2">
                     <span className="text-forensic-500">Status:</span>
-                    <Badge className="bg-forensic-warning text-forensic-900">
-                      Pending
+                    <Badge className="bg-forensic-success text-white">
+                      Filed on Blockchain
                     </Badge>
                   </div>
                 </div>
                 <div className="flex gap-4 mt-8">
-                  <Button variant="outline">View FIR Details</Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      // Reset form for new FIR
+                      setStep(1);
+                      setFormCompleted(false);
+                      setSubmittedFirId(null);
+                      setTitle("");
+                      setDate("");
+                      setTime("");
+                      setLocation("");
+                      setIncidentType("");
+                      setDescription("");
+                      setComplainantName("");
+                      setOrganization("");
+                      setContactNumber("");
+                      setEmail("");
+                      setSuspectName("");
+                      setSuspectType("");
+                      setSuspectInfo("");
+                      setWitnesses([{ name: "", contact: "", statement: "" }]);
+                    }}
+                  >
+                    File Another FIR
+                  </Button>
                   <Button className="bg-forensic-evidence hover:bg-forensic-evidence/90">
                     Upload Evidence
                   </Button>
