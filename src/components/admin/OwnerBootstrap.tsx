@@ -480,7 +480,7 @@ const OwnerBootstrap = () => {
                   Forensic Expert
                 </SelectItem>
                 <SelectItem value={Role.Lawyer.toString()}>
-                  Legal Counsel
+                  Lawyer
                 </SelectItem>
               </SelectContent>
             </Select>
