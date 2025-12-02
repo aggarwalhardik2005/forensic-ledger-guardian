@@ -87,7 +87,8 @@ const CaseList: React.FC = () => {
   const [cases, setCases] = React.useState<CaseData[]>([]);
 
   // Only Court can create cases (not Officer)
-  const canCreateCase = userRole === Role.Court;
+  // Check both AuthContext (email auth) and Web3Context (wallet auth)
+  const canCreateCase = user?.role === Role.Court || userRole === Role.Court;
 
   React.useEffect(() => {
     try {
