@@ -21,6 +21,7 @@ import MetaMaskHelp from '@/pages/help/MetaMaskHelp';
 import CaseDetail from '@/pages/cases/CaseDetail';
 import CreateCase from '@/pages/cases/CreateCase';
 import FIR from '@/pages/fir/Fir';
+import View from '@/pages/fir/View';
 
 /**
  * Routes accessible by all authenticated users
@@ -98,6 +99,17 @@ export const SharedRoutes = () => (
         <Layout>
           <SecureRoute requireAuth={true}>
             <CaseDetail />
+          </SecureRoute>
+        </Layout>
+      }
+    />
+
+    <Route
+      path="/fir/view/:id"
+      element={
+        <Layout>
+          <SecureRoute requireAuth={true}>
+            <View />
           </SecureRoute>
         </Layout>
       }
