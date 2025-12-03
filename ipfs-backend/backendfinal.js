@@ -541,12 +541,13 @@ app.post("/fir/:firId/promote", async (req, res) => {
     const { error } = await supabase.from("cases").upsert(
       [
         {
-          case_id: firId,
+          case_id: caseId,
           title: title,
           type: type,
           description: description,
           filed_by: data.filed_by,
           tags: tags,
+          fir_id: firId,
         },
       ],
       { onConflict: ["case_id"] }

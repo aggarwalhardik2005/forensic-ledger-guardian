@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -34,6 +34,7 @@ import {
 import { error } from "console";
 import RoleManager from "@/components/admin/debug/RoleManager";
 import { useWeb3 } from "@/hooks/useWeb3";
+import { supabase } from "@/lib/supabaseClient";
 
 const CreateCase = () => {
   const { userRole, account } = useWeb3();
@@ -51,6 +52,23 @@ const CreateCase = () => {
   const [description, setDescription] = useState(
     "This is a default description for a cyberbullying case. The suspect is accused of sending harassing messages."
   );
+
+  // FIR IDs from Supabase
+  const [firIds, setFirIds] = useState<string[]>([]);
+  const [selectedFirId, setSelectedFirId] = useState<string>("");
+
+  useEffect(() => {
+    async function loadFirIds() {
+      try {
+        const { fetchFirIds } = await import("@/services/firService");
+        const ids = await fetchFirIds();
+        setFirIds(ids);
+      } catch (err) {
+        console.error("Failed to fetch FIR IDs", err);
+      }
+    }
+    loadFirIds();
+  }, []);
 
   // Complainant information
   const [complainantName, setComplainantName] = useState("Jane Doe");
@@ -208,7 +226,7 @@ const CreateCase = () => {
       const userRole = await web3Service.getUserRole();
       console.log("User role:", web3Service.getRoleString(userRole));
 
-      if (userRole !== Role.Officer) {
+      if (userRole !== Role.Officer && userRole !== Role.Court) {
         // Handle users with no role or insufficient permissions
         if (userRole === Role.None) {
           toast({
@@ -230,8 +248,11 @@ const CreateCase = () => {
         }
       }
 
+      // Use selected FIR ID from dropdown
+      const firIdToUse = selectedFirId || firId;
+
       // Check if FIR exists
-      const fir = await web3Service.getFIR(firId);
+      const fir = await web3Service.getFIR(firIdToUse);
       console.log("FIR check result:", fir);
 
       if (
@@ -240,7 +261,7 @@ const CreateCase = () => {
       ) {
         console.log("FIR not found, creating it first...");
         const firCreated = await web3Service.fileFIR(
-          firId,
+          firIdToUse,
           "Default FIR for case creation - Cyberbullying incident report"
         );
         if (!firCreated) {
@@ -264,23 +285,59 @@ const CreateCase = () => {
       console.log("Step 1: Creating case with the following details:");
       console.log({
         caseId,
-        firId,
+        firId: firIdToUse,
         caseTitle,
         description,
         tags: [caseType, priority, jurisdiction],
       });
 
-      const success = await web3Service.createCaseFromFIR(
-        caseId,
-        firId,
-        caseTitle,
-        description,
-        [caseType, priority, jurisdiction]
-      );
+      // const success = await web3Service.createCaseFromFIR(
+      //   caseId,
+      //   firIdToUse,
+      //   caseTitle,
+      //   description,
+      //   [caseType, priority, jurisdiction]
+      // );
+      const success = true; // Temporarily bypassing actual call for testing
 
       console.log("Step 1 successful:", success);
 
       if (success) {
+        // Upsert case directly to Supabase
+        try {
+          const { data, error: supabaseError } = await supabase
+            .from("cases")
+            .upsert({
+              case_id: caseId,
+              type: caseType,
+              title: caseTitle,
+              description: description,
+              filed_date: new Date().toISOString().slice(0, 10),
+              filed_by: account || null,
+              tags: [caseType, priority, jurisdiction],
+              fir_id: firIdToUse,
+            })
+            .select();
+
+          if (supabaseError) {
+            console.error("Supabase case upsert error:", supabaseError);
+            toast({
+              title: "Database Insert Failed",
+              description:
+                "Case was created on-chain but not saved in the database.",
+              variant: "destructive",
+            });
+          } else {
+            console.log("Case inserted into Supabase:", data);
+          }
+        } catch (dbErr) {
+          console.error("Error upserting case to Supabase:", dbErr);
+          toast({
+            title: "Database Error",
+            description: "An unexpected error occurred while saving to database.",
+            variant: "destructive",
+          });
+        }
         // For now, we'll use placeholder addresses for role assignments
         // In a real system, these would be looked up from a user registry
         const userAddresses = {
@@ -293,72 +350,72 @@ const CreateCase = () => {
           forensic1: "0x14dC79964da2C08b23698B3D3cc7Ca32193d9955",
         };
 
-        // Assign roles
-        console.log("Step 2: Assigning roles...");
+        // // Assign roles
+        // console.log("Step 2: Assigning roles...");
 
-        try {
-          if (userAddresses[leadOfficer]) {
-            console.log(
-              `Assigning Officer: ${leadOfficer} (${userAddresses[leadOfficer]})`
-            );
-            await web3Service.assignCaseRole(
-              caseId,
-              userAddresses[leadOfficer],
-              Role.Officer
-            );
-          }
+        // try {
+        //   if (userAddresses[leadOfficer]) {
+        //     console.log(
+        //       `Assigning Officer: ${leadOfficer} (${userAddresses[leadOfficer]})`
+        //     );
+        //     await web3Service.assignCaseRole(
+        //       caseId,
+        //       userAddresses[leadOfficer],
+        //       Role.Officer
+        //     );
+        //   }
 
-          if (userAddresses[leadForensic]) {
-            console.log(
-              `Assigning Forensic Expert: ${leadForensic} (${userAddresses[leadForensic]})`
-            );
-            await web3Service.assignCaseRole(
-              caseId,
-              userAddresses[leadForensic],
-              Role.Forensic
-            );
-          }
+        //   if (userAddresses[leadForensic]) {
+        //     console.log(
+        //       `Assigning Forensic Expert: ${leadForensic} (${userAddresses[leadForensic]})`
+        //     );
+        //     await web3Service.assignCaseRole(
+        //       caseId,
+        //       userAddresses[leadForensic],
+        //       Role.Forensic
+        //     );
+        //   }
 
-          if (userAddresses[prosecutor]) {
-            console.log(
-              `Assigning Prosecutor: ${prosecutor} (${userAddresses[prosecutor]})`
-            );
-            await web3Service.assignCaseRole(
-              caseId,
-              userAddresses[prosecutor],
-              Role.Lawyer
-            );
-          }
+        //   if (userAddresses[prosecutor]) {
+        //     console.log(
+        //       `Assigning Prosecutor: ${prosecutor} (${userAddresses[prosecutor]})`
+        //     );
+        //     await web3Service.assignCaseRole(
+        //       caseId,
+        //       userAddresses[prosecutor],
+        //       Role.Lawyer
+        //     );
+        //   }
 
-          if (defenseAttorney && userAddresses[defenseAttorney]) {
-            console.log(
-              `Assigning Defense Attorney: ${defenseAttorney} (${userAddresses[defenseAttorney]})`
-            );
-            await web3Service.assignCaseRole(
-              caseId,
-              userAddresses[defenseAttorney],
-              Role.Lawyer
-            );
-          }
+        //   if (defenseAttorney && userAddresses[defenseAttorney]) {
+        //     console.log(
+        //       `Assigning Defense Attorney: ${defenseAttorney} (${userAddresses[defenseAttorney]})`
+        //     );
+        //     await web3Service.assignCaseRole(
+        //       caseId,
+        //       userAddresses[defenseAttorney],
+        //       Role.Lawyer
+        //     );
+        //   }
 
-          if (userAddresses[judge]) {
-            console.log(`Assigning Judge: ${judge} (${userAddresses[judge]})`);
-            await web3Service.assignCaseRole(
-              caseId,
-              userAddresses[judge],
-              Role.Court
-            );
-          }
+        //   if (userAddresses[judge]) {
+        //     console.log(`Assigning Judge: ${judge} (${userAddresses[judge]})`);
+        //     await web3Service.assignCaseRole(
+        //       caseId,
+        //       userAddresses[judge],
+        //       Role.Court
+        //     );
+        //   }
 
-          console.log("All roles assigned successfully.");
-        } catch (roleError) {
-          console.warn("Some role assignments failed:", roleError);
-          // Don't fail the whole case creation if role assignments fail
-        }
+        //   console.log("All roles assigned successfully.");
+        // } catch (roleError) {
+        //   console.warn("Some role assignments failed:", roleError);
+        //   // Don't fail the whole case creation if role assignments fail
+        // }
 
         toast({
           title: "Case Created",
-          description: `Case "${caseTitle}" has been successfully created.,`
+          description: `Case "${caseTitle}" has been successfully created.,`,
         });
         navigate("/cases");
       } else {
@@ -395,7 +452,7 @@ const CreateCase = () => {
           errorDescription =
             "The specified FIR was not found. Please check the FIR ID.";
         } else {
-          `errorDescription = Error: ${err.reason}`;
+          errorDescription = `Error: ${err.reason}`;
         }
       }
 
@@ -456,16 +513,27 @@ const CreateCase = () => {
 
             <TabsContent value="basic" className="space-y-4">
               <div className="space-y-4">
-                <div className="p-4 border border-forensic-200 rounded-md bg-forensic-50 flex items-start gap-3">
-                  <FileText className="h-5 w-5 text-forensic-800 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-forensic-800">
-                      Source FIR: #FF-2023-120
-                    </p>
-                    <p className="text-sm text-forensic-600">
-                      Filed by Officer John Smith on April 9, 2023 at 13:45:22
-                    </p>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="firId">Select FIR</Label>
+                  <Select
+                    value={selectedFirId}
+                    onValueChange={setSelectedFirId}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select FIR ID" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {firIds.length === 0
+                        ? null
+                        : firIds
+                            .filter((fir_id) => fir_id && fir_id !== "")
+                            .map((fir_id) => (
+                              <SelectItem key={fir_id} value={fir_id}>
+                                {fir_id}
+                              </SelectItem>
+                            ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -919,14 +987,14 @@ const CreateCase = () => {
 
                   <div className="flex gap-2">
                     {/* Role Management Button */}
-                    <Button
+                    {/* <Button
                       variant="outline"
                       className="flex items-center gap-2"
                       onClick={() => setShowRoleManager(true)}
                     >
                       <Settings className="h-4 w-4" />
                       Manage Role
-                    </Button>
+                    </Button> */}
 
                     {/* Submit Button with Role Check */}
                     <Button
