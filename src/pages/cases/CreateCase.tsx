@@ -35,6 +35,7 @@ import { error } from "console";
 import RoleManager from "@/components/admin/debug/RoleManager";
 import { useWeb3 } from "@/hooks/useWeb3";
 import { supabase } from "@/lib/supabaseClient";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
 
 const CreateCase = () => {
   const { userRole, account } = useWeb3();
@@ -188,15 +189,13 @@ const CreateCase = () => {
       const m = String(now.getMonth() + 1).padStart(2, "0");
       const d = String(now.getDate()).padStart(2, "0");
       const random = Math.floor(Math.random() * 900 + 100);
-      return `FF-${y}-${m}${d}-${random}`;
+      return `CASE-${y}-${m}${d}-${random}`;
     };
 
     const caseId = generateCaseId();
-    const partialID = "FF-2025-";
-    // Generate a random number (e.g., between 0 and 99999)
-    const randomNumber = Math.floor(Math.random() * 100000);
-    // Combine the base string and the random number
-    const firId = partialID + randomNumber; // Hardcoded for now
+    // const partialID = "CASE-2025-";
+    // const randomNumber = Math.floor(Math.random() * 100000);
+    // const firId = partialID + randomNumber;
 
     try {
       // Pre-checks before case creation
@@ -205,7 +204,6 @@ const CreateCase = () => {
       // Test contract connection
       const contractConnected = await web3Service.testContractConnection();
       if (!contractConnected) {
-        // Get diagnostic information
         const networkInfo = await web3Service.getNetworkInfo();
         const contractAddress = web3Service.getContractAddress();
 
@@ -227,7 +225,6 @@ const CreateCase = () => {
       console.log("User role:", web3Service.getRoleString(userRole));
 
       if (userRole !== Role.Officer && userRole !== Role.Court) {
-        // Handle users with no role or insufficient permissions
         if (userRole === Role.None) {
           toast({
             title: "Unauthorized Access",
@@ -249,31 +246,13 @@ const CreateCase = () => {
       }
 
       // Use selected FIR ID from dropdown
-      const firIdToUse = selectedFirId || firId;
+      const firIdToUse = selectedFirId;
 
       // Check if FIR exists
       const fir = await web3Service.getFIR(firIdToUse);
       console.log("FIR check result:", fir);
 
-      if (
-        !fir ||
-        fir.filedBy === "0x0000000000000000000000000000000000000000"
-      ) {
-        console.log("FIR not found, creating it first...");
-        const firCreated = await web3Service.fileFIR(
-          firIdToUse,
-          "Default FIR for case creation - Cyberbullying incident report"
-        );
-        if (!firCreated) {
-          toast({
-            title: "FIR Creation Failed",
-            description: "Could not create the required FIR. Please try again.",
-            variant: "destructive",
-          });
-          return;
-        }
-        console.log("FIR created successfully");
-      } else if (fir.promotedToCase) {
+      if (fir.promotedToCase) {
         toast({
           title: "FIR Already Used",
           description: "This FIR has already been promoted to a case.",
@@ -291,6 +270,7 @@ const CreateCase = () => {
         tags: [caseType, priority, jurisdiction],
       });
 
+      // // UPDATED: Actually call the blockchain function instead of bypassing it
       // const success = await web3Service.createCaseFromFIR(
       //   caseId,
       //   firIdToUse,
@@ -298,131 +278,169 @@ const CreateCase = () => {
       //   description,
       //   [caseType, priority, jurisdiction]
       // );
-      const success = true; // Temporarily bypassing actual call for testing
 
-      console.log("Step 1 successful:", success);
+      try {
+        const response = await fetch(`${BACKEND_URL}/fir/${firIdToUse}/promote`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            caseId,
+            title: caseTitle,                    // ✅ backend expects `title`
+            type: caseType,                      // ✅ backend expects `type`
+            description,
+            tags: [caseType, priority, jurisdiction], // ✅ send tags array
+          }),
+        });
 
-      if (success) {
-        // Upsert case directly to Supabase
-        try {
-          const { data, error: supabaseError } = await supabase
-            .from("cases")
-            .upsert({
-              case_id: caseId,
-              type: caseType,
-              title: caseTitle,
-              description: description,
-              filed_date: new Date().toISOString().slice(0, 10),
-              filed_by: account || null,
-              tags: [caseType, priority, jurisdiction],
-              fir_id: firIdToUse,
-            })
-            .select();
+        const data = await response.json();
 
-          if (supabaseError) {
-            console.error("Supabase case upsert error:", supabaseError);
-            toast({
-              title: "Database Insert Failed",
-              description:
-                "Case was created on-chain but not saved in the database.",
-              variant: "destructive",
-            });
-          } else {
-            console.log("Case inserted into Supabase:", data);
-          }
-        } catch (dbErr) {
-          console.error("Error upserting case to Supabase:", dbErr);
-          toast({
-            title: "Database Error",
-            description: "An unexpected error occurred while saving to database.",
-            variant: "destructive",
-          });
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to file FIR");
         }
-        // For now, we'll use placeholder addresses for role assignments
-        // In a real system, these would be looked up from a user registry
-        const userAddresses = {
-          "john.smith": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
-          "emily.chen": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
-          "sarah.lee": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
-          lawyer2: "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
-          "michael.wong": "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc",
-          officer2: "0x976EA74026E726554dB657fA54763abd0C3a0aa9",
-          forensic1: "0x14dC79964da2C08b23698B3D3cc7Ca32193d9955",
-        };
-
-        // // Assign roles
-        // console.log("Step 2: Assigning roles...");
-
-        // try {
-        //   if (userAddresses[leadOfficer]) {
-        //     console.log(
-        //       `Assigning Officer: ${leadOfficer} (${userAddresses[leadOfficer]})`
-        //     );
-        //     await web3Service.assignCaseRole(
-        //       caseId,
-        //       userAddresses[leadOfficer],
-        //       Role.Officer
-        //     );
-        //   }
-
-        //   if (userAddresses[leadForensic]) {
-        //     console.log(
-        //       `Assigning Forensic Expert: ${leadForensic} (${userAddresses[leadForensic]})`
-        //     );
-        //     await web3Service.assignCaseRole(
-        //       caseId,
-        //       userAddresses[leadForensic],
-        //       Role.Forensic
-        //     );
-        //   }
-
-        //   if (userAddresses[prosecutor]) {
-        //     console.log(
-        //       `Assigning Prosecutor: ${prosecutor} (${userAddresses[prosecutor]})`
-        //     );
-        //     await web3Service.assignCaseRole(
-        //       caseId,
-        //       userAddresses[prosecutor],
-        //       Role.Lawyer
-        //     );
-        //   }
-
-        //   if (defenseAttorney && userAddresses[defenseAttorney]) {
-        //     console.log(
-        //       `Assigning Defense Attorney: ${defenseAttorney} (${userAddresses[defenseAttorney]})`
-        //     );
-        //     await web3Service.assignCaseRole(
-        //       caseId,
-        //       userAddresses[defenseAttorney],
-        //       Role.Lawyer
-        //     );
-        //   }
-
-        //   if (userAddresses[judge]) {
-        //     console.log(`Assigning Judge: ${judge} (${userAddresses[judge]})`);
-        //     await web3Service.assignCaseRole(
-        //       caseId,
-        //       userAddresses[judge],
-        //       Role.Court
-        //     );
-        //   }
-
-        //   console.log("All roles assigned successfully.");
-        // } catch (roleError) {
-        //   console.warn("Some role assignments failed:", roleError);
-        //   // Don't fail the whole case creation if role assignments fail
-        // }
 
         toast({
-          title: "Case Created",
-          description: `Case "${caseTitle}" has been successfully created.,`,
+          title: "Case created on chain Successfully",
+          description: `Your case with ID ${
+            data.caseId || caseId
+          } has been filed on the blockchain.`,
         });
-        navigate("/cases");
-      } else {
-        throw new Error(
-          "Failed to create case on the blockchain. The transaction may have reverted."
-        );
+      } catch (error) {
+        console.error("Case submission error:", error);
+        toast({
+          title: "CASE Submission Failed",
+          description:
+            error instanceof Error
+              ? error.message
+              : "An unexpected error occurred",
+          variant: "destructive",
+        });
       }
+
+      // console.log("Step 1 successful:", success);
+
+      // if (success) {
+      //   // Upsert case directly to Supabase
+      //   try {
+      //     const { data, error: supabaseError } = await supabase
+      //       .from("cases")
+      //       .upsert({
+      //         case_id: caseId,
+      //         type: caseType,
+      //         title: caseTitle,
+      //         description: description,
+      //         filed_date: new Date().toISOString().slice(0, 10),
+      //         filed_by: account || null,
+      //         tags: [caseType, priority, jurisdiction],
+      //         fir_id: firIdToUse,
+      //       })
+      //       .select();
+
+      //     if (supabaseError) {
+      //       console.error("Supabase case upsert error:", supabaseError);
+      //       toast({
+      //         title: "Database Insert Failed",
+      //         description:
+      //           "Case was created on-chain but not saved in the database.",
+      //         variant: "destructive",
+      //       });
+      //     } else {
+      //       console.log("Case inserted into Supabase:", data);
+      //     }
+      //   } catch (dbErr) {
+      //     console.error("Error upserting case to Supabase:", dbErr);
+      //     toast({
+      //       title: "Database Error",
+      //       description: "An unexpected error occurred while saving to database.",
+      //       variant: "destructive",
+      //     });
+      //   }
+
+      //   // For now, we'll use placeholder addresses for role assignments
+      //   // const userAddresses = {
+      //   //   "john.smith": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      //   //   "emily.chen": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+      //   //   "sarah.lee": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+      //   //   lawyer2: "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
+      //   //   "michael.wong": "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc",
+      //   //   officer2: "0x976EA74026E726554dB657fA54763abd0C3a0aa9",
+      //   //   forensic1: "0x14dC79964da2C08b23698B3D3cc7Ca32193d9955",
+      //   // };
+
+      //   // // Assign roles
+      //   // console.log("Step 2: Assigning roles...");
+
+      //   // try {
+      //   //   if (userAddresses[leadOfficer]) {
+      //   //     console.log(
+      //   //       `Assigning Officer: ${leadOfficer} (${userAddresses[leadOfficer]})`
+      //   //     );
+      //   //     await web3Service.assignCaseRole(
+      //   //       caseId,
+      //   //       userAddresses[leadOfficer],
+      //   //       Role.Officer
+      //   //     );
+      //   //   }
+
+      //   //   if (userAddresses[leadForensic]) {
+      //   //     console.log(
+      //   //       `Assigning Forensic Expert: ${leadForensic} (${userAddresses[leadForensic]})`
+      //   //     );
+      //   //     await web3Service.assignCaseRole(
+      //   //       caseId,
+      //   //       userAddresses[leadForensic],
+      //   //       Role.Forensic
+      //   //     );
+      //   //   }
+
+      //   //   if (userAddresses[prosecutor]) {
+      //   //     console.log(
+      //   //       `Assigning Prosecutor: ${prosecutor} (${userAddresses[prosecutor]})`
+      //   //     );
+      //   //     await web3Service.assignCaseRole(
+      //   //       caseId,
+      //   //       userAddresses[prosecutor],
+      //   //       Role.Lawyer
+      //   //     );
+      //   //   }
+
+      //   //   if (defenseAttorney && userAddresses[defenseAttorney]) {
+      //   //     console.log(
+      //   //       `Assigning Defense Attorney: ${defenseAttorney} (${userAddresses[defenseAttorney]})`
+      //   //     );
+      //   //     await web3Service.assignCaseRole(
+      //   //       caseId,
+      //   //       userAddresses[defenseAttorney],
+      //   //       Role.Lawyer
+      //   //     );
+      //   //   }
+
+      //   //   if (userAddresses[judge]) {
+      //   //     console.log(`Assigning Judge: ${judge} (${userAddresses[judge]})`);
+      //   //     await web3Service.assignCaseRole(
+      //   //       caseId,
+      //   //       userAddresses[judge],
+      //   //       Role.Court
+      //   //     );
+      //   //   }
+
+      //   //   console.log("All roles assigned successfully.");
+      //   // } catch (roleError) {
+      //   //   console.warn("Some role assignments failed:", roleError);
+      //   //   // Don't fail the whole case creation if role assignments fail
+      //   // }
+
+      //   toast({
+      //     title: "Case Created",
+      //     description: `Case "${caseTitle}" has been successfully created.`,
+      //   });
+      //   navigate("/cases");
+      // } else {
+      //   throw new Error(
+      //     "Failed to create case on the blockchain. The transaction may have reverted."
+      //   );
+      // }
     } catch (error: unknown) {
       console.error("Case creation error:", error);
 
@@ -430,8 +448,7 @@ const CreateCase = () => {
       let errorDescription =
         "There was a problem creating the case. Check the console for more details.";
 
-      // Handle specific error types
-      const err = error as { reason?: string; data?: string }; // Type assertion for error handling
+      const err = error as { reason?: string; data?: string };
       if (err.reason) {
         console.error("Revert reason:", err.reason);
 
