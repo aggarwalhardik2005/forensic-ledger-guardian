@@ -658,18 +658,13 @@ class Web3Service {
 
   public async accessEvidence(
     caseId: string,
-    index: number,
-    keyHash: string
+    index: number
   ): Promise<string | null> {
     if (!this.contract) return null;
 
     try {
-      const cidEncrypted = await this.contract.accessEvidence(
-        caseId,
-        index,
-        toUtf8Bytes(keyHash)
-      );
-      return cidEncrypted;
+      const cid = await this.contract.accessEvidence(caseId, index);
+      return cid;
     } catch (error) {
       console.error(`Error accessing evidence index ${index}:`, error);
       toast({

@@ -145,6 +145,16 @@ const EvidenceType = {
   Other: 3,
 };
 
+const MIME_GROUPS = {
+  0: ["image/jpeg", "image/png", "image/jpg"], // Image
+  1: ["video/mp4", "video/mkv", "video/webm"], // Video
+  2: [
+    "application/pdf",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ], // Document
+  3: ALLOWED_MIME, // Other
+};
+
 // In-memory cache for Pinata metadata
 const filenameCache = new Map();
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
@@ -383,7 +393,13 @@ app.post("/fir/:firId/upload", upload.single("file"), async (req, res) => {
       "UPLOAD: Raw FIR ID chars:",
       Array.from(firId).map((c) => c.charCodeAt(0))
     );
-    const { evidenceId, evidenceType, description } = req.body;
+    const { evidenceType } = req.body;
+    const evidenceId = crypto.randomUUID();
+    const {
+      description = null,
+      deviceSource = null,
+      location = null,
+    } = req.body;
     const file = req.file;
     const evidenceTypeNum = EvidenceType[evidenceType];
     console.log(evidenceType);
@@ -391,10 +407,15 @@ app.post("/fir/:firId/upload", upload.single("file"), async (req, res) => {
       return res.status(400).json({ error: "Invalid evidenceType" });
     }
 
-    if (!file || !evidenceId || !evidenceType)
+    if (!file || !evidenceId || evidenceType === undefined)
       return res.status(400).json({ error: "Missing required data" });
-    if (!ALLOWED_MIME.includes(file.mimetype))
-      return res.status(400).json({ error: "File type not allowed" });
+    const allowed = MIME_GROUPS[evidenceTypeNum];
+
+    if (!allowed.includes(file.mimetype)) {
+      return res
+        .status(400)
+        .send(`Invalid file type. Only ${allowed.join(", ")} allowed.`);
+    }
 
     // Encrypt file with random AES key
     const key = crypto.randomBytes(32);
@@ -439,7 +460,7 @@ app.post("/fir/:firId/upload", upload.single("file"), async (req, res) => {
     const ivEncrypted = iv.toString("hex");
 
     // Store key/IV off-chain
-    const { error } = await supabase.from("evidence1").upsert([
+    const { error } = await supabase.from("evidence1").insert([
       {
         container_id: firId,
         evidence_id: evidenceId,
@@ -448,9 +469,10 @@ app.post("/fir/:firId/upload", upload.single("file"), async (req, res) => {
         original_filename: file.originalname,
         key_encrypted: keyEncrypted,
         iv_encrypted: ivEncrypted,
-        description: description,
         type: evidenceType,
-        submitted_by: wallet.address,
+        description: description || null,
+        device_source: deviceSource || null,
+        collection_location: location || null,
       },
     ]);
 
@@ -476,10 +498,12 @@ app.post("/fir/:firId/upload", upload.single("file"), async (req, res) => {
       return res.status(500).json({ error: err.reason || err.message });
     }
 
-    console.log(
-      "On-chain evidenceCount for this FIR:",
-      (await contract.evidenceCount(firId)).toString()
-    );
+    res.json({
+      message: "FIR evidence uploaded and recorded on-chain",
+      cid,
+      evidenceId,
+      filename: file.originalname,
+    });
 
     res.json({
       message: "FIR evidence uploaded and recorded on-chain",
@@ -494,107 +518,132 @@ app.post("/fir/:firId/upload", upload.single("file"), async (req, res) => {
   }
 });
 
-  // 3. Promote FIR to Case
-  app.post("/fir/:firId/promote", async (req, res) => {
-    try {
-      const { firId } = req.params;
-      const { caseId, title, type, description, tags } = req.body;
+// 3. Promote FIR to Case
+app.post("/fir/:firId/promote", async (req, res) => {
+  try {
+    const { firId } = req.params;
+    const { caseId, title, type, description, tags } = req.body;
 
-      if (!firId || !caseId || !title || !description || !type)
-        return res.status(400).json({ error: "Missing required data" });
-      console.log("PROMOTE: FIR ID =", firId);
-      console.log(
-        "PROMOTE: Raw FIR ID chars:",
-        Array.from(firId).map((c) => c.charCodeAt(0))
-      );
-      console.log("PROMOTE: CASE ID =", caseId);
-      console.log(
-        "PROMOTE: Raw CASE ID chars:",
-        Array.from(caseId).map((c) => c.charCodeAt(0))
-      );
-      const tx = await contract.createCaseFromFIR(
-        caseId,
-        firId,
-        title,
-        description,
-        tags || []
-      );
-      await tx.wait();
-      const { error: supaError } = await supabase
-        .from("evidence1")
-        .update({ container_id: caseId })
-        .eq("container_id", firId);
+    if (!firId || !caseId || !title || !description || !type)
+      return res.status(400).json({ error: "Missing required data" });
+    console.log("PROMOTE: FIR ID =", firId);
+    console.log(
+      "PROMOTE: Raw FIR ID chars:",
+      Array.from(firId).map((c) => c.charCodeAt(0))
+    );
+    console.log("PROMOTE: CASE ID =", caseId);
+    console.log(
+      "PROMOTE: Raw CASE ID chars:",
+      Array.from(caseId).map((c) => c.charCodeAt(0))
+    );
+    const tx = await contract.createCaseFromFIR(
+      caseId,
+      firId,
+      title,
+      description,
+      tags || []
+    );
+    await tx.wait();
+    const { error: supaError } = await supabase
+      .from("evidence1")
+      .update({ container_id: caseId })
+      .eq("container_id", firId);
 
-      const { data, select_error } = await supabase
-        .from("fir")
-        .select("filed_by")
-        .eq("fir_id", firId)
-        .single();
+    const { data, select_error } = await supabase
+      .from("fir")
+      .select("filed_by")
+      .eq("fir_id", firId)
+      .single();
 
-      if (select_error) {
-        console.error(select_error);
-      } else {
-        console.log("Filed by:", data.filed_by); // ← access value here
-      }
-
-      // Upsert FIR in Supabase
-      const { error } = await supabase.from("cases").upsert(
-        [
-          {
-            case_id: caseId,
-            title: title,
-            type: type,
-            description: description,
-            filed_by: data.filed_by,
-            tags: tags,
-            fir_id: firId,
-          },
-        ],
-        { onConflict: ["case_id"] }
-      );
-
-      if (error) {
-        console.error("Supabase Case upsert failed:", error.message);
-        return res.status(500).json({
-          error: "Failed to store Case in Supabase",
-          details: error.message,
-        });
-      }
-
-      if (supaError) {
-        console.error("Supabase update failed:", supaError);
-        return res.status(500).json({
-          error: "FIR promoted but database update failed",
-          details: supaError,
-        });
-      }
-
-      console.log("Checking FIR & CASE evidence count after promotion...");
-      console.log("FIR:", (await contract.evidenceCount(firId)).toString());
-      console.log("CASE:", (await contract.evidenceCount(caseId)).toString());
-      res.json({ message: "FIR promoted to case successfully", caseId });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: err.reason || err.message });
+    if (select_error) {
+      console.error(select_error);
+    } else {
+      console.log("Filed by:", data.filed_by); // ← access value here
     }
-  });
+
+    // Upsert FIR in Supabase
+    const { error } = await supabase.from("cases").upsert(
+      [
+        {
+          case_id: caseId,
+          title: title,
+          type: type,
+          description: description,
+          filed_by: data.filed_by,
+          tags: tags,
+          fir_id: firId,
+        },
+      ],
+      { onConflict: ["case_id"] }
+    );
+
+    if (error) {
+      console.error("Supabase Case upsert failed:", error.message);
+      return res.status(500).json({
+        error: "Failed to store Case in Supabase",
+        details: error.message,
+      });
+    }
+
+    if (supaError) {
+      console.error("Supabase update failed:", supaError);
+      return res.status(500).json({
+        error: "FIR promoted but database update failed",
+        details: supaError,
+      });
+    }
+
+    console.log("Checking FIR & CASE evidence count after promotion...");
+    console.log("FIR:", (await contract.evidenceCount(firId)).toString());
+    console.log("CASE:", (await contract.evidenceCount(caseId)).toString());
+    res.json({ message: "FIR promoted to case successfully", caseId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.reason || err.message });
+  }
+});
 
 // 4. Submit Case Evidence
 app.post("/case/:caseId/upload", upload.single("file"), async (req, res) => {
   try {
     const { caseId } = req.params;
-    const { evidenceId, evidenceType } = req.body;
+    const { evidenceType } = req.body;
+    const evidenceId = crypto.randomUUID();
+    const {
+      description = null,
+      deviceSource = null,
+      location = null,
+    } = req.body;
     const file = req.file;
     const evidenceTypeNum = EvidenceType[evidenceType];
-    if (evidenceTypeNum === undefined) {
-      return res.status(400).json({ error: "Invalid evidenceType" });
+    // if (evidenceTypeNum === undefined) {
+    //   return res.status(400).json({ error: "Invalid evidenceType" });
+    // }
+
+    console.log(evidenceType);
+    console.log("evidenceTypeNum:", evidenceTypeNum);
+    if (
+      !Number.isFinite(evidenceTypeNum) ||
+      ![0, 1, 2, 3].includes(evidenceTypeNum)
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Invalid or missing evidenceType. Expected 0|1|2|3" });
     }
 
-    if (!file || !evidenceId || !evidenceType)
-      return res.status(400).json({ error: "Missing required data" });
-    if (!ALLOWED_MIME.includes(file.mimetype))
-      return res.status(400).json({ error: "File type not allowed" });
-
+    if (!file || !evidenceId) {
+      return res
+        .status(400)
+        .json({ error: "Missing required data (file or evidenceId)" });
+    }
+    const allowed = MIME_GROUPS[evidenceTypeNum];
+    if (!allowed.includes(file.mimetype)) {
+      return res.status(400).json({
+        error: `Invalid file type. Only ${allowed.join(
+          ", "
+        )} allowed for this evidence type.`,
+      });
+    }
     const key = crypto.randomBytes(32);
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
@@ -633,7 +682,7 @@ app.post("/case/:caseId/upload", upload.single("file"), async (req, res) => {
     ]).toString("hex");
     const ivEncrypted = iv.toString("hex");
 
-    const { error } = await supabase.from("evidence1").upsert([
+    const { error } = await supabase.from("evidence1").insert([
       {
         container_id: caseId,
         evidence_id: evidenceId,
@@ -642,6 +691,9 @@ app.post("/case/:caseId/upload", upload.single("file"), async (req, res) => {
         original_filename: file.originalname,
         key_encrypted: keyEncrypted,
         iv_encrypted: ivEncrypted,
+        description: description || null,
+        device_source: deviceSource || null,
+        collection_location: location || null,
       },
     ]);
 
@@ -659,13 +711,14 @@ app.post("/case/:caseId/upload", upload.single("file"), async (req, res) => {
     res.json({
       message: "Case evidence uploaded and recorded on-chain",
       cid,
+      evidenceId,
       filename: file.originalname,
     });
   } catch (err) {
     console.error(err);
     res
       .status(500)
-      .json({ error: "Case upload failed: " + (err.reason || err.message) });
+      .json({ error: "Case upload failed: " + (err)});
   }
 });
 

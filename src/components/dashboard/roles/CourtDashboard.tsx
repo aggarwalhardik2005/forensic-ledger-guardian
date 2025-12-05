@@ -248,7 +248,7 @@ const CourtDashboard = () => {
               className="w-full bg-forensic-evidence hover:bg-forensic-evidence/90 shadow-sm transition-all duration-300"
             >
               <Link
-                to="/users/roles"
+                to="/bootstarp"
                 className="flex items-center justify-center"
               >
                 <span>Manage Roles</span>

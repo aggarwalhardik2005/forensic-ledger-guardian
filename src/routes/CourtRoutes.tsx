@@ -13,6 +13,7 @@ import SystemConfiguration from '@/pages/court/SystemConfiguration';
 import ReportsAnalytics from '@/pages/court/ReportsAnalytics';
 import CasesApproval from '@/pages/cases/CasesApproval';
 import AddUser from '@/pages/users/AddUser';
+import OwnerBootstrap from '@/components/admin/OwnerBootstrap';
 
 /**
  * Routes exclusively for Court role
@@ -43,11 +44,12 @@ export const CourtRoutes = () => (
     
     {/* Role Management */}
     <Route
-      path="/users/roles"
+      path="/bootstrap"
       element={
         <Layout>
           <SecureRoute allowedRoles={[Role.Court]} requireAuth={true}>
-            <RoleManagement />
+            {/* <RoleManagement /> */}
+            <OwnerBootstrap/>
           </SecureRoute>
         </Layout>
       }
