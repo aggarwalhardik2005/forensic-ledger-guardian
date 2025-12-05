@@ -33,7 +33,7 @@ import {
   RoleAssignment,
 } from "@/services/roleManagementService";
 import { Shield, Crown, UserPlus, CheckCircle, Trash2 } from "lucide-react";
-import RoleDebugger from "@/components/admin/debug/RoleDebugger";
+// import RoleDebugger from "@/components/admin/debug/RoleDebugger";
 
 const OwnerBootstrap = () => {
   const [isOwner, setIsOwner] = useState(false);
@@ -301,46 +301,46 @@ const OwnerBootstrap = () => {
   }
 
   // Debug information card
-  const debugInfo = (
-    <Card className="max-w-4xl mx-auto mb-6 border-yellow-200 bg-yellow-50">
-      <CardHeader>
-        <CardTitle className="text-yellow-800">Debug Information</CardTitle>
-      </CardHeader>
-      <CardContent className="text-sm space-y-2">
-        <p>
-          <strong>User ID:</strong> {user?.id || "Not available"}
-        </p>
-        <p>
-          <strong>User Email:</strong> {user?.email || "Not available"}
-        </p>
-        <p>
-          <strong>User Name:</strong> {user?.name || "Not available"}
-        </p>
-        <p>
-          <strong>User Role:</strong> {user?.role} (
-          {user?.roleTitle || "Not available"})
-        </p>
-        <p>
-          <strong>Connected Wallet:</strong> {account || "Not connected"}
-        </p>
-        <p>
-          <strong>Is Court Admin:</strong> {isCourtAdmin ? "Yes" : "No"}
-        </p>
-        <p>
-          <strong>Is Contract Owner:</strong> {isOwner ? "Yes" : "No"}
-        </p>
-        <p>
-          <strong>User ID starts with wallet:</strong>{" "}
-          {user?.id?.startsWith("wallet-") ? "Yes" : "No"}
-        </p>
-      </CardContent>
-    </Card>
-  );
+  // const debugInfo = (
+  //   <Card className="max-w-4xl mx-auto mb-6 border-yellow-200 bg-yellow-50">
+  //     <CardHeader>
+  //       <CardTitle className="text-yellow-800">Debug Information</CardTitle>
+  //     </CardHeader>
+  //     <CardContent className="text-sm space-y-2">
+  //       <p>
+  //         <strong>User ID:</strong> {user?.id || "Not available"}
+  //       </p>
+  //       <p>
+  //         <strong>User Email:</strong> {user?.email || "Not available"}
+  //       </p>
+  //       <p>
+  //         <strong>User Name:</strong> {user?.name || "Not available"}
+  //       </p>
+  //       <p>
+  //         <strong>User Role:</strong> {user?.role} (
+  //         {user?.roleTitle || "Not available"})
+  //       </p>
+  //       <p>
+  //         <strong>Connected Wallet:</strong> {account || "Not connected"}
+  //       </p>
+  //       <p>
+  //         <strong>Is Court Admin:</strong> {isCourtAdmin ? "Yes" : "No"}
+  //       </p>
+  //       <p>
+  //         <strong>Is Contract Owner:</strong> {isOwner ? "Yes" : "No"}
+  //       </p>
+  //       <p>
+  //         <strong>User ID starts with wallet:</strong>{" "}
+  //         {user?.id?.startsWith("wallet-") ? "Yes" : "No"}
+  //       </p>
+  //     </CardContent>
+  //   </Card>
+  // );
 
   if (!isOwner && !isCourtAdmin) {
     return (
       <div className="max-w-4xl mx-auto space-y-6">
-        {debugInfo}
+        {/* {debugInfo} */}
         <Card className="max-w-md mx-auto">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-red-600">
@@ -375,7 +375,7 @@ const OwnerBootstrap = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {debugInfo}
+      {/* {debugInfo} */}
 
       {/* Admin Status Card */}
       <Card>
@@ -565,7 +565,7 @@ const OwnerBootstrap = () => {
       </Card>
 
       {/* Role Debugger */}
-      <RoleDebugger />
+      {/* <RoleDebugger /> */}
 
       {/* Status Card */}
       {(userRole !== Role.None || user?.role !== Role.None) && (

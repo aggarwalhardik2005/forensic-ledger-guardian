@@ -152,7 +152,7 @@ export const ROLE_NAVIGATION: Record<Role, NavigationItem[]> = {
   [Role.None]: [],
   [Role.Court]: [
     {
-      to: '/users/roles',
+      to: '/bootstrap',
       label: 'Role Management',
       icon: Users,
       roles: [Role.Court],
