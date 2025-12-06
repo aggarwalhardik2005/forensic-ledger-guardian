@@ -34,11 +34,16 @@ import {
 import { error } from "console";
 import RoleManager from "@/components/admin/debug/RoleManager";
 import { useWeb3 } from "@/hooks/useWeb3";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabaseClient";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
 
 const CreateCase = () => {
-  const { userRole, account } = useWeb3();
+  const { userRole: web3Role, account } = useWeb3();
+  const { user } = useAuth();
+
+  // Use auth role (from Supabase login) if available, otherwise fall back to web3 role
+  const userRole = user?.role ?? web3Role;
 
   // State for form fields
   const [isLoading, setIsLoading] = useState(false);
@@ -280,19 +285,22 @@ const CreateCase = () => {
       // );
 
       try {
-        const response = await fetch(`${BACKEND_URL}/fir/${firIdToUse}/promote`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            caseId,
-            title: caseTitle,                    // ✅ backend expects `title`
-            type: caseType,                      // ✅ backend expects `type`
-            description,
-            tags: [caseType, priority, jurisdiction], // ✅ send tags array
-          }),
-        });
+        const response = await fetch(
+          `${BACKEND_URL}/fir/${firIdToUse}/promote`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              caseId,
+              title: caseTitle, // ✅ backend expects `title`
+              type: caseType, // ✅ backend expects `type`
+              description,
+              tags: [caseType, priority, jurisdiction], // ✅ send tags array
+            }),
+          }
+        );
 
         const data = await response.json();
 
@@ -764,234 +772,6 @@ const CreateCase = () => {
 
             <TabsContent value="assignments" className="space-y-4">
               <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-base flex items-center">
-                        <User className="h-4 w-4 mr-2 text-forensic-800" />
-                        Assigned Officers
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="leadOfficer">Lead Officer</Label>
-                        <Select
-                          value={leadOfficer}
-                          onValueChange={setLeadOfficer}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select officer" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="john.smith">
-                              John Smith
-                            </SelectItem>
-                            <SelectItem value="robert.johnson">
-                              Robert Johnson
-                            </SelectItem>
-                            <SelectItem value="officer3">
-                              James Wilson
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="assistingOfficers">
-                          Assisting Officers
-                        </Label>
-                        <Select
-                          value={assistingOfficers}
-                          onValueChange={setAssistingOfficers}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select officers" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="officer1">
-                              James Wilson
-                            </SelectItem>
-                            <SelectItem value="officer2">
-                              Maria Garcia
-                            </SelectItem>
-                            <SelectItem value="officer3">David Lee</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-base flex items-center">
-                        <FileCheck className="h-4 w-4 mr-2 text-forensic-accent" />
-                        Assigned Forensic Experts
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="leadForensic">
-                          Lead Forensic Expert
-                        </Label>
-                        <Select
-                          value={leadForensic}
-                          onValueChange={setLeadForensic}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select forensic expert" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="emily.chen">
-                              Emily Chen
-                            </SelectItem>
-                            <SelectItem value="david.williams">
-                              David Williams
-                            </SelectItem>
-                            <SelectItem value="forensic3">
-                              Thomas Brown
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="assistingForensics">
-                          Assisting Forensic Experts
-                        </Label>
-                        <Select
-                          value={assistingForensics}
-                          onValueChange={setAssistingForensics}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select forensic experts" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="forensic1">
-                              Thomas Brown
-                            </SelectItem>
-                            <SelectItem value="forensic2">
-                              Lisa Anderson
-                            </SelectItem>
-                            <SelectItem value="forensic3">
-                              Mark Wilson
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="forensicSpecialities">
-                          Required Specialities
-                        </Label>
-                        <Select
-                          value={forensicSpecialities}
-                          onValueChange={setForensicSpecialities}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select specialities" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="digital">
-                              Digital Forensics
-                            </SelectItem>
-                            <SelectItem value="dna">DNA Analysis</SelectItem>
-                            <SelectItem value="chemical">
-                              Chemical Analysis
-                            </SelectItem>
-                            <SelectItem value="ballistic">
-                              Ballistic Examination
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base flex items-center">
-                      <User className="h-4 w-4 mr-2 text-forensic-warning" />
-                      Assigned Legal Representatives
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="prosecutor">Prosecution Lead</Label>
-                        <Select
-                          value={prosecutor}
-                          onValueChange={setProsecutor}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select prosecutor" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="sarah.lee">Sarah Lee</SelectItem>
-                            <SelectItem value="jennifer.miller">
-                              Jennifer Miller
-                            </SelectItem>
-                            <SelectItem value="lawyer3">
-                              Daniel Martinez
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="defenseAttorney">
-                          Defense Attorney (if known)
-                        </Label>
-                        <Select
-                          value={defenseAttorney}
-                          onValueChange={setDefenseAttorney}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select defense attorney" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="lawyer1">
-                              Daniel Martinez
-                            </SelectItem>
-                            <SelectItem value="lawyer2">Susan Clark</SelectItem>
-                            <SelectItem value="lawyer3">
-                              Richard Wright
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base flex items-center">
-                      <User className="h-4 w-4 mr-2 text-forensic-court" />
-                      Judicial Assignment
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <Label htmlFor="judge">Assigned Judge</Label>
-                      <Select value={judge} onValueChange={setJudge}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select judge" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="michael.wong">
-                            Michael Wong
-                          </SelectItem>
-                          <SelectItem value="judge2">
-                            Eleanor Rodriguez
-                          </SelectItem>
-                          <SelectItem value="judge3">William Taylor</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </CardContent>
-                </Card>
-
                 <div className="flex justify-between gap-2">
                   <Button
                     variant="outline"
