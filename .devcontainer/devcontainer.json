@@ -2,34 +2,22 @@
   "name": "Forensic Ledger Guardian Dev Environment",
   "build": {
     "dockerfile": "Dockerfile",
-    "context": ".."
+    "context": "."
   },
-
-  // Configure tool-specific properties
+  "remoteUser": "node",
+  "updateRemoteUserUID": true,
   "customizations": {
     "vscode": {
-      // VS Code extensions for the development environment
       "extensions": [
-        // TypeScript & JavaScript
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
-
-        // React & Frontend
         "dsznajder.es7-react-js-snippets",
         "bradlc.vscode-tailwindcss",
-
-        // Solidity
         "NomicFoundation.hardhat-solidity",
-
-        // Docker
         "ms-azuretools.vscode-docker",
-
-        // GitHub Copilot
         "GitHub.copilot",
         "GitHub.copilot-chat"
       ],
-
-      // VS Code settings
       "settings": {
         "typescript.tsdk": "node_modules/typescript/lib",
         "editor.formatOnSave": true,
@@ -48,33 +36,25 @@
         },
         "solidity.defaultCompiler": "localNodeModule",
         "solidity.compileUsingRemoteVersion": "v0.8.29",
-        "terminal.integrated.defaultProfile.linux": "bash"
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "git.path": "/usr/bin/git"
       }
     }
   },
-
-  // Use 'postCreateCommand' to run commands after the container is created
-  "postCreateCommand": "bash .devcontainer/post-create.sh",
-
-  // Set environment variables
+  "postCreateCommand": ".devcontainer/post-create.sh",
   "remoteEnv": {
     "NODE_ENV": "development"
   },
-
-  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root
-  "remoteUser": "node",
-
-  // Features to add to the dev container
   "features": {
-    "ghcr.io/devcontainers/features/git:1": {
+    "ghcr.io/devcontainers/features/github-cli:1": {
       "version": "latest"
     },
-    "ghcr.io/devcontainers/features/github-cli:1": {
+    "ghcr.io/devcontainers/features/git:1": {
       "version": "latest"
     }
   },
-
-  // Lifecycle scripts - SSH keys mount (optional)
-  // Uses USERPROFILE on Windows, HOME on Linux/macOS
-  "mounts": []
+  "mounts": [],
+  "runArgs": [
+    "--init"
+  ]
 }
