@@ -105,7 +105,7 @@ const CaseList: React.FC = () => {
   const shortenAddress = (address: string): string => {
     if (!address) return "";
     return `${address.substring(0, 6)}...${address.substring(
-      address.length - 4
+      address.length - 4,
     )}`;
   };
 
@@ -134,7 +134,7 @@ const CaseList: React.FC = () => {
         const { data, error } = await supabase
           .from("cases")
           .select(
-            "case_id, type, title, description, filed_date, filed_by, tags, fir_id, assigned_officer"
+            "case_id, type, title, description, filed_date, filed_by, tags, fir_id, assigned_officer",
           )
           .order("filed_date", { ascending: false });
 
@@ -222,14 +222,14 @@ const CaseList: React.FC = () => {
 
     try {
       console.log(
-        `Assigning officer ${selectedOfficer} to case ${selectedCaseId}`
+        `Assigning officer ${selectedOfficer} to case ${selectedCaseId}`,
       );
 
       // Call blockchain to assign role
       const success = await web3Service.assignCaseRole(
         selectedCaseId,
         selectedOfficer,
-        Role.Officer
+        Role.Officer,
       );
 
       if (success) {
@@ -242,7 +242,7 @@ const CaseList: React.FC = () => {
         if (updateError) {
           console.error(
             "Error updating case assignment in Supabase:",
-            updateError
+            updateError,
           );
         }
 
@@ -251,14 +251,14 @@ const CaseList: React.FC = () => {
           prevCases.map((c) =>
             c.id === selectedCaseId
               ? { ...c, assignedOfficer: selectedOfficer }
-              : c
-          )
+              : c,
+          ),
         );
 
         toast({
           title: "Officer Assigned",
           description: `Officer ${shortenAddress(
-            selectedOfficer
+            selectedOfficer,
           )} has been assigned to case ${selectedCaseId}`,
         });
 

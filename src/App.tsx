@@ -11,12 +11,12 @@ import { Web3Provider } from "./contexts/Web3Context";
 import OwnerBootstrap from "./components/admin/OwnerBootstrap";
 
 // Import organized route modules
-import { 
-  CourtRoutes, 
-  OfficerRoutes, 
-  ForensicRoutes, 
-  LawyerRoutes, 
-  SharedRoutes 
+import {
+  CourtRoutes,
+  OfficerRoutes,
+  ForensicRoutes,
+  LawyerRoutes,
+  SharedRoutes,
 } from "./routes";
 
 // Debug components (should be behind feature flag in production)

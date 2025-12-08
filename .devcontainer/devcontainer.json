@@ -54,7 +54,5 @@
     }
   },
   "mounts": [],
-  "runArgs": [
-    "--init"
-  ]
+  "runArgs": ["--init"]
 }

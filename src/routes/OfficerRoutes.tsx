@@ -1,16 +1,16 @@
 /**
  * Route definitions for Officer role
  */
-import { Route } from 'react-router-dom';
-import Layout from '@/components/layout/Layout';
-import SecureRoute from '@/components/auth/SecureRoute';
-import { Role } from '@/services/web3Service';
+import { Route } from "react-router-dom";
+import Layout from "@/components/layout/Layout";
+import SecureRoute from "@/components/auth/SecureRoute";
+import { Role } from "@/services/web3Service";
 
 // Officer-specific pages
-import FIRManagement from '@/pages/officer/FIRManagement';
-import EvidenceConfirmation from '@/pages/officer/EvidenceConfirmation';
-import OfficerReports from '@/pages/officer/Reports';
-import Cases from '@/pages/Cases';
+import FIRManagement from "@/pages/officer/FIRManagement";
+import EvidenceConfirmation from "@/pages/officer/EvidenceConfirmation";
+import OfficerReports from "@/pages/officer/Reports";
+import Cases from "@/pages/Cases";
 
 /**
  * Routes exclusively for Officer role
@@ -28,7 +28,7 @@ export const OfficerRoutes = () => (
         </Layout>
       }
     />
-    
+
     {/* Case Management */}
     <Route
       path="/cases/update"
@@ -50,7 +50,7 @@ export const OfficerRoutes = () => (
         </Layout>
       }
     />
-    
+
     {/* Evidence Management */}
     <Route
       path="/evidence/confirm"
@@ -62,7 +62,7 @@ export const OfficerRoutes = () => (
         </Layout>
       }
     />
-    
+
     {/* Reports */}
     <Route
       path="/officer/reports"

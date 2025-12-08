@@ -64,10 +64,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     setIsLoading(true);
     try {
       const result = await authService.loginWithEmail(email, password);
-      
+
       if (result.success && result.user) {
         setUser(result.user);
-        
+
         toast({
           title: "Login Successful",
           description: `Welcome back, ${result.user.name}`,
@@ -78,7 +78,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         } else {
           navigate("/dashboard");
         }
-        
+
         return true;
       } else {
         toast({
@@ -105,10 +105,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     setIsLoading(true);
     try {
       const result = await authService.loginWithWallet(walletAddress);
-      
+
       if (result.success && result.user) {
         setUser(result.user);
-        
+
         toast({
           title: "Authentication Successful",
           description: `Welcome, ${result.user.roleTitle}!`,
@@ -119,7 +119,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         } else {
           navigate("/dashboard");
         }
-        
+
         return true;
       } else {
         toast({
@@ -146,12 +146,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     try {
       await authService.logout();
       setUser(null);
-      
+
       toast({
         title: "Logged Out",
         description: "You have been logged out successfully",
       });
-      
+
       navigate("/");
     } catch (error) {
       console.error("Logout error:", error);

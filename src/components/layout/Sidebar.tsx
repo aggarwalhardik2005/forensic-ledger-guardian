@@ -30,7 +30,7 @@ const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const { user } = useAuth();
-  
+
   // Sidebar is closed on mobile, open on desktop
   const isOpen = !isMobile;
 
@@ -64,14 +64,14 @@ const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
         baseLinks.push(
           { to: "/evidence", label: "Evidence", icon: FileDigit },
           { to: "/upload", label: "Upload", icon: Upload },
-          { to: "/verify", label: "Verify", icon: CheckCircle }
+          { to: "/verify", label: "Verify", icon: CheckCircle },
         );
         break;
       default:
         // Default case for other roles
         baseLinks.push(
           { to: "/evidence", label: "Evidence", icon: FileDigit },
-          { to: "/verify", label: "Verify", icon: CheckCircle }
+          { to: "/verify", label: "Verify", icon: CheckCircle },
         );
     }
 
@@ -102,7 +102,7 @@ const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
           className={cn(
             "fixed top-0 left-0 z-50 h-full bg-white shadow-xl transition-all duration-300 transform",
             isOpen ? "translate-x-0" : "-translate-x-full",
-            "w-64"
+            "w-64",
           )}
         >
           <div className="flex flex-col h-full">
@@ -146,7 +146,7 @@ const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
                           "flex items-center px-3 py-2 text-sm rounded-md w-full",
                           isActive
                             ? "bg-forensic-accent/10 text-forensic-accent font-medium"
-                            : "text-gray-700 hover:bg-gray-100"
+                            : "text-gray-700 hover:bg-gray-100",
                         )
                       }
                       onClick={() => isMobile && setIsOpen(false)}
@@ -173,7 +173,7 @@ const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
                             "flex items-center px-3 py-2 text-sm rounded-md w-full",
                             isActive
                               ? "bg-forensic-accent/10 text-forensic-accent font-medium"
-                              : "text-gray-700 hover:bg-gray-100"
+                              : "text-gray-700 hover:bg-gray-100",
                           )
                         }
                         onClick={() => isMobile && setIsOpen(false)}
@@ -202,7 +202,7 @@ const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
                           "flex items-center px-3 py-2 text-sm rounded-md w-full",
                           isActive
                             ? "bg-forensic-accent/10 text-forensic-accent font-medium"
-                            : "text-gray-700 hover:bg-gray-100"
+                            : "text-gray-700 hover:bg-gray-100",
                         )
                       }
                       onClick={() => isMobile && setIsOpen(false)}
@@ -227,7 +227,7 @@ const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
     <div
       className={cn(
         "h-screen bg-white border-r border-forensic-200 transition-all duration-300",
-        collapsed ? "w-16" : "w-64"
+        collapsed ? "w-16" : "w-64",
       )}
     >
       <div className="flex flex-col h-full">
@@ -276,7 +276,7 @@ const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
                       collapsed ? "justify-center p-2" : "px-3 py-2",
                       isActive
                         ? "bg-forensic-accent/10 text-forensic-accent font-medium"
-                        : "text-gray-700 hover:bg-gray-100"
+                        : "text-gray-700 hover:bg-gray-100",
                     )
                   }
                 >
@@ -308,7 +308,7 @@ const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
                         collapsed ? "justify-center p-2" : "px-3 py-2",
                         isActive
                           ? "bg-forensic-accent/10 text-forensic-accent font-medium"
-                          : "text-gray-700 hover:bg-gray-100"
+                          : "text-gray-700 hover:bg-gray-100",
                       )
                     }
                   >
@@ -340,13 +340,13 @@ const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
                       collapsed ? "justify-center p-2" : "px-3 py-2",
                       isActive
                         ? "bg-forensic-accent/10 text-forensic-accent font-medium"
-                        : "text-gray-700 hover:bg-gray-100"
+                        : "text-gray-700 hover:bg-gray-100",
                     )
                   }
                 >
                   <span className={cn(!collapsed && "mr-3")}>
-                  <link.icon size={18} />
-                </span>
+                    <link.icon size={18} />
+                  </span>
                   {!collapsed && <span>{link.label}</span>}
                 </NavLink>
               ))}

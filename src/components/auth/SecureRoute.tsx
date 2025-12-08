@@ -1,8 +1,8 @@
-import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { Role } from '@/services/web3Service';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ShieldAlert, Loader2 } from 'lucide-react';
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { Role } from "@/services/web3Service";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ShieldAlert, Loader2 } from "lucide-react";
 
 interface SecureRouteProps {
   children: React.ReactNode;
@@ -21,7 +21,7 @@ const SecureRoute: React.FC<SecureRouteProps> = ({
   children,
   allowedRoles = [],
   requireAuth = true,
-  fallbackPath = "/"
+  fallbackPath = "/",
 }) => {
   const { user, isLoggedIn, isLoading } = useAuth();
   const location = useLocation();
@@ -47,7 +47,7 @@ const SecureRoute: React.FC<SecureRouteProps> = ({
   if (requireAuth && isLoggedIn && user && allowedRoles.length > 0) {
     const hasRequiredRole = allowedRoles.includes(user.role);
     const isCourtAdmin = user.role === Role.Court; // Court admins can access everything
-    
+
     if (!hasRequiredRole && !isCourtAdmin) {
       return (
         <div className="flex items-center justify-center min-h-[60vh]">
@@ -64,7 +64,7 @@ const SecureRoute: React.FC<SecureRouteProps> = ({
               <p className="text-gray-600">
                 You don't have permission to access this page.
               </p>
-              
+
               <div className="bg-gray-50 p-3 rounded-lg">
                 <p className="text-sm font-medium text-gray-700">Your Role:</p>
                 <p className="text-sm text-gray-600">{user.roleTitle}</p>
@@ -72,9 +72,11 @@ const SecureRoute: React.FC<SecureRouteProps> = ({
 
               {allowedRoles.length > 0 && (
                 <div className="bg-blue-50 p-3 rounded-lg">
-                  <p className="text-sm font-medium text-blue-700">Required Roles:</p>
+                  <p className="text-sm font-medium text-blue-700">
+                    Required Roles:
+                  </p>
                   <div className="text-sm text-blue-600 space-y-1 mt-1">
-                    {allowedRoles.map(role => (
+                    {allowedRoles.map((role) => (
                       <div key={role}>{getRoleDisplayName(role)}</div>
                     ))}
                   </div>
@@ -103,11 +105,16 @@ const SecureRoute: React.FC<SecureRouteProps> = ({
 // Helper function to get human-readable role names
 function getRoleDisplayName(role: Role): string {
   switch (role) {
-    case Role.Court: return 'Court Official';
-    case Role.Officer: return 'Police Officer';
-    case Role.Forensic: return 'Forensic Expert';
-    case Role.Lawyer: return 'Legal Counsel';
-    default: return 'Unknown Role';
+    case Role.Court:
+      return "Court Official";
+    case Role.Officer:
+      return "Police Officer";
+    case Role.Forensic:
+      return "Forensic Expert";
+    case Role.Lawyer:
+      return "Legal Counsel";
+    default:
+      return "Unknown Role";
   }
 }
 

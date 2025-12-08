@@ -1,4 +1,4 @@
-import EvidenceUpload from '@/components/evidence/EvidenceUpload';
+import EvidenceUpload from "@/components/evidence/EvidenceUpload";
 
 const Upload = () => {
   return <EvidenceUpload />;

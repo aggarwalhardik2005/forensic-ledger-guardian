@@ -1,6 +1,5 @@
-
-import { create, IPFSHTTPClient } from 'ipfs-http-client';
-import { toast } from '@/hooks/use-toast';
+import { create, IPFSHTTPClient } from "ipfs-http-client";
+import { toast } from "@/hooks/use-toast";
 
 class IPFSService {
   private client: IPFSHTTPClient | null = null;
@@ -9,9 +8,9 @@ class IPFSService {
     // Using Infura as an IPFS provider (in production, configure with API keys)
     try {
       this.client = create({
-        host: 'ipfs.infura.io',
+        host: "ipfs.infura.io",
         port: 5001,
-        protocol: 'https'
+        protocol: "https",
       });
     } catch (error) {
       console.error("Failed to create IPFS client:", error);
@@ -27,12 +26,14 @@ class IPFSService {
           reject("Failed to read file");
           return;
         }
-        
+
         try {
           const arrayBuffer = e.target.result as ArrayBuffer;
-          const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+          const hashBuffer = await crypto.subtle.digest("SHA-256", arrayBuffer);
           const hashArray = Array.from(new Uint8Array(hashBuffer));
-          const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+          const hashHex = hashArray
+            .map((b) => b.toString(16).padStart(2, "0"))
+            .join("");
           resolve(hashHex);
         } catch (error) {
           console.error("Error generating hash:", error);
@@ -45,19 +46,25 @@ class IPFSService {
   }
 
   // Simple encryption function (in real-world, use a more robust encryption)
-  private async encryptData(data: ArrayBuffer, key: string): Promise<ArrayBuffer> {
+  private async encryptData(
+    data: ArrayBuffer,
+    key: string,
+  ): Promise<ArrayBuffer> {
     // This is a placeholder. In a real app, implement proper encryption
     // using Web Crypto API with the provided key
     return data;
   }
 
   // Upload a file to IPFS and return the CID
-  public async uploadFile(file: File, encryptionKey: string): Promise<{ cid: string, hash: string }> {
+  public async uploadFile(
+    file: File,
+    encryptionKey: string,
+  ): Promise<{ cid: string; hash: string }> {
     if (!this.client) {
       toast({
         title: "IPFS Error",
         description: "IPFS client is not initialized",
-        variant: "destructive"
+        variant: "destructive",
       });
       throw new Error("IPFS client is not initialized");
     }
@@ -65,35 +72,38 @@ class IPFSService {
     try {
       // Generate file hash for verification
       const hash = await this.generateFileHash(file);
-      
+
       // Read file data
       const fileData = await file.arrayBuffer();
-      
+
       // Encrypt data (in a real app, implement proper encryption)
       const encryptedData = await this.encryptData(fileData, encryptionKey);
-      
+
       // Upload to IPFS
-      const { cid } = await this.client.add({
-        content: new Uint8Array(encryptedData)
-      }, {
-        pin: true // Pin the file to keep it in IPFS
-      });
-      
+      const { cid } = await this.client.add(
+        {
+          content: new Uint8Array(encryptedData),
+        },
+        {
+          pin: true, // Pin the file to keep it in IPFS
+        },
+      );
+
       toast({
         title: "Upload Complete",
-        description: "File successfully uploaded to IPFS"
+        description: "File successfully uploaded to IPFS",
       });
-      
+
       return {
         cid: cid.toString(),
-        hash
+        hash,
       };
     } catch (error) {
       console.error("Error uploading to IPFS:", error);
       toast({
         title: "Upload Failed",
         description: "Failed to upload file to IPFS",
-        variant: "destructive"
+        variant: "destructive",
       });
       throw error;
     }

@@ -200,7 +200,7 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = "create" }) => {
           },
           // Witnesses array
           witnesses: witnesses.filter(
-            (w) => w.name || w.contact || w.statement
+            (w) => w.name || w.contact || w.statement,
           ),
         }),
       });
@@ -269,8 +269,8 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = "create" }) => {
                   step > 1
                     ? "bg-forensic-success text-white"
                     : step === 1
-                    ? "bg-forensic-800 text-white"
-                    : "bg-forensic-200 text-forensic-400"
+                      ? "bg-forensic-800 text-white"
+                      : "bg-forensic-200 text-forensic-400"
                 }`}
               >
                 {step > 1 ? <Check className="h-5 w-5" /> : 1}
@@ -296,8 +296,8 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = "create" }) => {
                   step > 2
                     ? "bg-forensic-success text-white"
                     : step === 2
-                    ? "bg-forensic-800 text-white"
-                    : "bg-forensic-200 text-forensic-400"
+                      ? "bg-forensic-800 text-white"
+                      : "bg-forensic-200 text-forensic-400"
                 }`}
               >
                 {step > 2 ? <Check className="h-5 w-5" /> : 2}
@@ -323,8 +323,8 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = "create" }) => {
                   step > 3
                     ? "bg-forensic-success text-white"
                     : step === 3
-                    ? "bg-forensic-800 text-white"
-                    : "bg-forensic-200 text-forensic-400"
+                      ? "bg-forensic-800 text-white"
+                      : "bg-forensic-200 text-forensic-400"
                 }`}
               >
                 {step > 3 ? <Check className="h-5 w-5" /> : 3}
@@ -754,22 +754,22 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = "create" }) => {
                           {incidentType === "data_breach"
                             ? "Data Breach"
                             : incidentType === "unauthorized_access"
-                            ? "Unauthorized System Access"
-                            : incidentType === "information_theft"
-                            ? "Information Theft"
-                            : incidentType === "malware_attack"
-                            ? "Malware Attack"
-                            : incidentType === "phishing"
-                            ? "Phishing Incident"
-                            : incidentType === "identity_theft"
-                            ? "Identity Theft"
-                            : incidentType === "data_loss"
-                            ? "Data Loss"
-                            : incidentType === "physical"
-                            ? "Physical Device Theft"
-                            : incidentType === "other"
-                            ? "Other Cyber Crime"
-                            : "Not selected"}
+                              ? "Unauthorized System Access"
+                              : incidentType === "information_theft"
+                                ? "Information Theft"
+                                : incidentType === "malware_attack"
+                                  ? "Malware Attack"
+                                  : incidentType === "phishing"
+                                    ? "Phishing Incident"
+                                    : incidentType === "identity_theft"
+                                      ? "Identity Theft"
+                                      : incidentType === "data_loss"
+                                        ? "Data Loss"
+                                        : incidentType === "physical"
+                                          ? "Physical Device Theft"
+                                          : incidentType === "other"
+                                            ? "Other Cyber Crime"
+                                            : "Not selected"}
                         </p>
                       </div>
                     </div>
@@ -825,14 +825,14 @@ const FIRManagement: React.FC<FIRManagementProps> = ({ mode = "create" }) => {
                           {suspectType === "internal"
                             ? "Internal Actor"
                             : suspectType === "external"
-                            ? "External Actor"
-                            : suspectType === "former_employee"
-                            ? "Former Employee"
-                            : suspectType === "group"
-                            ? "Organized Group"
-                            : suspectType === "unknown"
-                            ? "Unknown"
-                            : "Not selected"}
+                              ? "External Actor"
+                              : suspectType === "former_employee"
+                                ? "Former Employee"
+                                : suspectType === "group"
+                                  ? "Organized Group"
+                                  : suspectType === "unknown"
+                                    ? "Unknown"
+                                    : "Not selected"}
                         </p>
                       </div>
                     </div>

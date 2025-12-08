@@ -164,9 +164,8 @@ const OwnerBootstrap = () => {
     setAssigning(true);
     try {
       // Check if wallet is already assigned
-      const isAssigned = await roleManagementService.isWalletAssigned(
-        walletAddress
-      );
+      const isAssigned =
+        await roleManagementService.isWalletAssigned(walletAddress);
       if (isAssigned) {
         toast({
           title: "Already Assigned",
@@ -182,7 +181,7 @@ const OwnerBootstrap = () => {
       const dbSuccess = await roleManagementService.assignWalletToRole(
         walletAddress,
         selectedRole,
-        assignedBy
+        assignedBy,
       );
 
       if (!dbSuccess) {
@@ -194,7 +193,7 @@ const OwnerBootstrap = () => {
       if (web3Service.isContractConnected() && account) {
         blockchainSuccess = await web3Service.setGlobalRole(
           walletAddress,
-          selectedRole
+          selectedRole,
         );
 
         if (!blockchainSuccess) {
@@ -210,7 +209,7 @@ const OwnerBootstrap = () => {
       toast({
         title: "Role Assigned Successfully",
         description: `${getRoleTitle(
-          selectedRole
+          selectedRole,
         )} role assigned to ${walletAddress}`,
       });
 
@@ -237,9 +236,8 @@ const OwnerBootstrap = () => {
 
   const handleRevokeRole = async (walletAddress: string) => {
     try {
-      const success = await roleManagementService.revokeWalletAssignment(
-        walletAddress
-      );
+      const success =
+        await roleManagementService.revokeWalletAssignment(walletAddress);
 
       if (success) {
         toast({
@@ -526,7 +524,7 @@ const OwnerBootstrap = () => {
                     <TableCell className="font-mono text-sm">
                       {assignment.address.substring(0, 6)}...
                       {assignment.address.substring(
-                        assignment.address.length - 4
+                        assignment.address.length - 4,
                       )}
                     </TableCell>
                     <TableCell>{assignment.role_name}</TableCell>

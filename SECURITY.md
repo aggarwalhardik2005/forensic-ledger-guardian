@@ -8,25 +8,28 @@ Security updates are provided for the following versions of Forensic Ledger Guar
 | ------- | ------------------ |
 | 0.x.x   | :white_check_mark: |
 
-*Note: This project is in active development. All versions receive security updates.*
+_Note: This project is in active development. All versions receive security updates._
 
 ## Security Features
 
 Forensic Ledger Guardian implements multiple layers of security:
 
 ### Blockchain Security
+
 - Smart contract access controls with role-based permissions
 - Immutable evidence records on Ethereum blockchain
 - Multi-signature requirements for critical operations
 - Emergency pause functionality for system-wide security incidents
 
 ### Data Protection
+
 - AES-256 encryption for all stored evidence files
 - Cryptographic hashing (SHA-256) for integrity verification
 - Secure key management and rotation
 - End-to-end encryption for sensitive communications
 
 ### Application Security
+
 - Input validation and sanitization
 - SQL injection prevention
 - Cross-site scripting (XSS) protection
@@ -40,6 +43,7 @@ Forensic Ledger Guardian implements multiple layers of security:
 ### Private Reporting
 
 Please report security vulnerabilities privately to:
+
 - **Email**: [Create a private vulnerability report on GitHub](https://github.com/aaravmahajanofficial/forensic-ledger-guardian/security/advisories/new)
 - **Alternative**: Contact the maintainer directly via GitHub DM
 
@@ -99,16 +103,19 @@ We follow responsible disclosure practices:
 ## Known Security Considerations
 
 ### Smart Contract Risks
+
 - Gas limit vulnerabilities
 - Reentrancy attacks (mitigated with checks-effects-interactions pattern)
 - Oracle manipulation (not applicable - no external oracles used)
 
 ### IPFS Storage
+
 - Content addressing ensures integrity
 - Encryption provides confidentiality
 - Access control through smart contracts
 
 ### Web3 Integration
+
 - Private key management responsibility lies with users
 - MetaMask and wallet security dependencies
 - Transaction replay protection
@@ -122,6 +129,7 @@ We follow responsible disclosure practices:
 ## Compliance
 
 This system is designed with forensic evidence handling in mind and aims to meet:
+
 - Chain of custody requirements
 - Evidence integrity standards
 - Access control regulations

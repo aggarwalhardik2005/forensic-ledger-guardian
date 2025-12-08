@@ -20,8 +20,16 @@ export async function getContract(withSigner = false) {
     // Request wallet access if needed
     await provider.send("eth_requestAccounts", []);
     const signer = await provider.getSigner();
-    return new ethers.Contract(contractAddress, EvidenceRegistryArtifact.abi, signer);
+    return new ethers.Contract(
+      contractAddress,
+      EvidenceRegistryArtifact.abi,
+      signer,
+    );
   } else {
-    return new ethers.Contract(contractAddress, EvidenceRegistryArtifact.abi, provider);
+    return new ethers.Contract(
+      contractAddress,
+      EvidenceRegistryArtifact.abi,
+      provider,
+    );
   }
 }

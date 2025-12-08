@@ -70,7 +70,7 @@ const OfficerDashboard = () => {
 
   // Filter for eligible confirmations (not self-submitted)
   const eligibleConfirmations = pendingConfirmations.filter(
-    (item) => !item.isOwnSubmission
+    (item) => !item.isOwnSubmission,
   );
 
   return (

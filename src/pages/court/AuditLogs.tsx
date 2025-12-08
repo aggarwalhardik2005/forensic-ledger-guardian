@@ -1,6 +1,5 @@
-
-import { Activity } from 'lucide-react';
-import PlaceholderPage from '@/components/shared/PlaceholderPage';
+import { Activity } from "lucide-react";
+import PlaceholderPage from "@/components/shared/PlaceholderPage";
 
 const AuditLogs = () => {
   return (

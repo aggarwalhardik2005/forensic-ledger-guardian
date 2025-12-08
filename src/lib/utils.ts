@@ -15,8 +15,8 @@ export function handleAuthError(error: unknown): {
     error instanceof Error
       ? error.message
       : typeof error === "string"
-      ? error
-      : "Unknown error";
+        ? error
+        : "Unknown error";
 
   // Check for common authentication errors
   const isRefreshTokenError =

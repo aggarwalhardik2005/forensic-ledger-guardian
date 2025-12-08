@@ -92,7 +92,7 @@ const View = () => {
           *,
           suspect ( name ),
           complainant ( name,contact_number )
-        `
+        `,
         )
         .eq("fir_id", id)
         .single();
@@ -153,7 +153,6 @@ const View = () => {
   const handleAddEvidence = () => {
     navigate("/upload", { state: { firId: id } });
   };
-
 
   return (
     <div className="space-y-6 animate-fade-in">

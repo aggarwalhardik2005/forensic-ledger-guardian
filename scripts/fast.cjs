@@ -90,22 +90,22 @@ function clearScreen() {
 function printHeader() {
   console.log("\n");
   console.log(
-    `${colors.cyan}${colors.bright}╔══════════════════════════════════════════════════════════════╗${colors.reset}`
+    `${colors.cyan}${colors.bright}╔══════════════════════════════════════════════════════════════╗${colors.reset}`,
   );
   console.log(
-    `${colors.cyan}${colors.bright}║${colors.reset}                                                              ${colors.cyan}${colors.bright}║${colors.reset}`
+    `${colors.cyan}${colors.bright}║${colors.reset}                                                              ${colors.cyan}${colors.bright}║${colors.reset}`,
   );
   console.log(
-    `${colors.cyan}${colors.bright}║${colors.reset}   ${colors.green}${colors.bright}🔐 FORENSIC LEDGER GUARDIAN - CLI TOOL${colors.reset}                   ${colors.cyan}${colors.bright}║${colors.reset}`
+    `${colors.cyan}${colors.bright}║${colors.reset}   ${colors.green}${colors.bright}🔐 FORENSIC LEDGER GUARDIAN - CLI TOOL${colors.reset}                   ${colors.cyan}${colors.bright}║${colors.reset}`,
   );
   console.log(
-    `${colors.cyan}${colors.bright}║${colors.reset}   ${colors.dim}Blockchain-powered forensic evidence management${colors.reset}           ${colors.cyan}${colors.bright}║${colors.reset}`
+    `${colors.cyan}${colors.bright}║${colors.reset}   ${colors.dim}Blockchain-powered forensic evidence management${colors.reset}           ${colors.cyan}${colors.bright}║${colors.reset}`,
   );
   console.log(
-    `${colors.cyan}${colors.bright}║${colors.reset}                                                              ${colors.cyan}${colors.bright}║${colors.reset}`
+    `${colors.cyan}${colors.bright}║${colors.reset}                                                              ${colors.cyan}${colors.bright}║${colors.reset}`,
   );
   console.log(
-    `${colors.cyan}${colors.bright}╚══════════════════════════════════════════════════════════════╝${colors.reset}`
+    `${colors.cyan}${colors.bright}╚══════════════════════════════════════════════════════════════╝${colors.reset}`,
   );
   console.log("\n");
 }
@@ -114,58 +114,58 @@ function printHeader() {
 function printMenu() {
   console.log(`${colors.yellow}${colors.bright}  MAIN MENU${colors.reset}`);
   console.log(
-    `${colors.dim}  ─────────────────────────────────────────${colors.reset}\n`
+    `${colors.dim}  ─────────────────────────────────────────${colors.reset}\n`,
   );
 
   console.log(
-    `  ${colors.cyan}[1]${colors.reset} ${colors.bright}🚀 Deploy Contract${colors.reset}`
+    `  ${colors.cyan}[1]${colors.reset} ${colors.bright}🚀 Deploy Contract${colors.reset}`,
   );
   console.log(
-    `      ${colors.dim}Deploy ForensicChain smart contract to Sepolia${colors.reset}\n`
-  );
-
-  console.log(
-    `  ${colors.cyan}[2]${colors.reset} ${colors.bright}👤 Assign Global Role${colors.reset}`
-  );
-  console.log(
-    `      ${colors.dim}Grant a role to a wallet address${colors.reset}\n`
+    `      ${colors.dim}Deploy ForensicChain smart contract to Sepolia${colors.reset}\n`,
   );
 
   console.log(
-    `  ${colors.cyan}[3]${colors.reset} ${colors.bright}📁 Assign Case Role${colors.reset}`
+    `  ${colors.cyan}[2]${colors.reset} ${colors.bright}👤 Assign Global Role${colors.reset}`,
   );
   console.log(
-    `      ${colors.dim}Assign a user to a specific case${colors.reset}\n`
-  );
-
-  console.log(
-    `  ${colors.cyan}[4]${colors.reset} ${colors.bright}⚙️  Configure Settings${colors.reset}`
-  );
-  console.log(
-    `      ${colors.dim}Set RPC URL, Private Key, Contract Address${colors.reset}\n`
+    `      ${colors.dim}Grant a role to a wallet address${colors.reset}\n`,
   );
 
   console.log(
-    `  ${colors.cyan}[5]${colors.reset} ${colors.bright}📋 View Current Config${colors.reset}`
+    `  ${colors.cyan}[3]${colors.reset} ${colors.bright}📁 Assign Case Role${colors.reset}`,
   );
   console.log(
-    `      ${colors.dim}Display saved configuration${colors.reset}\n`
-  );
-
-  console.log(
-    `  ${colors.cyan}[6]${colors.reset} ${colors.bright}💰 Check Wallet Balance${colors.reset}`
-  );
-  console.log(
-    `      ${colors.dim}Get ETH balance of a wallet address${colors.reset}\n`
+    `      ${colors.dim}Assign a user to a specific case${colors.reset}\n`,
   );
 
   console.log(
-    `  ${colors.cyan}[0]${colors.reset} ${colors.bright}🚪 Exit${colors.reset}`
+    `  ${colors.cyan}[4]${colors.reset} ${colors.bright}⚙️  Configure Settings${colors.reset}`,
+  );
+  console.log(
+    `      ${colors.dim}Set RPC URL, Private Key, Contract Address${colors.reset}\n`,
+  );
+
+  console.log(
+    `  ${colors.cyan}[5]${colors.reset} ${colors.bright}📋 View Current Config${colors.reset}`,
+  );
+  console.log(
+    `      ${colors.dim}Display saved configuration${colors.reset}\n`,
+  );
+
+  console.log(
+    `  ${colors.cyan}[6]${colors.reset} ${colors.bright}💰 Check Wallet Balance${colors.reset}`,
+  );
+  console.log(
+    `      ${colors.dim}Get ETH balance of a wallet address${colors.reset}\n`,
+  );
+
+  console.log(
+    `  ${colors.cyan}[0]${colors.reset} ${colors.bright}🚪 Exit${colors.reset}`,
   );
   console.log(`      ${colors.dim}Close the CLI tool${colors.reset}\n`);
 
   console.log(
-    `${colors.dim}  ─────────────────────────────────────────${colors.reset}\n`
+    `${colors.dim}  ─────────────────────────────────────────${colors.reset}\n`,
   );
 }
 
@@ -174,7 +174,7 @@ function printRoleSelection() {
   console.log(`\n${colors.yellow}  Select Role:${colors.reset}\n`);
   for (const [num, role] of Object.entries(ROLES)) {
     console.log(
-      `    ${colors.cyan}[${num}]${colors.reset} ${role.color}${role.name}${colors.reset}`
+      `    ${colors.cyan}[${num}]${colors.reset} ${role.color}${role.name}${colors.reset}`,
     );
   }
   console.log("");
@@ -183,14 +183,14 @@ function printRoleSelection() {
 // Print success message
 function printSuccess(message) {
   console.log(
-    `\n${colors.green}${colors.bright}  ✅ SUCCESS: ${message}${colors.reset}\n`
+    `\n${colors.green}${colors.bright}  ✅ SUCCESS: ${message}${colors.reset}\n`,
   );
 }
 
 // Print error message
 function printError(message) {
   console.log(
-    `\n${colors.red}${colors.bright}  ❌ ERROR: ${message}${colors.reset}\n`
+    `\n${colors.red}${colors.bright}  ❌ ERROR: ${message}${colors.reset}\n`,
   );
 }
 
@@ -210,7 +210,7 @@ function createSpinner(text) {
   let i = 0;
   const interval = setInterval(() => {
     process.stdout.write(
-      `\r${colors.cyan}  ${frames[i]} ${text}${colors.reset}`
+      `\r${colors.cyan}  ${frames[i]} ${text}${colors.reset}`,
     );
     i = (i + 1) % frames.length;
   }, 80);
@@ -220,11 +220,11 @@ function createSpinner(text) {
       clearInterval(interval);
       if (success) {
         process.stdout.write(
-          `\r${colors.green}  ✓ ${message || text}${colors.reset}\n`
+          `\r${colors.green}  ✓ ${message || text}${colors.reset}\n`,
         );
       } else {
         process.stdout.write(
-          `\r${colors.red}  ✗ ${message || text}${colors.reset}\n`
+          `\r${colors.red}  ✗ ${message || text}${colors.reset}\n`,
         );
       }
     },
@@ -237,7 +237,7 @@ function executeCommand(command, showOutput = true) {
     if (showOutput) {
       console.log(`\n${colors.dim}  Executing: ${command}${colors.reset}\n`);
       console.log(
-        `${colors.dim}  ─────────────────────────────────────────${colors.reset}\n`
+        `${colors.dim}  ─────────────────────────────────────────${colors.reset}\n`,
       );
     }
 
@@ -259,12 +259,12 @@ async function getConfigValue(config, key, promptText, isSecret = false) {
   if (config[key]) {
     const displayValue = isSecret
       ? `${config[key].substring(0, 6)}...${config[key].substring(
-          config[key].length - 4
+          config[key].length - 4,
         )}`
       : config[key];
 
     const useExisting = await question(
-      `  ${colors.dim}Use saved ${key}? (${displayValue})${colors.reset} [Y/n]: `
+      `  ${colors.dim}Use saved ${key}? (${displayValue})${colors.reset} [Y/n]: `,
     );
 
     if (useExisting.toLowerCase() !== "n") {
@@ -273,7 +273,7 @@ async function getConfigValue(config, key, promptText, isSecret = false) {
   }
 
   const value = await question(
-    `  ${colors.cyan}${promptText}:${colors.reset} `
+    `  ${colors.cyan}${promptText}:${colors.reset} `,
   );
   return value;
 }
@@ -289,23 +289,23 @@ async function deployContract() {
   printHeader();
 
   console.log(
-    `${colors.yellow}${colors.bright}  🚀 DEPLOY CONTRACT${colors.reset}`
+    `${colors.yellow}${colors.bright}  🚀 DEPLOY CONTRACT${colors.reset}`,
   );
   console.log(
-    `${colors.dim}  ─────────────────────────────────────────${colors.reset}\n`
+    `${colors.dim}  ─────────────────────────────────────────${colors.reset}\n`,
   );
 
   const config = loadConfig();
 
   printInfo(
-    "This will deploy the ForensicChain contract to Sepolia testnet.\n"
+    "This will deploy the ForensicChain contract to Sepolia testnet.\n",
   );
 
   // Get RPC URL
   const rpcUrl = await getConfigValue(
     config,
     "rpcUrl",
-    "Enter Sepolia RPC URL (e.g., https://sepolia.infura.io/v3/YOUR_KEY)"
+    "Enter Sepolia RPC URL (e.g., https://sepolia.infura.io/v3/YOUR_KEY)",
   );
 
   if (!rpcUrl) {
@@ -318,7 +318,7 @@ async function deployContract() {
     config,
     "privateKey",
     "Enter deployer private key (with 0x prefix)",
-    true
+    true,
   );
 
   if (!privateKey) {
@@ -333,7 +333,7 @@ async function deployContract() {
 
   console.log("");
   const confirm = await question(
-    `  ${colors.yellow}Proceed with deployment? [y/N]:${colors.reset} `
+    `  ${colors.yellow}Proceed with deployment? [y/N]:${colors.reset} `,
   );
 
   if (confirm.toLowerCase() !== "y") {
@@ -352,7 +352,7 @@ async function deployContract() {
 
     printSuccess("Contract deployed successfully!");
     printInfo(
-      "Copy the deployed contract address and save it using option [4]"
+      "Copy the deployed contract address and save it using option [4]",
     );
   } catch (error) {
     printError(`Deployment failed: ${error.message}`);
@@ -367,10 +367,10 @@ async function assignGlobalRole() {
   printHeader();
 
   console.log(
-    `${colors.yellow}${colors.bright}  👤 ASSIGN GLOBAL ROLE${colors.reset}`
+    `${colors.yellow}${colors.bright}  👤 ASSIGN GLOBAL ROLE${colors.reset}`,
   );
   console.log(
-    `${colors.dim}  ─────────────────────────────────────────${colors.reset}\n`
+    `${colors.dim}  ─────────────────────────────────────────${colors.reset}\n`,
   );
 
   const config = loadConfig();
@@ -379,7 +379,7 @@ async function assignGlobalRole() {
   const contractAddress = await getConfigValue(
     config,
     "contractAddress",
-    "Enter Contract Address"
+    "Enter Contract Address",
   );
 
   if (!isValidAddress(contractAddress)) {
@@ -391,7 +391,7 @@ async function assignGlobalRole() {
   const rpcUrl = await getConfigValue(
     config,
     "rpcUrl",
-    "Enter Sepolia RPC URL"
+    "Enter Sepolia RPC URL",
   );
 
   if (!rpcUrl) {
@@ -404,7 +404,7 @@ async function assignGlobalRole() {
     config,
     "privateKey",
     "Enter admin private key (with 0x prefix)",
-    true
+    true,
   );
 
   if (!privateKey) {
@@ -415,7 +415,7 @@ async function assignGlobalRole() {
   // Get wallet address to assign role to
   console.log("");
   const walletAddress = await question(
-    `  ${colors.cyan}Enter wallet address to assign role to:${colors.reset} `
+    `  ${colors.cyan}Enter wallet address to assign role to:${colors.reset} `,
   );
 
   if (!isValidAddress(walletAddress)) {
@@ -426,7 +426,7 @@ async function assignGlobalRole() {
   // Select role
   printRoleSelection();
   const roleNum = await question(
-    `  ${colors.cyan}Enter role number (1-4):${colors.reset} `
+    `  ${colors.cyan}Enter role number (1-4):${colors.reset} `,
   );
 
   if (!["1", "2", "3", "4"].includes(roleNum)) {
@@ -444,20 +444,20 @@ async function assignGlobalRole() {
 
   console.log("");
   console.log(
-    `${colors.dim}  ─────────────────────────────────────────${colors.reset}`
+    `${colors.dim}  ─────────────────────────────────────────${colors.reset}`,
   );
   console.log(`  ${colors.bright}Summary:${colors.reset}`);
   console.log(`    Contract: ${colors.cyan}${contractAddress}${colors.reset}`);
   console.log(`    Wallet:   ${colors.cyan}${walletAddress}${colors.reset}`);
   console.log(
-    `    Role:     ${selectedRole.color}${selectedRole.name} (${roleNum})${colors.reset}`
+    `    Role:     ${selectedRole.color}${selectedRole.name} (${roleNum})${colors.reset}`,
   );
   console.log(
-    `${colors.dim}  ─────────────────────────────────────────${colors.reset}`
+    `${colors.dim}  ─────────────────────────────────────────${colors.reset}`,
   );
 
   const confirm = await question(
-    `\n  ${colors.yellow}Proceed with role assignment? [y/N]:${colors.reset} `
+    `\n  ${colors.yellow}Proceed with role assignment? [y/N]:${colors.reset} `,
   );
 
   if (confirm.toLowerCase() !== "y") {
@@ -485,10 +485,10 @@ async function assignCaseRole() {
   printHeader();
 
   console.log(
-    `${colors.yellow}${colors.bright}  📁 ASSIGN CASE ROLE${colors.reset}`
+    `${colors.yellow}${colors.bright}  📁 ASSIGN CASE ROLE${colors.reset}`,
   );
   console.log(
-    `${colors.dim}  ─────────────────────────────────────────${colors.reset}\n`
+    `${colors.dim}  ─────────────────────────────────────────${colors.reset}\n`,
   );
 
   const config = loadConfig();
@@ -497,7 +497,7 @@ async function assignCaseRole() {
   const contractAddress = await getConfigValue(
     config,
     "contractAddress",
-    "Enter Contract Address"
+    "Enter Contract Address",
   );
 
   if (!isValidAddress(contractAddress)) {
@@ -509,7 +509,7 @@ async function assignCaseRole() {
   const rpcUrl = await getConfigValue(
     config,
     "rpcUrl",
-    "Enter Sepolia RPC URL"
+    "Enter Sepolia RPC URL",
   );
 
   if (!rpcUrl) {
@@ -522,7 +522,7 @@ async function assignCaseRole() {
     config,
     "privateKey",
     "Enter admin private key (with 0x prefix)",
-    true
+    true,
   );
 
   if (!privateKey) {
@@ -533,7 +533,7 @@ async function assignCaseRole() {
   // Get case number
   console.log("");
   const caseNo = await question(
-    `  ${colors.cyan}Enter Case Number/ID:${colors.reset} `
+    `  ${colors.cyan}Enter Case Number/ID:${colors.reset} `,
   );
 
   if (!caseNo) {
@@ -543,7 +543,7 @@ async function assignCaseRole() {
 
   // Get wallet address to assign case to
   const walletAddress = await question(
-    `  ${colors.cyan}Enter wallet address to assign case to:${colors.reset} `
+    `  ${colors.cyan}Enter wallet address to assign case to:${colors.reset} `,
   );
 
   if (!isValidAddress(walletAddress)) {
@@ -554,7 +554,7 @@ async function assignCaseRole() {
   // Select role
   printRoleSelection();
   const roleNum = await question(
-    `  ${colors.cyan}Enter role number (1-4):${colors.reset} `
+    `  ${colors.cyan}Enter role number (1-4):${colors.reset} `,
   );
 
   if (!["1", "2", "3", "4"].includes(roleNum)) {
@@ -572,21 +572,21 @@ async function assignCaseRole() {
 
   console.log("");
   console.log(
-    `${colors.dim}  ─────────────────────────────────────────${colors.reset}`
+    `${colors.dim}  ─────────────────────────────────────────${colors.reset}`,
   );
   console.log(`  ${colors.bright}Summary:${colors.reset}`);
   console.log(`    Contract: ${colors.cyan}${contractAddress}${colors.reset}`);
   console.log(`    Case:     ${colors.cyan}${caseNo}${colors.reset}`);
   console.log(`    Wallet:   ${colors.cyan}${walletAddress}${colors.reset}`);
   console.log(
-    `    Role:     ${selectedRole.color}${selectedRole.name} (${roleNum})${colors.reset}`
+    `    Role:     ${selectedRole.color}${selectedRole.name} (${roleNum})${colors.reset}`,
   );
   console.log(
-    `${colors.dim}  ─────────────────────────────────────────${colors.reset}`
+    `${colors.dim}  ─────────────────────────────────────────${colors.reset}`,
   );
 
   const confirm = await question(
-    `\n  ${colors.yellow}Proceed with case assignment? [y/N]:${colors.reset} `
+    `\n  ${colors.yellow}Proceed with case assignment? [y/N]:${colors.reset} `,
   );
 
   if (confirm.toLowerCase() !== "y") {
@@ -601,7 +601,7 @@ async function assignCaseRole() {
     await executeCommand(command);
 
     printSuccess(
-      `Case "${caseNo}" assigned to ${walletAddress} as ${selectedRole.name}`
+      `Case "${caseNo}" assigned to ${walletAddress} as ${selectedRole.name}`,
     );
   } catch (error) {
     printError(`Case assignment failed: ${error.message}`);
@@ -616,10 +616,10 @@ async function configureSettings() {
   printHeader();
 
   console.log(
-    `${colors.yellow}${colors.bright}  ⚙️  CONFIGURE SETTINGS${colors.reset}`
+    `${colors.yellow}${colors.bright}  ⚙️  CONFIGURE SETTINGS${colors.reset}`,
   );
   console.log(
-    `${colors.dim}  ─────────────────────────────────────────${colors.reset}\n`
+    `${colors.dim}  ─────────────────────────────────────────${colors.reset}\n`,
   );
 
   const config = loadConfig();
@@ -632,7 +632,7 @@ async function configureSettings() {
     : "not set";
   console.log(`  ${colors.dim}Current RPC URL: ${currentRpc}${colors.reset}`);
   const rpcUrl = await question(
-    `  ${colors.cyan}New Sepolia RPC URL:${colors.reset} `
+    `  ${colors.cyan}New Sepolia RPC URL:${colors.reset} `,
   );
   if (rpcUrl) config.rpcUrl = rpcUrl;
 
@@ -641,14 +641,14 @@ async function configureSettings() {
   // Private Key
   const currentKey = config.privateKey
     ? `${config.privateKey.substring(0, 6)}...${config.privateKey.substring(
-        config.privateKey.length - 4
+        config.privateKey.length - 4,
       )}`
     : "not set";
   console.log(
-    `  ${colors.dim}Current Private Key: ${currentKey}${colors.reset}`
+    `  ${colors.dim}Current Private Key: ${currentKey}${colors.reset}`,
   );
   const privateKey = await question(
-    `  ${colors.cyan}New Private Key:${colors.reset} `
+    `  ${colors.cyan}New Private Key:${colors.reset} `,
   );
   if (privateKey) config.privateKey = privateKey;
 
@@ -657,10 +657,10 @@ async function configureSettings() {
   // Contract Address
   const currentContract = config.contractAddress || "not set";
   console.log(
-    `  ${colors.dim}Current Contract Address: ${currentContract}${colors.reset}`
+    `  ${colors.dim}Current Contract Address: ${currentContract}${colors.reset}`,
   );
   const contractAddress = await question(
-    `  ${colors.cyan}New Contract Address:${colors.reset} `
+    `  ${colors.cyan}New Contract Address:${colors.reset} `,
   );
   if (contractAddress) {
     if (isValidAddress(contractAddress)) {
@@ -682,10 +682,10 @@ async function viewConfig() {
   printHeader();
 
   console.log(
-    `${colors.yellow}${colors.bright}  📋 CURRENT CONFIGURATION${colors.reset}`
+    `${colors.yellow}${colors.bright}  📋 CURRENT CONFIGURATION${colors.reset}`,
   );
   console.log(
-    `${colors.dim}  ─────────────────────────────────────────${colors.reset}\n`
+    `${colors.dim}  ─────────────────────────────────────────${colors.reset}\n`,
   );
 
   const config = loadConfig();
@@ -693,7 +693,7 @@ async function viewConfig() {
   const rpcDisplay = config.rpcUrl || `${colors.dim}not set${colors.reset}`;
   const keyDisplay = config.privateKey
     ? `${config.privateKey.substring(0, 6)}...${config.privateKey.substring(
-        config.privateKey.length - 4
+        config.privateKey.length - 4,
       )}`
     : `${colors.dim}not set${colors.reset}`;
   const contractDisplay =
@@ -709,7 +709,7 @@ async function viewConfig() {
   console.log(`    ${colors.cyan}${contractDisplay}${colors.reset}\n`);
 
   console.log(
-    `${colors.dim}  ─────────────────────────────────────────${colors.reset}`
+    `${colors.dim}  ─────────────────────────────────────────${colors.reset}`,
   );
   console.log(`  ${colors.dim}Config file: ${CONFIG_FILE}${colors.reset}\n`);
 
@@ -722,10 +722,10 @@ async function checkBalance() {
   printHeader();
 
   console.log(
-    `${colors.yellow}${colors.bright}  💰 CHECK WALLET BALANCE${colors.reset}`
+    `${colors.yellow}${colors.bright}  💰 CHECK WALLET BALANCE${colors.reset}`,
   );
   console.log(
-    `${colors.dim}  ─────────────────────────────────────────${colors.reset}\n`
+    `${colors.dim}  ─────────────────────────────────────────${colors.reset}\n`,
   );
 
   const config = loadConfig();
@@ -734,13 +734,13 @@ async function checkBalance() {
   const rpcUrl = await getConfigValue(
     config,
     "rpcUrl",
-    "Enter Sepolia RPC URL"
+    "Enter Sepolia RPC URL",
   );
 
   if (!rpcUrl) {
     printError("RPC URL is required");
     await question(
-      `\n  ${colors.dim}Press Enter to continue...${colors.reset}`
+      `\n  ${colors.dim}Press Enter to continue...${colors.reset}`,
     );
     return;
   }
@@ -752,13 +752,13 @@ async function checkBalance() {
   // Get wallet address
   console.log("");
   const walletAddress = await question(
-    `  ${colors.cyan}Enter wallet address to check balance:${colors.reset} `
+    `  ${colors.cyan}Enter wallet address to check balance:${colors.reset} `,
   );
 
   if (!isValidAddress(walletAddress)) {
     printError("Invalid wallet address format");
     await question(
-      `\n  ${colors.dim}Press Enter to continue...${colors.reset}`
+      `\n  ${colors.dim}Press Enter to continue...${colors.reset}`,
     );
     return;
   }
@@ -770,36 +770,36 @@ async function checkBalance() {
     // Get balance in wei
     const balanceWei = execSync(
       `cast balance "${walletAddress}" --rpc-url "${rpcUrl}"`,
-      { encoding: "utf8", cwd: path.join(__dirname, "..") }
+      { encoding: "utf8", cwd: path.join(__dirname, "..") },
     ).trim();
 
     // Get balance in ether
     const balanceEther = execSync(
       `cast balance "${walletAddress}" --rpc-url "${rpcUrl}" --ether`,
-      { encoding: "utf8", cwd: path.join(__dirname, "..") }
+      { encoding: "utf8", cwd: path.join(__dirname, "..") },
     ).trim();
 
     spinner.stop(true, "Balance fetched successfully!");
 
     console.log("");
     console.log(
-      `${colors.dim}  ─────────────────────────────────────────${colors.reset}`
+      `${colors.dim}  ─────────────────────────────────────────${colors.reset}`,
     );
     console.log(
-      `  ${colors.bright}Wallet:${colors.reset}  ${colors.cyan}${walletAddress}${colors.reset}`
+      `  ${colors.bright}Wallet:${colors.reset}  ${colors.cyan}${walletAddress}${colors.reset}`,
     );
     console.log(
-      `${colors.dim}  ─────────────────────────────────────────${colors.reset}`
+      `${colors.dim}  ─────────────────────────────────────────${colors.reset}`,
     );
     console.log("");
     console.log(`  ${colors.bright}Balance:${colors.reset}`);
     console.log(
-      `    ${colors.green}${colors.bright}${balanceEther} ETH${colors.reset}`
+      `    ${colors.green}${colors.bright}${balanceEther} ETH${colors.reset}`,
     );
     console.log(`    ${colors.dim}(${balanceWei} wei)${colors.reset}`);
     console.log("");
     console.log(
-      `${colors.dim}  ─────────────────────────────────────────${colors.reset}`
+      `${colors.dim}  ─────────────────────────────────────────${colors.reset}`,
     );
   } catch (error) {
     spinner.stop(false, "Failed to fetch balance");
@@ -817,7 +817,7 @@ async function main() {
     printMenu();
 
     const choice = await question(
-      `  ${colors.cyan}Enter your choice [0-6]:${colors.reset} `
+      `  ${colors.cyan}Enter your choice [0-6]:${colors.reset} `,
     );
 
     switch (choice) {
@@ -842,14 +842,14 @@ async function main() {
       case "0":
         clearScreen();
         console.log(
-          `\n${colors.green}  👋 Goodbye! Stay secure.${colors.reset}\n`
+          `\n${colors.green}  👋 Goodbye! Stay secure.${colors.reset}\n`,
         );
         rl.close();
         process.exit(0);
       default:
         printError("Invalid choice. Please enter 0-6.");
         await question(
-          `  ${colors.dim}Press Enter to continue...${colors.reset}`
+          `  ${colors.dim}Press Enter to continue...${colors.reset}`,
         );
     }
   }
@@ -865,7 +865,7 @@ process.on("SIGINT", () => {
 // Run the CLI
 main().catch((error) => {
   console.error(
-    `\n${colors.red}Fatal error: ${error.message}${colors.reset}\n`
+    `\n${colors.red}Fatal error: ${error.message}${colors.reset}\n`,
   );
   process.exit(1);
 });

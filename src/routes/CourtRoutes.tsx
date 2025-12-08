@@ -1,19 +1,19 @@
 /**
  * Route definitions for Court role
  */
-import { Route } from 'react-router-dom';
-import Layout from '@/components/layout/Layout';
-import SecureRoute from '@/components/auth/SecureRoute';
-import { Role } from '@/services/web3Service';
+import { Route } from "react-router-dom";
+import Layout from "@/components/layout/Layout";
+import SecureRoute from "@/components/auth/SecureRoute";
+import { Role } from "@/services/web3Service";
 
 // Court-specific pages
-import UserManagement from '@/pages/users/Manage';
-import RoleManagement from '@/pages/court/RoleManagement';
-import SystemConfiguration from '@/pages/court/SystemConfiguration';
-import ReportsAnalytics from '@/pages/court/ReportsAnalytics';
-import CasesApproval from '@/pages/cases/CasesApproval';
-import AddUser from '@/pages/users/AddUser';
-import OwnerBootstrap from '@/components/admin/OwnerBootstrap';
+import UserManagement from "@/pages/users/Manage";
+import RoleManagement from "@/pages/court/RoleManagement";
+import SystemConfiguration from "@/pages/court/SystemConfiguration";
+import ReportsAnalytics from "@/pages/court/ReportsAnalytics";
+import CasesApproval from "@/pages/cases/CasesApproval";
+import AddUser from "@/pages/users/AddUser";
+import OwnerBootstrap from "@/components/admin/OwnerBootstrap";
 
 /**
  * Routes exclusively for Court role
@@ -41,7 +41,7 @@ export const CourtRoutes = () => (
         </Layout>
       }
     />
-    
+
     {/* Role Management */}
     <Route
       path="/bootstrap"
@@ -49,12 +49,12 @@ export const CourtRoutes = () => (
         <Layout>
           <SecureRoute allowedRoles={[Role.Court]} requireAuth={true}>
             {/* <RoleManagement /> */}
-            <OwnerBootstrap/>
+            <OwnerBootstrap />
           </SecureRoute>
         </Layout>
       }
     />
-    
+
     {/* System Configuration */}
     <Route
       path="/settings/security"
@@ -66,7 +66,7 @@ export const CourtRoutes = () => (
         </Layout>
       }
     />
-    
+
     {/* Reports and Analytics */}
     <Route
       path="/reports"
@@ -78,7 +78,7 @@ export const CourtRoutes = () => (
         </Layout>
       }
     />
-    
+
     {/* Case Management */}
     <Route
       path="/cases/approval"

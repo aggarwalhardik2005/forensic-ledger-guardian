@@ -40,7 +40,7 @@ export default function EvidenceComponent() {
         form.hashEncrypted,
         form.hashOriginal,
         form.encryptionKeyHash,
-        parseInt(form.evidenceType)
+        parseInt(form.evidenceType),
       );
       if (success) {
         alert("Evidence added!");
@@ -79,37 +79,91 @@ export default function EvidenceComponent() {
           />
         </label>
         <p>
-          Evidence count for case: {caseId ? (evidenceCount !== null ? evidenceCount : "Loading...") : "Enter a Case ID"}
+          Evidence count for case:{" "}
+          {caseId
+            ? evidenceCount !== null
+              ? evidenceCount
+              : "Loading..."
+            : "Enter a Case ID"}
         </p>
       </div>
-      <form onSubmit={addEvidence} style={{ display: "flex", flexDirection: "column", gap: 8, maxWidth: 400 }}>
+      <form
+        onSubmit={addEvidence}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 8,
+          maxWidth: 400,
+        }}
+      >
         <label>
           FIR ID:
-          <input type="text" name="firId" value={form.firId} onChange={handleChange} required />
+          <input
+            type="text"
+            name="firId"
+            value={form.firId}
+            onChange={handleChange}
+            required
+          />
         </label>
         <label>
           Evidence ID:
-          <input type="text" name="evidenceId" value={form.evidenceId} onChange={handleChange} required />
+          <input
+            type="text"
+            name="evidenceId"
+            value={form.evidenceId}
+            onChange={handleChange}
+            required
+          />
         </label>
         <label>
           CID (Encrypted):
-          <input type="text" name="cidEncrypted" value={form.cidEncrypted} onChange={handleChange} required />
+          <input
+            type="text"
+            name="cidEncrypted"
+            value={form.cidEncrypted}
+            onChange={handleChange}
+            required
+          />
         </label>
         <label>
           Hash (Encrypted):
-          <input type="text" name="hashEncrypted" value={form.hashEncrypted} onChange={handleChange} required />
+          <input
+            type="text"
+            name="hashEncrypted"
+            value={form.hashEncrypted}
+            onChange={handleChange}
+            required
+          />
         </label>
         <label>
           Hash (Original):
-          <input type="text" name="hashOriginal" value={form.hashOriginal} onChange={handleChange} required />
+          <input
+            type="text"
+            name="hashOriginal"
+            value={form.hashOriginal}
+            onChange={handleChange}
+            required
+          />
         </label>
         <label>
           Encryption Key Hash (hex):
-          <input type="text" name="encryptionKeyHash" value={form.encryptionKeyHash} onChange={handleChange} required />
+          <input
+            type="text"
+            name="encryptionKeyHash"
+            value={form.encryptionKeyHash}
+            onChange={handleChange}
+            required
+          />
         </label>
         <label>
           Evidence Type:
-          <select name="evidenceType" value={form.evidenceType} onChange={handleChange} required>
+          <select
+            name="evidenceType"
+            value={form.evidenceType}
+            onChange={handleChange}
+            required
+          >
             <option value="0">Image</option>
             <option value="1">Video</option>
             <option value="2">Document</option>

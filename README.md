@@ -29,6 +29,7 @@ Forensic Ledger Guardian is a comprehensive digital evidence management platform
 ### Problem Statement
 
 Traditional evidence management systems often lack:
+
 - **Immutable audit trails** - Evidence can be tampered with or modified
 - **Transparent chain of custody** - Difficult to track who accessed evidence and when
 - **Secure storage** - Centralized storage is vulnerable to attacks
@@ -38,6 +39,7 @@ Traditional evidence management systems often lack:
 ### Solution
 
 Our platform addresses these challenges by:
+
 - Using blockchain for immutable evidence records
 - Implementing IPFS for decentralized, encrypted storage
 - Providing role-based access control with smart contracts
@@ -47,24 +49,28 @@ Our platform addresses these challenges by:
 ## ✨ Key Features
 
 ### 🔒 Security & Integrity
+
 - **Blockchain-based immutability** - All evidence records stored on Ethereum
 - **End-to-end encryption** - AES-256 encryption for all stored files
 - **Cryptographic hashing** - SHA-256 verification for evidence integrity
 - **Tamper detection** - Automatic verification of evidence authenticity
 
 ### 👥 Role-Based Access Control
+
 - **Court Officials** - Case creation, role assignment, evidence sealing
 - **Police Officers** - FIR filing, evidence submission
 - **Forensic Experts** - Evidence analysis and confirmation
 - **Legal Counsel** - Evidence access and review
 
 ### 📁 Evidence Management
+
 - **Multi-format support** - Images, videos, documents, audio files
 - **Chain of custody tracking** - Complete audit trail of evidence access
 - **Evidence confirmation system** - Multi-party verification process
 - **Case lifecycle management** - From FIR to case closure
 
 ### 🌐 Modern Interface
+
 - **Responsive design** - Works seamlessly across devices
 - **Real-time updates** - Live notifications and status updates
 - **Intuitive navigation** - Role-specific dashboards and workflows
@@ -73,6 +79,7 @@ Our platform addresses these challenges by:
 ## 🛠 Technology Stack
 
 ### Frontend
+
 - **React 19.1.1** - Modern UI framework
 - **TypeScript** - Type-safe development
 - **Vite** - Fast build tool and dev server
@@ -82,18 +89,21 @@ Our platform addresses these challenges by:
 - **React Query** - Server state management
 
 ### Backend & Storage
+
 - **Node.js/Express** - IPFS backend server
 - **IPFS** - Decentralized file storage
 - **Supabase** - Database and authentication
 - **PostgreSQL** - Relational database
 
 ### Blockchain
+
 - **Solidity 0.8.29** - Smart contract language
 - **Foundry** - Development framework
 - **Ethers.js** - Blockchain interaction library
 - **Ethereum Sepolia** - Testnet deployment
 
 ### Development Tools
+
 - **ESLint** - Code linting
 - **TypeScript** - Static type checking
 - **Git** - Version control
@@ -124,6 +134,7 @@ Our platform addresses these challenges by:
 ```
 
 ### Data Flow
+
 1. **Evidence Submission**: Files encrypted and stored on IPFS, metadata recorded on blockchain
 2. **Access Control**: Smart contract validates user permissions before evidence access
 3. **Chain of Custody**: All interactions logged immutably on blockchain
@@ -136,11 +147,13 @@ Our platform addresses these challenges by:
 The fastest way to get started! Everything is pre-configured in a containerized environment.
 
 **Prerequisites:**
+
 - Docker Desktop
 - Visual Studio Code
 - Dev Containers extension (`ms-vscode-remote.remote-containers`)
 
 **Steps:**
+
 1. Clone and open the repository in VS Code
 2. Press `F1` → `Dev Containers: Reopen in Container`
 3. Wait for the container to build and dependencies to install
@@ -261,24 +274,28 @@ npm start
 ### Role-Specific Workflows
 
 #### Court Officials
+
 - Create cases from filed FIRs
 - Assign roles to officers, forensic experts, and lawyers
 - Seal/unseal cases as needed
 - Manage system-wide settings
 
 #### Police Officers
+
 - File First Information Reports (FIRs)
 - Submit evidence to cases
 - Track investigation progress
 - Collaborate with forensic teams
 
 #### Forensic Experts
+
 - Access and analyze submitted evidence
 - Confirm evidence authenticity
 - Submit forensic reports and findings
 - Maintain chain of custody
 
 #### Legal Counsel
+
 - Review case evidence
 - Access court-approved materials
 - Prepare legal documentation
@@ -306,6 +323,7 @@ npm start
 ### REST Endpoints
 
 #### Evidence Management
+
 ```
 POST   /upload              # Upload encrypted evidence
 GET    /retrieve/:evidenceId # Retrieve and decrypt evidence
@@ -315,6 +333,7 @@ POST   /verify              # Verify evidence integrity
 ### Smart Contract Functions
 
 #### Evidence Operations
+
 ```solidity
 submitCaseEvidence(caseId, evidenceId, cidEncrypted, hashEncrypted, hashOriginal, encryptionKeyHash, evidenceType)
 confirmCaseEvidence(caseId, index)
@@ -323,6 +342,7 @@ verifyEvidence(caseId, index, providedHash)
 ```
 
 #### Case Management
+
 ```solidity
 createCaseFromFIR(caseId, firId, title, description, tags)
 assignCaseRole(caseId, user, role)
@@ -331,6 +351,7 @@ closeCase(caseId)
 ```
 
 #### Role Management
+
 ```solidity
 setGlobalRole(user, role)
 getMyRoleInCase(caseId)
@@ -342,6 +363,7 @@ getGlobalRole(user)
 The `ForensicChain.sol` smart contract is the core of our evidence management system, deployed on Ethereum Sepolia testnet.
 
 ### Key Features
+
 - **Role-based access control** with enum-based permissions
 - **Evidence integrity** through cryptographic hashing
 - **Chain of custody** tracking with automatic audit trails
@@ -349,11 +371,13 @@ The `ForensicChain.sol` smart contract is the core of our evidence management sy
 - **Emergency controls** with system-wide locking capabilities
 
 ### Contract Address
+
 ```
 Sepolia Testnet: [Contract Address will be displayed after deployment]
 ```
 
 ### Roles & Permissions
+
 - **Role.Court (1)**: Full administrative control
 - **Role.Officer (2)**: FIR filing, evidence submission
 - **Role.Forensic (3)**: Evidence analysis, confirmation
@@ -382,11 +406,13 @@ We welcome contributions from the community! Please read our [Contributing Guide
 ### Development Tools
 
 The project includes GitHub Copilot custom agents to accelerate development:
+
 - **React Expert Agent**: Specialized in React 19.2, modern hooks, Server Components, and TypeScript patterns
 
 ### Bug Reports
 
 Use GitHub Issues to report bugs. Include:
+
 - Description of the issue
 - Steps to reproduce
 - Expected vs actual behavior
@@ -398,6 +424,7 @@ Use GitHub Issues to report bugs. Include:
 Security is paramount in forensic evidence management. Our implementation includes:
 
 ### Security Measures
+
 - **Multi-layer encryption** for all stored evidence
 - **Smart contract audits** and formal verification
 - **Role-based access control** with principle of least privilege
@@ -408,6 +435,7 @@ Security is paramount in forensic evidence management. Our implementation includ
 Please report security vulnerabilities privately to [security@yourproject.com](mailto:security@yourproject.com). Do not create public issues for security vulnerabilities.
 
 ### Security Best Practices
+
 - Keep your private keys secure and never share them
 - Use hardware wallets for production deployments
 - Regularly update dependencies and monitor for vulnerabilities
