@@ -1,5 +1,4 @@
-
-import { Role } from '@/services/web3Service';
+import { Role } from "@/services/web3Service";
 
 interface RoleGuidesProps {
   role?: Role;

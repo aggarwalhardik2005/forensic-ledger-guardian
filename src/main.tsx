@@ -1,11 +1,11 @@
-import React from 'react';
-import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import App from './App.tsx';
-import './index.css';
-import { AuthProvider } from '@/contexts/AuthContext';
+import React from "react";
+import { createRoot } from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import App from "./App.tsx";
+import "./index.css";
+import { AuthProvider } from "@/contexts/AuthContext";
 
-const rootElement = document.getElementById('root');
+const rootElement = document.getElementById("root");
 
 if (rootElement) {
   createRoot(rootElement).render(
@@ -15,6 +15,6 @@ if (rootElement) {
           <App />
         </AuthProvider>
       </BrowserRouter>
-    </React.StrictMode>
+    </React.StrictMode>,
   );
 }

@@ -1,21 +1,15 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended"
-  ],
+  "extends": ["config:recommended"],
   "prHourlyLimit": 0,
   "prConcurrentLimit": 0,
   "packageRules": [
     {
-      "matchPackageNames": [
-        "tailwindcss"
-      ],
+      "matchPackageNames": ["tailwindcss"],
       "enabled": false
     }
   ],
   "automerge": true,
-  "labels": [
-    "dependencies"
-  ],
+  "labels": ["dependencies"],
   "commitMessagePrefix": "chore(deps):"
 }

@@ -160,13 +160,13 @@ const RoleDebugger = () => {
     try {
       const success = await web3Service.setGlobalRole(
         targetAddress,
-        targetRole
+        targetRole,
       );
       if (success) {
         toast({
           title: "Success",
           description: `Role set to ${web3Service.getRoleString(
-            targetRole
+            targetRole,
           )} for ${targetAddress}`,
         });
         await checkRoles(); // Refresh the data
@@ -209,7 +209,7 @@ const RoleDebugger = () => {
               <p className="font-mono text-sm">
                 {account
                   ? `${account.substring(0, 6)}...${account.substring(
-                      account.length - 4
+                      account.length - 4,
                     )}`
                   : "Not connected"}
               </p>

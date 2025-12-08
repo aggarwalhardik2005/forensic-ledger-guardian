@@ -141,7 +141,7 @@ class RoleManagementService {
   async assignWalletToRole(
     walletAddress: string,
     role: Role,
-    assignedBy: string
+    assignedBy: string,
   ): Promise<RoleOperationResult> {
     if (!supabase) {
       return { success: false, error: "Database not available" };
@@ -158,7 +158,10 @@ class RoleManagementService {
     try {
       const isAssigned = await this.isWalletAssigned(walletAddress);
       if (isAssigned) {
-        return { success: false, error: "Wallet address is already assigned to a role" };
+        return {
+          success: false,
+          error: "Wallet address is already assigned to a role",
+        };
       }
 
       const { error } = await supabase.from("role_assignments").insert({
@@ -187,7 +190,7 @@ class RoleManagementService {
   async updateWalletRole(
     walletAddress: string,
     newRole: Role,
-    updatedBy: string
+    updatedBy: string,
   ): Promise<RoleOperationResult> {
     if (!supabase) {
       return { success: false, error: "Database not available" };
@@ -223,7 +226,9 @@ class RoleManagementService {
   /**
    * Revoke wallet assignment (only court can do this)
    */
-  async revokeWalletAssignment(walletAddress: string): Promise<RoleOperationResult> {
+  async revokeWalletAssignment(
+    walletAddress: string,
+  ): Promise<RoleOperationResult> {
     if (!supabase) {
       return { success: false, error: "Database not available" };
     }
@@ -317,7 +322,7 @@ class RoleManagementService {
    */
   async linkWalletToProfile(
     userId: string,
-    walletAddress: string
+    walletAddress: string,
   ): Promise<RoleOperationResult> {
     if (!supabase) {
       return { success: false, error: "Database not available" };
@@ -413,7 +418,7 @@ class RoleManagementService {
   async createCourtAdminProfile(
     userId: string,
     email: string,
-    name: string
+    name: string,
   ): Promise<RoleOperationResult> {
     if (!supabase) {
       return { success: false, error: "Database not available" };
@@ -436,10 +441,14 @@ class RoleManagementService {
       if (error) {
         console.error("Error creating court admin profile:", error);
 
-        if (error.code === POSTGRES_ERROR.RLS_VIOLATION || error.message?.includes("policy")) {
+        if (
+          error.code === POSTGRES_ERROR.RLS_VIOLATION ||
+          error.message?.includes("policy")
+        ) {
           return {
             success: false,
-            error: "RLS policy preventing profile creation. Database policy update required.",
+            error:
+              "RLS policy preventing profile creation. Database policy update required.",
           };
         }
 

@@ -1,17 +1,17 @@
 /**
  * Route definitions for Lawyer role
  */
-import { Route } from 'react-router-dom';
-import Layout from '@/components/layout/Layout';
-import SecureRoute from '@/components/auth/SecureRoute';
-import { Role } from '@/services/web3Service';
+import { Route } from "react-router-dom";
+import Layout from "@/components/layout/Layout";
+import SecureRoute from "@/components/auth/SecureRoute";
+import { Role } from "@/services/web3Service";
 
 // Lawyer-specific pages
-import LegalDocumentation from '@/pages/lawyer/LegalDocumentation';
-import ChainOfCustodyVerification from '@/pages/lawyer/ChainOfCustodyVerification';
-import LegalReports from '@/pages/lawyer/Reports';
-import CourtPreparation from '@/pages/lawyer/CourtPreparation';
-import ClientManagement from '@/pages/lawyer/ClientManagement';
+import LegalDocumentation from "@/pages/lawyer/LegalDocumentation";
+import ChainOfCustodyVerification from "@/pages/lawyer/ChainOfCustodyVerification";
+import LegalReports from "@/pages/lawyer/Reports";
+import CourtPreparation from "@/pages/lawyer/CourtPreparation";
+import ClientManagement from "@/pages/lawyer/ClientManagement";
 
 /**
  * Routes exclusively for Lawyer role
@@ -29,19 +29,22 @@ export const LawyerRoutes = () => (
         </Layout>
       }
     />
-    
+
     {/* Chain of Custody */}
     <Route
       path="/verify/custody"
       element={
         <Layout>
-          <SecureRoute allowedRoles={[Role.Lawyer, Role.Court]} requireAuth={true}>
+          <SecureRoute
+            allowedRoles={[Role.Lawyer, Role.Court]}
+            requireAuth={true}
+          >
             <ChainOfCustodyVerification />
           </SecureRoute>
         </Layout>
       }
     />
-    
+
     {/* Court Preparation */}
     <Route
       path="/cases/prepare"
@@ -53,7 +56,7 @@ export const LawyerRoutes = () => (
         </Layout>
       }
     />
-    
+
     {/* Client Management */}
     <Route
       path="/clients"
@@ -75,7 +78,7 @@ export const LawyerRoutes = () => (
         </Layout>
       }
     />
-    
+
     {/* Reports */}
     <Route
       path="/legal/reports"

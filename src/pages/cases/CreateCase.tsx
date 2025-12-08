@@ -62,13 +62,13 @@ const CreateCase = () => {
   const [activeTab, setActiveTab] = useState("basic");
   const [showRoleManager, setShowRoleManager] = useState(false);
   const [caseTitle, setCaseTitle] = useState(
-    "Default Case Title - Cyberbullying Incident"
+    "Default Case Title - Cyberbullying Incident",
   );
   const [caseType, setCaseType] = useState("criminal");
   const [priority, setPriority] = useState("high");
   const [jurisdiction, setJurisdiction] = useState("district");
   const [description, setDescription] = useState(
-    "This is a default description for a cyberbullying case. The suspect is accused of sending harassing messages."
+    "This is a default description for a cyberbullying case. The suspect is accused of sending harassing messages.",
   );
 
   // FIR IDs from Supabase
@@ -117,17 +117,17 @@ const CreateCase = () => {
   const [complainantName, setComplainantName] = useState("Jane Doe");
   const [complainantContact, setComplainantContact] = useState("555-1234");
   const [complainantAddress, setComplainantAddress] = useState(
-    "123 Main St, Anytown, USA"
+    "123 Main St, Anytown, USA",
   );
 
   // Suspect information
   const [suspectName, setSuspectName] = useState("John Smith");
   const [suspectContact, setSuspectContact] = useState("555-5678");
   const [suspectAddress, setSuspectAddress] = useState(
-    "456 Oak Ave, Anytown, USA"
+    "456 Oak Ave, Anytown, USA",
   );
   const [suspectDescription, setSuspectDescription] = useState(
-    'The suspect is known to use the online alias "TrollMaster99".'
+    'The suspect is known to use the online alias "TrollMaster99".',
   );
 
   // Assignments
@@ -222,13 +222,13 @@ const CreateCase = () => {
 
     try {
       console.log(
-        `Assigning officer ${selectedOfficer} to case ${createdCaseId}`
+        `Assigning officer ${selectedOfficer} to case ${createdCaseId}`,
       );
 
       const success = await web3Service.assignCaseRole(
         createdCaseId,
         selectedOfficer,
-        Role.Officer
+        Role.Officer,
       );
 
       if (success) {
@@ -379,7 +379,7 @@ const CreateCase = () => {
               description,
               tags: [caseType, priority, jurisdiction],
             }),
-          }
+          },
         );
 
         const data = await response.json();
@@ -743,10 +743,10 @@ const CreateCase = () => {
                           {userRole === Role.None
                             ? "None"
                             : userRole === Role.Forensic
-                            ? "Forensic"
-                            : userRole === Role.Lawyer
-                            ? "Lawyer"
-                            : "Unknown"}
+                              ? "Forensic"
+                              : userRole === Role.Lawyer
+                                ? "Lawyer"
+                                : "Unknown"}
                         </p>
                       </div>
                       <p className="text-xs text-yellow-600 mt-1">

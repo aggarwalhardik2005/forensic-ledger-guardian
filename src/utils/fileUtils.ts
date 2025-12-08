@@ -1,24 +1,23 @@
-
-import { EvidenceType } from '@/services/web3Service';
+import { EvidenceType } from "@/services/web3Service";
 
 // Determine evidence type from file MIME type
 export const getEvidenceTypeFromFile = (file: File): EvidenceType => {
   const mimeType = file.type.toLowerCase();
-  
-  if (mimeType.startsWith('image/')) {
+
+  if (mimeType.startsWith("image/")) {
     return EvidenceType.Image;
-  } else if (mimeType.startsWith('video/')) {
+  } else if (mimeType.startsWith("video/")) {
     return EvidenceType.Video;
   } else if (
-    mimeType === 'application/pdf' ||
-    mimeType === 'text/plain' ||
-    mimeType === 'application/msword' ||
-    mimeType.includes('document') ||
-    mimeType.includes('spreadsheet')
+    mimeType === "application/pdf" ||
+    mimeType === "text/plain" ||
+    mimeType === "application/msword" ||
+    mimeType.includes("document") ||
+    mimeType.includes("spreadsheet")
   ) {
     return EvidenceType.Document;
   }
-  
+
   return EvidenceType.Other;
 };
 
@@ -36,6 +35,6 @@ export const formatBlockchainDate = (timestamp: number): string => {
 
 // Shorten blockchain address for display
 export const shortenAddress = (address: string): string => {
-  if (!address) return '';
+  if (!address) return "";
   return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
 };

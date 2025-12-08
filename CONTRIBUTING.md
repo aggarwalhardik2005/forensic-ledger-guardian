@@ -98,6 +98,7 @@ type(scope): description
 ```
 
 Types:
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation
@@ -107,6 +108,7 @@ Types:
 - `chore`: Maintenance
 
 Example:
+
 ```
 feat(evidence): add batch upload functionality
 
@@ -131,23 +133,28 @@ Closes #123
 
 ```markdown
 ## Description
+
 Brief description of changes
 
 ## Type of Change
+
 - [ ] Bug fix
 - [ ] New feature
 - [ ] Breaking change
 - [ ] Documentation update
 
 ## Testing
+
 - [ ] Unit tests pass
 - [ ] Integration tests pass
 - [ ] Manual testing completed
 
 ## Screenshots (if applicable)
+
 [Add screenshots here]
 
 ## Related Issues
+
 Closes #[issue number]
 ```
 
@@ -238,6 +245,7 @@ The project includes GitHub Copilot custom agents to assist with specialized dev
 ### Using Custom Agents
 
 When working on React frontend code, you can leverage the React Expert agent for:
+
 - Implementing React 19.2 features (`<Activity>`, `useEffectEvent()`, `cacheSignal`)
 - Using modern hooks (`use()`, `useFormStatus`, `useOptimistic`, `useActionState`)
 - TypeScript integration and type-safe patterns
@@ -247,6 +255,7 @@ When working on React frontend code, you can leverage the React Expert agent for
 ### Creating New Agents
 
 If you need to add a new custom agent:
+
 1. Create a markdown file in `.github/agents/` directory
 2. Include YAML frontmatter with `description` and `tools` fields
 3. Write comprehensive instructions and code examples
@@ -286,6 +295,7 @@ If you need to add a new custom agent:
 ## Recognition
 
 Contributors will be recognized in:
+
 - GitHub contributors list
 - Project documentation
 - Release notes

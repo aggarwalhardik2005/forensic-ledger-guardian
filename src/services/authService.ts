@@ -64,7 +64,7 @@ class AuthService {
   // Email/password authentication
   public async loginWithEmail(
     email: string,
-    password: string
+    password: string,
   ): Promise<AuthResult> {
     try {
       if (!supabase) {
@@ -145,9 +145,8 @@ class AuthService {
       await this.clearAuthState();
 
       // Get role from database (primary source of truth)
-      const dbRole = await roleManagementService.getRoleForWallet(
-        walletAddress
-      );
+      const dbRole =
+        await roleManagementService.getRoleForWallet(walletAddress);
 
       if (dbRole === Role.None) {
         // Check if this wallet is the contract owner
@@ -161,13 +160,13 @@ class AuthService {
               await roleManagementService.assignWalletToRole(
                 walletAddress,
                 Role.Court,
-                walletAddress // Self-assigned as contract owner
+                walletAddress, // Self-assigned as contract owner
               );
 
             if (assignSuccess) {
               const courtUser = this.createWalletUser(
                 walletAddress,
-                Role.Court
+                Role.Court,
               );
               this.currentUser = courtUser;
               this.saveAuthState();
@@ -194,12 +193,12 @@ class AuthService {
 
       if (blockchainRole !== dbRole && blockchainRole !== Role.None) {
         console.warn(
-          `Role mismatch: Database=${dbRole}, Blockchain=${blockchainRole}`
+          `Role mismatch: Database=${dbRole}, Blockchain=${blockchainRole}`,
         );
         toast({
           title: "Role Mismatch Detected",
           description: `Using database role: ${getRoleTitle(
-            dbRole
+            dbRole,
           )}. Blockchain role may need updating.`,
           variant: "default",
         });
@@ -334,7 +333,7 @@ class AuthService {
       if (userData.authType === "wallet" && userData.address) {
         try {
           const currentRole = await roleManagementService.getRoleForWallet(
-            userData.address
+            userData.address,
           );
           if (currentRole === Role.None) {
             // Role revoked, clear storage
@@ -351,7 +350,7 @@ class AuthService {
           // Network error - allow cached user but mark for re-validation
           console.warn(
             "Could not verify wallet role, using cached data:",
-            error
+            error,
           );
         }
       }
@@ -369,7 +368,7 @@ class AuthService {
   // Private helper methods
   private async loadUserProfile(
     userId: string,
-    email: string
+    email: string,
   ): Promise<AuthResult> {
     if (!supabase) {
       return { success: false, error: "Database not available" };
@@ -426,7 +425,7 @@ class AuthService {
 
   private async createCourtAdmin(
     userId: string,
-    email: string
+    email: string,
   ): Promise<AuthResult> {
     if (!roleManagementService.createCourtAdminProfile) {
       return { success: false, error: "Role management not available" };
@@ -436,7 +435,7 @@ class AuthService {
       const created = await roleManagementService.createCourtAdminProfile(
         userId,
         email,
-        "Court Administrator"
+        "Court Administrator",
       );
 
       if (created) {
@@ -456,7 +455,7 @@ class AuthService {
       email: `${walletAddress}@wallet.local`,
       name: `${getRoleTitle(role)} (${walletAddress.substring(
         0,
-        6
+        6,
       )}...${walletAddress.substring(walletAddress.length - 4)})`,
       role,
       roleTitle: getRoleTitle(role),
@@ -514,7 +513,7 @@ class AuthService {
     if (this.currentUser) {
       localStorage.setItem(
         "forensicLedgerUser",
-        JSON.stringify(this.currentUser)
+        JSON.stringify(this.currentUser),
       );
     }
   }

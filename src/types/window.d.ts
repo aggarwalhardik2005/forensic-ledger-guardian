@@ -7,7 +7,7 @@ interface EthereumProvider {
   on: (event: string, callback: (...args: unknown[]) => void) => void;
   removeListener: (
     event: string,
-    callback: (...args: unknown[]) => void
+    callback: (...args: unknown[]) => void,
   ) => void;
   removeAllListeners: (event?: string) => void;
   enable: () => Promise<string[]>;

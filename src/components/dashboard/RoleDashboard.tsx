@@ -1,12 +1,11 @@
-
-import { useAuth } from '@/contexts/AuthContext';
-import { Role } from '@/services/web3Service';
-import { getRoleConfig } from '@/config/roles';
-import { Badge } from '@/components/ui/badge';
-import ForensicDashboard from './roles/ForensicDashboard';
-import CourtDashboard from './roles/CourtDashboard';
-import OfficerDashboard from './roles/OfficerDashboard';
-import LawyerDashboard from './roles/LawyerDashboard';
+import { useAuth } from "@/contexts/AuthContext";
+import { Role } from "@/services/web3Service";
+import { getRoleConfig } from "@/config/roles";
+import { Badge } from "@/components/ui/badge";
+import ForensicDashboard from "./roles/ForensicDashboard";
+import CourtDashboard from "./roles/CourtDashboard";
+import OfficerDashboard from "./roles/OfficerDashboard";
+import LawyerDashboard from "./roles/LawyerDashboard";
 
 const RoleDashboard = () => {
   const { user } = useAuth();

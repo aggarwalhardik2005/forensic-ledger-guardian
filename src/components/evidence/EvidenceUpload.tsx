@@ -44,7 +44,7 @@ const EvidenceUpload = () => {
   const [selectedCase, setSelectedCase] = useState<string>("");
   const [selectedFir, setSelectedFir] = useState<string>("");
   const [evidenceType, setEvidenceType] = useState<EvidenceType>(
-    EvidenceType.Other
+    EvidenceType.Other,
   );
   const [description, setDescription] = useState<string>("");
   const [deviceSource, setDeviceSource] = useState<string>("");
@@ -106,8 +106,8 @@ const EvidenceUpload = () => {
           tags: Array.isArray(c.tags)
             ? c.tags
             : c.tags
-            ? String(c.tags).split(",")
-            : [],
+              ? String(c.tags).split(",")
+              : [],
           evidenceCount: Number(c.evidenceCount || c.evidence_count || 0),
         })) as Case[];
 
@@ -189,7 +189,7 @@ const EvidenceUpload = () => {
       [
         "application/pdf",
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      ].includes(t)
+      ].includes(t),
     ),
     [EvidenceType.Other]: ALLOWED_MIME, // allow all
   };
@@ -232,97 +232,96 @@ const EvidenceUpload = () => {
   // };
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  // require at least one: case OR FIR
-  if (!selectedCase && !selectedFir) {
-    toast({
-      title: "Case or FIR required",
-      description: "Please select a case or FIR for this evidence",
-      variant: "destructive",
-    });
-    return;
-  }
-
-  if (files.length === 0) {
-    toast({
-      title: "No files selected",
-      description: "Please select at least one evidence file to upload",
-      variant: "destructive",
-    });
-    return;
-  }
-
-  setIsUploading(true);
-
-  try {
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const progress = Math.round(((i + 1) / files.length) * 100);
-      setUploadProgress(progress);
-
-      const form = new FormData();
-      form.append("file", file, file.name);
-      form.append("evidenceType", EvidenceType[evidenceType]);
-
-      // send either case or FIR based on what is selected
-      if (selectedCase) {
-        form.append("caseId", selectedCase);
-        form.append("referenceType", "case");
-      } else if (selectedFir) {
-        form.append("firId", selectedFir);
-        form.append("referenceType", "fir");
-      }
-
-      if (description.trim()) form.append("description", description);
-      if (deviceSource.trim()) form.append("deviceSource", deviceSource);
-      if (location.trim()) form.append("location", location);
-
-      // choose appropriate backend route based on what you use on server
-      const referenceId = selectedCase || selectedFir;
-      const resp = await fetch(
-        `${BASE_URL}/${selectedCase ? "case" : "fir"}/${referenceId}/upload`,
-        {
-          method: "POST",
-          body: form,
-        }
-      );
-
-      if (!resp.ok) {
-        const text = await resp.text();
-        throw new Error(text || `Upload failed for ${file.name}`);
-      }
-
-      const data = await resp.json();
-      console.log(
-        `Uploaded → CID: ${data.cid}, Evidence ID: ${data.evidenceId}`
-      );
+    // require at least one: case OR FIR
+    if (!selectedCase && !selectedFir) {
+      toast({
+        title: "Case or FIR required",
+        description: "Please select a case or FIR for this evidence",
+        variant: "destructive",
+      });
+      return;
     }
 
-    toast({
-      title: "Evidence uploaded",
-      description: `${files.length} file(s) uploaded to IPFS and recorded on-chain via backend`,
-      variant: "default",
-    });
+    if (files.length === 0) {
+      toast({
+        title: "No files selected",
+        description: "Please select at least one evidence file to upload",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    setFiles([]);
-    setDescription("");
-    setDeviceSource("");
-    setLocation("");
-    setUploadProgress(0);
-  } catch (error) {
-    toast({
-      title: "Upload failed",
-      description:
-        (error as Error).message ||
-        "There was a problem uploading your evidence",
-      variant: "destructive",
-    });
-  } finally {
-    setIsUploading(false);
-  }
-};
+    setIsUploading(true);
 
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const progress = Math.round(((i + 1) / files.length) * 100);
+        setUploadProgress(progress);
+
+        const form = new FormData();
+        form.append("file", file, file.name);
+        form.append("evidenceType", EvidenceType[evidenceType]);
+
+        // send either case or FIR based on what is selected
+        if (selectedCase) {
+          form.append("caseId", selectedCase);
+          form.append("referenceType", "case");
+        } else if (selectedFir) {
+          form.append("firId", selectedFir);
+          form.append("referenceType", "fir");
+        }
+
+        if (description.trim()) form.append("description", description);
+        if (deviceSource.trim()) form.append("deviceSource", deviceSource);
+        if (location.trim()) form.append("location", location);
+
+        // choose appropriate backend route based on what you use on server
+        const referenceId = selectedCase || selectedFir;
+        const resp = await fetch(
+          `${BASE_URL}/${selectedCase ? "case" : "fir"}/${referenceId}/upload`,
+          {
+            method: "POST",
+            body: form,
+          },
+        );
+
+        if (!resp.ok) {
+          const text = await resp.text();
+          throw new Error(text || `Upload failed for ${file.name}`);
+        }
+
+        const data = await resp.json();
+        console.log(
+          `Uploaded → CID: ${data.cid}, Evidence ID: ${data.evidenceId}`,
+        );
+      }
+
+      toast({
+        title: "Evidence uploaded",
+        description: `${files.length} file(s) uploaded to IPFS and recorded on-chain via backend`,
+        variant: "default",
+      });
+
+      setFiles([]);
+      setDescription("");
+      setDeviceSource("");
+      setLocation("");
+      setUploadProgress(0);
+    } catch (error) {
+      toast({
+        title: "Upload failed",
+        description:
+          (error as Error).message ||
+          "There was a problem uploading your evidence",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -526,7 +525,7 @@ const EvidenceUpload = () => {
                 className={cn(
                   "border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors",
                   "border-forensic-300 hover:border-forensic-accent",
-                  files.length > 0 ? "bg-forensic-50" : "bg-white"
+                  files.length > 0 ? "bg-forensic-50" : "bg-white",
                 )}
               >
                 <div className="flex flex-col items-center space-y-2">
@@ -605,7 +604,7 @@ const EvidenceUpload = () => {
             disabled={isUploading || files.length === 0}
             className={cn(
               "bg-forensic-accent hover:bg-forensic-accent/90",
-              isUploading && "opacity-80"
+              isUploading && "opacity-80",
             )}
           >
             {isUploading ? (

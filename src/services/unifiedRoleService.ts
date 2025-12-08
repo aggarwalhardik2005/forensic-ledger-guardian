@@ -78,7 +78,7 @@ export class UnifiedRoleService {
   async assignWalletToRole(
     walletAddress: string,
     role: Role,
-    assignedBy: string
+    assignedBy: string,
   ): Promise<boolean> {
     if (!this.isValidRole(role) || role === Role.None) {
       return false;
@@ -86,7 +86,7 @@ export class UnifiedRoleService {
     return roleManagementService.assignWalletToRole(
       walletAddress,
       role,
-      assignedBy
+      assignedBy,
     );
   }
 
@@ -100,7 +100,7 @@ export class UnifiedRoleService {
 
   async linkWalletToProfile(
     userId: string,
-    walletAddress: string
+    walletAddress: string,
   ): Promise<boolean> {
     return roleManagementService.linkWalletToProfile(userId, walletAddress);
   }

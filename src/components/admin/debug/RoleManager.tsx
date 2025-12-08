@@ -61,7 +61,7 @@ const RoleManager: React.FC<RoleManagerProps> = ({ onClose }) => {
         }
       } else {
         setMessage(
-          "Only Court role can assign roles. Please set yourself as Court first."
+          "Only Court role can assign roles. Please set yourself as Court first.",
         );
       }
     } catch (error: unknown) {
@@ -69,7 +69,7 @@ const RoleManager: React.FC<RoleManagerProps> = ({ onClose }) => {
       setMessage(
         `Error: ${
           error instanceof Error ? error.message : "Failed to set role"
-        }`
+        }`,
       );
     } finally {
       setLoading(false);
@@ -96,7 +96,7 @@ const RoleManager: React.FC<RoleManagerProps> = ({ onClose }) => {
       setMessage(
         `Error: ${
           error instanceof Error ? error.message : "Failed to set as Court"
-        }`
+        }`,
       );
     } finally {
       setLoading(false);

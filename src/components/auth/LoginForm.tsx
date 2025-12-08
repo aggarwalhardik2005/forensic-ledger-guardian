@@ -94,7 +94,8 @@ const LoginForm = () => {
       console.error("MetaMask login error:", error);
       toast({
         title: "Connection failed",
-        description: "Could not connect to MetaMask. Please ensure MetaMask is installed and try again.",
+        description:
+          "Could not connect to MetaMask. Please ensure MetaMask is installed and try again.",
         variant: "destructive",
       });
       setIsLoading(false);

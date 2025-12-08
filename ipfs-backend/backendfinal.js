@@ -49,7 +49,7 @@ app.use(
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
-  })
+  }),
 );
 
 app.use(express.json());
@@ -65,11 +65,11 @@ app.use((req, res, next) => {
   }
   res.header(
     "Access-Control-Allow-Methods",
-    "GET,POST,PUT,PATCH,DELETE,OPTIONS"
+    "GET,POST,PUT,PATCH,DELETE,OPTIONS",
   );
   res.header(
     "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization",
   );
   res.header("Access-Control-Allow-Credentials", "true");
   if (req.method === "OPTIONS") return res.sendStatus(200);
@@ -98,7 +98,7 @@ const _supabaseKey =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlqb3lzZnZ4bWpwYnlsYnRtbHdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUxNDMzNDMsImV4cCI6MjA3MDcxOTM0M30.9TlzNEzOIQcHk1TlWNyccQq5tEHWV5sFODDnWwnIRJk";
 if (!_supabaseUrl || !_supabaseKey) {
   console.warn(
-    "Supabase URL or Key missing. Supabase writes will likely fail. Make sure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_KEY) are set."
+    "Supabase URL or Key missing. Supabase writes will likely fail. Make sure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_KEY) are set.",
   );
 }
 const supabase = createClient(_supabaseUrl, _supabaseKey);
@@ -185,7 +185,7 @@ async function getPinnedFilenameFromPinata(cid) {
 
   try {
     const pinataMetaUrl = `https://api.pinata.cloud/data/pinList?hashContains=${encodeURIComponent(
-      cid
+      cid,
     )}&status=pinned&limit=1`;
     const resp = await axios.get(pinataMetaUrl, {
       headers: { Authorization: `Bearer ${PJWT}` },
@@ -289,7 +289,7 @@ app.post("/fir", async (req, res) => {
           status: "pending",
         },
       ],
-      { onConflict: ["fir_id"] }
+      { onConflict: ["fir_id"] },
     );
     if (firError) {
       console.error("Supabase FIR upsert failed:", firError.message);
@@ -325,7 +325,7 @@ app.post("/fir", async (req, res) => {
             additional_info: suspect.additionalInfo || null,
           },
         ],
-        { onConflict: ["fir_id"] }
+        { onConflict: ["fir_id"] },
       );
       if (suspectError) {
         console.error("Supabase suspect upsert failed:", suspectError.message);
@@ -336,7 +336,7 @@ app.post("/fir", async (req, res) => {
     if (witnesses && Array.isArray(witnesses) && witnesses.length > 0) {
       // Filter out empty witnesses
       const validWitnesses = witnesses.filter(
-        (w) => w.name || w.contact_info || w.statement
+        (w) => w.name || w.contact_info || w.statement,
       );
 
       if (validWitnesses.length > 0) {
@@ -354,7 +354,7 @@ app.post("/fir", async (req, res) => {
         if (witnessError) {
           console.error(
             "Supabase witness upsert failed:",
-            witnessError.message
+            witnessError.message,
           );
           // Log but don't fail the request
         }
@@ -391,7 +391,7 @@ app.post("/fir/:firId/upload", upload.single("file"), async (req, res) => {
     console.log("UPLOAD: FIR ID =", firId);
     console.log(
       "UPLOAD: Raw FIR ID chars:",
-      Array.from(firId).map((c) => c.charCodeAt(0))
+      Array.from(firId).map((c) => c.charCodeAt(0)),
     );
     const { evidenceType } = req.body;
     const evidenceId = crypto.randomUUID();
@@ -440,7 +440,7 @@ app.post("/fir/:firId/upload", upload.single("file"), async (req, res) => {
       {
         maxBodyLength: Infinity,
         headers: { Authorization: `Bearer ${PJWT}`, ...formData.getHeaders() },
-      }
+      },
     );
     const cid = ipfsResp.data.IpfsHash;
 
@@ -481,7 +481,7 @@ app.post("/fir/:firId/upload", upload.single("file"), async (req, res) => {
     console.log("FIR ID used in submit:", firId);
     console.log(
       "Raw FIR ID string (chars):",
-      Array.from(firId).map((c) => c.charCodeAt(0))
+      Array.from(firId).map((c) => c.charCodeAt(0)),
     );
     // Store CID & hash on-chain
     try {
@@ -490,7 +490,7 @@ app.post("/fir/:firId/upload", upload.single("file"), async (req, res) => {
         evidenceId,
         cid,
         hashOriginal,
-        evidenceTypeNum
+        evidenceTypeNum,
       );
       await tx.wait();
     } catch (err) {
@@ -529,19 +529,19 @@ app.post("/fir/:firId/promote", async (req, res) => {
     console.log("PROMOTE: FIR ID =", firId);
     console.log(
       "PROMOTE: Raw FIR ID chars:",
-      Array.from(firId).map((c) => c.charCodeAt(0))
+      Array.from(firId).map((c) => c.charCodeAt(0)),
     );
     console.log("PROMOTE: CASE ID =", caseId);
     console.log(
       "PROMOTE: Raw CASE ID chars:",
-      Array.from(caseId).map((c) => c.charCodeAt(0))
+      Array.from(caseId).map((c) => c.charCodeAt(0)),
     );
     const tx = await contract.createCaseFromFIR(
       caseId,
       firId,
       title,
       description,
-      tags || []
+      tags || [],
     );
     await tx.wait();
     const { error: supaError } = await supabase
@@ -574,7 +574,7 @@ app.post("/fir/:firId/promote", async (req, res) => {
           fir_id: firId,
         },
       ],
-      { onConflict: ["case_id"] }
+      { onConflict: ["case_id"] },
     );
 
     if (error) {
@@ -640,7 +640,7 @@ app.post("/case/:caseId/upload", upload.single("file"), async (req, res) => {
     if (!allowed.includes(file.mimetype)) {
       return res.status(400).json({
         error: `Invalid file type. Only ${allowed.join(
-          ", "
+          ", ",
         )} allowed for this evidence type.`,
       });
     }
@@ -665,7 +665,7 @@ app.post("/case/:caseId/upload", upload.single("file"), async (req, res) => {
       {
         maxBodyLength: Infinity,
         headers: { Authorization: `Bearer ${PJWT}`, ...formData.getHeaders() },
-      }
+      },
     );
     const cid = ipfsResp.data.IpfsHash;
 
@@ -704,7 +704,7 @@ app.post("/case/:caseId/upload", upload.single("file"), async (req, res) => {
       evidenceId,
       cid,
       hashOriginal,
-      evidenceTypeNum
+      evidenceTypeNum,
     );
     await tx.wait();
 
@@ -716,9 +716,7 @@ app.post("/case/:caseId/upload", upload.single("file"), async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res
-      .status(500)
-      .json({ error: "Case upload failed: " + (err)});
+    res.status(500).json({ error: "Case upload failed: " + err });
   }
 });
 
@@ -771,7 +769,7 @@ app.get("/retrieve/:containerId/:evidenceId", async (req, res) => {
     // Fetch CID + hashOriginal from blockchain
     const evidenceOnChain = await contract.getEvidenceById(
       containerId,
-      evidenceId
+      evidenceId,
     );
     const cid = evidenceOnChain.cid;
     const hashOriginal = evidenceOnChain.hashOriginal;
@@ -779,7 +777,7 @@ app.get("/retrieve/:containerId/:evidenceId", async (req, res) => {
     // Fetch encrypted file from IPFS
     const fileResp = await axios.get(
       `https://gateway.pinata.cloud/ipfs/${cid}`,
-      { responseType: "arraybuffer" }
+      { responseType: "arraybuffer" },
     );
     const encryptedFile = Buffer.from(fileResp.data);
 
@@ -797,7 +795,7 @@ app.get("/retrieve/:containerId/:evidenceId", async (req, res) => {
       .digest("hex");
     if (hashCheck !== hashOriginal) {
       console.error(
-        "Hash mismatch: evidence file may be tampered or corrupted."
+        "Hash mismatch: evidence file may be tampered or corrupted.",
       );
       return res.status(403).json({
         error:
@@ -830,8 +828,8 @@ app.get("/retrieve/:containerId/:evidenceId", async (req, res) => {
     res.setHeader(
       "Content-Disposition",
       `attachment; filename="${originalFilename}"; filename*=UTF-8''${encodeURIComponent(
-        originalFilename
-      )}`
+        originalFilename,
+      )}`,
     );
     res.send(decrypted);
   } catch (err) {
@@ -856,7 +854,7 @@ app.get("/sync", async (req, res) => {
       try {
         const evidenceOnChain = await contract.getEvidenceById(
           container_id,
-          evidence_id
+          evidence_id,
         );
         if (!evidenceOnChain) {
           results.push({
@@ -872,7 +870,7 @@ app.get("/sync", async (req, res) => {
 
         const fileResp = await axios.get(
           `https://gateway.pinata.cloud/ipfs/${cid}`,
-          { responseType: "arraybuffer" }
+          { responseType: "arraybuffer" },
         );
         const encryptedFile = Buffer.from(fileResp.data);
 
@@ -887,7 +885,7 @@ app.get("/sync", async (req, res) => {
         const fileDecipher = crypto.createDecipheriv(
           "aes-256-cbc",
           keyBuffer,
-          iv
+          iv,
         );
         const decrypted = Buffer.concat([
           fileDecipher.update(encryptedFile),
@@ -905,7 +903,7 @@ app.get("/sync", async (req, res) => {
       } catch (innerErr) {
         console.error(
           `Sync error for ${record.evidence_id}:`,
-          innerErr.message
+          innerErr.message,
         );
         results.push({
           container_id: record.container_id,

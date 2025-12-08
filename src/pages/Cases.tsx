@@ -1,4 +1,4 @@
-import CaseList from '@/components/cases/CaseList';
+import CaseList from "@/components/cases/CaseList";
 
 const Cases = () => {
   return <CaseList />;

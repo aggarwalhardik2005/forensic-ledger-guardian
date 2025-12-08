@@ -1,27 +1,27 @@
 /**
  * Shared routes accessible by multiple roles or all authenticated users
  */
-import { Route } from 'react-router-dom';
-import Layout from '@/components/layout/Layout';
-import SecureRoute from '@/components/auth/SecureRoute';
-import { Role } from '@/services/web3Service';
+import { Route } from "react-router-dom";
+import Layout from "@/components/layout/Layout";
+import SecureRoute from "@/components/auth/SecureRoute";
+import { Role } from "@/services/web3Service";
 
 // Shared pages
-import Dashboard from '@/pages/Dashboard';
-import Cases from '@/pages/Cases';
-import Evidence from '@/pages/Evidence';
-import Upload from '@/pages/Upload';
-import Verify from '@/pages/Verify';
-import Help from '@/pages/Help';
-import FAQ from '@/pages/help/Faq';
-import Settings from '@/pages/Settings';
-import Activity from '@/pages/Activity';
-import WalletManagement from '@/pages/WalletManagement';
-import MetaMaskHelp from '@/pages/help/MetaMaskHelp';
-import CaseDetail from '@/pages/cases/CaseDetail';
-import CreateCase from '@/pages/cases/CreateCase';
-import FIR from '@/pages/fir/Fir';
-import View from '@/pages/fir/View';
+import Dashboard from "@/pages/Dashboard";
+import Cases from "@/pages/Cases";
+import Evidence from "@/pages/Evidence";
+import Upload from "@/pages/Upload";
+import Verify from "@/pages/Verify";
+import Help from "@/pages/Help";
+import FAQ from "@/pages/help/Faq";
+import Settings from "@/pages/Settings";
+import Activity from "@/pages/Activity";
+import WalletManagement from "@/pages/WalletManagement";
+import MetaMaskHelp from "@/pages/help/MetaMaskHelp";
+import CaseDetail from "@/pages/cases/CaseDetail";
+import CreateCase from "@/pages/cases/CreateCase";
+import FIR from "@/pages/fir/Fir";
+import View from "@/pages/fir/View";
 
 /**
  * Routes accessible by all authenticated users
