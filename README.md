@@ -81,31 +81,38 @@ Our platform addresses these challenges by:
 ### Frontend
 
 - **React 19.1.1** - Modern UI framework
-- **TypeScript** - Type-safe development
-- **Vite** - Fast build tool and dev server
-- **Tailwind CSS** - Utility-first CSS framework
-- **Radix UI** - Accessible component library
-- **React Router** - Client-side routing
-- **React Query** - Server state management
+- **TypeScript 5.9.2** - Type-safe development
+- **Vite 7.1.2** - Fast build tool and dev server (port 8080)
+- **Tailwind CSS 3.4.11** - Utility-first CSS framework
+- **Radix UI** - Accessible component primitives
+- **shadcn/ui** - Re-usable component library
+- **React Router 7.8.0** - Client-side routing
+- **TanStack Query 5.85.3** - Server state management
+- **React Hook Form 7.62.0** - Form validation
+- **Ethers.js 6.15.0** - Blockchain interaction library
 
 ### Backend & Storage
 
-- **Node.js/Express** - IPFS backend server
-- **IPFS** - Decentralized file storage
-- **Supabase** - Database and authentication
-- **PostgreSQL** - Relational database
+- **Node.js/Express 5.1.0** - IPFS backend server
+- **IPFS/Pinata** - Decentralized file storage
+- **Supabase 2.55.0** - Database and authentication
+- **PostgreSQL** - Relational database via Supabase
+- **Axios 1.12.0** - HTTP client
+- **Multer 2.0.2** - File upload handling
 
 ### Blockchain
 
 - **Solidity 0.8.29** - Smart contract language
-- **Foundry** - Development framework
-- **Ethers.js** - Blockchain interaction library
+- **Foundry** - Development framework and testing
+- **Ethers.js 6.15.0** - Blockchain interaction
 - **Ethereum Sepolia** - Testnet deployment
 
 ### Development Tools
 
-- **ESLint** - Code linting
-- **TypeScript** - Static type checking
+- **ESLint 9.33.0** - Code linting
+- **TypeScript 5.9.2** - Static type checking
+- **Vite 7.1.2** - Development server
+- **Foundry** - Smart contract testing
 - **Git** - Version control
 
 ## 🏗 Architecture
@@ -135,10 +142,41 @@ Our platform addresses these challenges by:
 
 ### Data Flow
 
-1. **Evidence Submission**: Files encrypted and stored on IPFS, metadata recorded on blockchain
+1. **Evidence Submission**: Files encrypted (AES-256) and stored on IPFS via Pinata, metadata recorded on blockchain
 2. **Access Control**: Smart contract validates user permissions before evidence access
 3. **Chain of Custody**: All interactions logged immutably on blockchain
-4. **Verification**: Cryptographic hashes ensure evidence integrity
+4. **Verification**: Cryptographic hashes (SHA-256) ensure evidence integrity
+
+### Project Structure
+
+```
+forensic-ledger-guardian/
+├── src/                        # React frontend source
+│   ├── components/            # Reusable UI components (shadcn/ui)
+│   ├── pages/                 # Application pages
+│   │   ├── court/            # Court official pages
+│   │   ├── fir/              # FIR management pages
+│   │   ├── forensic/         # Forensic expert pages
+│   │   └── cases/            # Case management pages
+│   ├── services/              # API and blockchain services
+│   │   ├── web3Service.ts    # Blockchain interactions (~1100 lines)
+│   │   ├── ipfsService.ts    # IPFS operations
+│   │   └── authService.ts    # Authentication logic
+│   ├── contexts/              # React context providers
+│   ├── config/                # Configuration files
+│   │   └── roles.ts          # Role definitions and permissions
+│   ├── routes/                # Route definitions by role
+│   └── ForensicChain.sol      # Smart contract source
+├── ipfs-backend/              # Node.js IPFS backend
+│   ├── backendfinal.js       # Main backend server (~940 lines)
+│   ├── ForensicChainABI.json # Contract ABI
+│   └── package.json          # Backend dependencies
+├── script/                    # Foundry deployment scripts
+│   └── ForensicChain.s.sol   # Contract deployment script
+├── lib/                       # Foundry libraries (forge-std)
+├── .devcontainer/             # VS Code dev container config
+└── foundry.toml               # Foundry configuration
+```
 
 ## 🚀 Installation & Setup
 
@@ -159,7 +197,7 @@ The fastest way to get started! Everything is pre-configured in a containerized 
 3. Wait for the container to build and dependencies to install
 4. Configure `.env` files and start coding!
 
-📚 See [`.devcontainer/README.md`](.devcontainer/README.md) for detailed instructions.
+📚 See [`.devcontainer/devcontainer.json`](.devcontainer/devcontainer.json) for detailed configuration.
 
 ### 💻 Option 2: Local Development Setup
 
@@ -184,36 +222,34 @@ cd forensic-ledger-guardian
 # Install dependencies
 npm install
 
-# Create environment file
-cp .env.example .env
-
 # Configure environment variables
-# Edit .env with your configuration
+# Create .env file with the following variables:
+# VITE_SUPABASE_URL=your_supabase_url
+# VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+# VITE_MASTER_PASSWORD=your_encryption_key
+# VITE_CONTRACT_ADDRESS=your_deployed_contract_address
 ```
 
 ### 3. IPFS Backend Setup
 
 ```bash
 # Navigate to backend directory
-cd ipfs_backend/ipfs-backend
+cd ipfs-backend
 
 # Install backend dependencies
 npm install
 
 # Configure backend environment
-cp .env.example .env
-# Edit with your IPFS and Supabase credentials
+# Create .env file with your IPFS and Supabase credentials
 ```
 
 ### 4. Database Setup
 
 1. Create a Supabase project at [supabase.com](https://supabase.com)
-2. Run the SQL setup script:
-
-```sql
--- Copy and execute the contents of database-setup.sql
--- in your Supabase SQL Editor
-```
+2. Set up the required database tables in your Supabase SQL Editor:
+   - `evidence1` table for evidence metadata
+   - User profiles and role management tables
+   - Configure authentication settings
 
 ### 5. Smart Contract Deployment
 
@@ -226,28 +262,36 @@ foundryup
 forge build
 
 # Deploy to testnet (ensure you have testnet ETH)
-forge script script/ForensicChain.s.sol --rpc-url $SEPOLIA_RPC_URL --broadcast
+forge script script/ForensicChain.s.sol:ForensicChainScript --rpc-url $SEPOLIA_RPC_URL --broadcast --private-key $PRIVATE_KEY
+
+# After deployment, update CONTRACT_ADDRESS in both frontend and backend .env files
 ```
 
 ### 6. Environment Configuration
 
-Create `.env` file in the root directory:
+**Frontend Environment Variables** (create `.env` in root directory):
 
 ```env
-# Frontend Configuration
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_MASTER_PASSWORD=your_encryption_key
 VITE_CONTRACT_ADDRESS=your_deployed_contract_address
-VITE_SEPOLIA_RPC_URL=your_sepolia_rpc_url
+```
 
-# Backend Configuration (in ipfs_backend/ipfs-backend/.env)
-SUPABASE_URL=your_supabase_url
-SUPABASE_KEY=your_supabase_service_key
+**Backend Environment Variables** (create `ipfs-backend/.env`):
+
+```env
+MASTER_PASSWORD=your_encryption_key  # Must match frontend
 PINATA_JWT=your_pinata_jwt_token
 CONTRACT_ADDRESS=your_deployed_contract_address
 SEPOLIA_RPC_URL=your_sepolia_rpc_url
 SEPOLIA_PRIVATE_KEY=your_wallet_private_key
+SUPABASE_URL=your_supabase_url
+SUPABASE_KEY=your_supabase_service_key
+PORT=4000  # Optional, defaults to 4000
 ```
+
+**Important:** The `MASTER_PASSWORD` must be identical in both frontend and backend for proper encryption/decryption.
 
 ### 7. Start the Application
 
@@ -256,10 +300,11 @@ SEPOLIA_PRIVATE_KEY=your_wallet_private_key
 npm run dev
 
 # Terminal 2: Start IPFS backend
-cd ipfs_backend/ipfs-backend
+cd ipfs-backend
 npm start
 
-# Application will be available at http://localhost:5173
+# Application will be available at http://localhost:8080
+# IPFS Backend API at http://localhost:4000
 ```
 
 ## 📖 Usage
@@ -322,13 +367,32 @@ npm start
 
 ### REST Endpoints
 
-#### Evidence Management
+The IPFS backend server (running on port 4000) provides the following endpoints:
+
+#### FIR Management
 
 ```
-POST   /upload              # Upload encrypted evidence
-GET    /retrieve/:evidenceId # Retrieve and decrypt evidence
-POST   /verify              # Verify evidence integrity
+POST   /fir                      # Create a new FIR
+POST   /fir/:firId/upload        # Upload evidence to FIR
+POST   /fir/:firId/promote       # Promote FIR to case
 ```
+
+#### Case & Evidence Management
+
+```
+POST   /case/:caseId/upload      # Upload evidence to case
+POST   /case/:containerId/confirm # Confirm evidence
+GET    /retrieve/:containerId/:evidenceId # Retrieve and decrypt evidence
+GET    /sync                      # Sync and verify all evidence integrity
+```
+
+#### Health Check
+
+```
+GET    /                          # Server health check
+```
+
+All endpoints support CORS for local development origins (localhost:8080, localhost:5173, localhost:4000).
 
 ### Smart Contract Functions
 
@@ -362,26 +426,48 @@ getGlobalRole(user)
 
 The `ForensicChain.sol` smart contract is the core of our evidence management system, deployed on Ethereum Sepolia testnet.
 
+**Contract Location:** `src/ForensicChain.sol`
+
 ### Key Features
 
 - **Role-based access control** with enum-based permissions
-- **Evidence integrity** through cryptographic hashing
+- **Evidence integrity** through cryptographic hashing (SHA-256)
 - **Chain of custody** tracking with automatic audit trails
-- **Case lifecycle management** from creation to closure
+- **Case lifecycle management** from FIR to case closure
 - **Emergency controls** with system-wide locking capabilities
+
+### Contract Structure
+
+The contract is built using Solidity 0.8.29 with Foundry framework and includes:
+
+- **Enums:** `Role` (None, Court, Officer, Forensic, Lawyer), `EvidenceType` (Image, Video, Document, Other)
+- **Structs:** `Evidence`, `FIR`, `Case`
+- **Role Management:** Global roles and case-specific role assignments
+- **Evidence Management:** Submit, confirm, and track evidence with chain of custody
+
+### Deployment
+
+Deployed using Foundry's scripting system (`script/ForensicChain.s.sol`):
+
+```bash
+forge script script/ForensicChain.s.sol:ForensicChainScript --rpc-url $SEPOLIA_RPC_URL --broadcast
+```
 
 ### Contract Address
 
 ```
-Sepolia Testnet: [Contract Address will be displayed after deployment]
+Sepolia Testnet: Update VITE_CONTRACT_ADDRESS after deployment
 ```
 
 ### Roles & Permissions
 
-- **Role.Court (1)**: Full administrative control
+- **Role.None (0)**: No assigned role
+- **Role.Court (1)**: Full administrative control, case creation, role assignment
 - **Role.Officer (2)**: FIR filing, evidence submission
 - **Role.Forensic (3)**: Evidence analysis, confirmation
 - **Role.Lawyer (4)**: Evidence access, review
+
+**Note:** Role values are defined in both the smart contract and frontend (`src/config/roles.ts`).
 
 ## 🤝 Contributing
 
@@ -401,13 +487,21 @@ We welcome contributions from the community! Please read our [Contributing Guide
 - Write comprehensive tests for new features
 - Document all public APIs and functions
 - Ensure responsive design for UI components
-- Use React 19.2 modern patterns and hooks (see our React Expert agent in `.github/agents/`)
+- Use modern React 19.1 patterns and hooks
 
-### Development Tools
+### Development Tools & Extensions
 
-The project includes GitHub Copilot custom agents to accelerate development:
+The project uses:
+- **ESLint** for code linting
+- **Vite** for fast development and building
+- **Foundry** for smart contract development and testing
 
-- **React Expert Agent**: Specialized in React 19.2, modern hooks, Server Components, and TypeScript patterns
+VS Code extensions recommended (see `.devcontainer/devcontainer.json`):
+- ESLint (`dbaeumer.vscode-eslint`)
+- Prettier (`esbenp.prettier-vscode`)
+- Tailwind CSS IntelliSense (`bradlc.vscode-tailwindcss`)
+- Solidity (`NomicFoundation.hardhat-solidity`)
+- GitHub Copilot (optional)
 
 ### Bug Reports
 
@@ -417,7 +511,32 @@ Use GitHub Issues to report bugs. Include:
 - Steps to reproduce
 - Expected vs actual behavior
 - Screenshots (if applicable)
-- Environment details
+- Environment details (Node.js version, browser, OS)
+
+### Testing
+
+**Smart Contract Testing:**
+```bash
+# Compile contracts
+forge build
+
+# Run tests (when available)
+forge test
+
+# Run tests with gas reporting
+forge test --gas-report
+```
+
+**Frontend Linting:**
+```bash
+# Run ESLint
+npm run lint
+
+# Build check
+npm run build
+```
+
+**Note:** Frontend test framework is not currently configured. Contributions to add testing infrastructure are welcome!
 
 ## 🔒 Security
 
@@ -432,7 +551,7 @@ Security is paramount in forensic evidence management. Our implementation includ
 
 ### Reporting Security Issues
 
-Please report security vulnerabilities privately to [security@yourproject.com](mailto:security@yourproject.com). Do not create public issues for security vulnerabilities.
+Please report security vulnerabilities privately through [GitHub Security Advisories](https://github.com/aaravmahajanofficial/forensic-ledger-guardian/security/advisories/new). Do not create public issues for security vulnerabilities.
 
 ### Security Best Practices
 
