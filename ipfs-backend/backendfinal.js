@@ -16,6 +16,12 @@ import url from "url";
 
 const pipeline = promisify(stream.pipeline);
 
+// --- Secure password hash configuration ---
+// These should be kept constant for your deployment
+const PBKDF2_SALT = "ipfs-backend-v1-salt"; // Random, application-unique
+const PBKDF2_ITERATIONS = 100_000;
+const PBKDF2_KEYLEN = 32; // 256 bits
+const PBKDF2_DIGEST = "sha256";
 const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config();
@@ -173,7 +179,14 @@ function getMasterKeyOrThrow() {
     "1e7548fd1b170145c49cf8dbb88d7a1a02faa914f842a1e61fc25525fd76b744";
   if (!pw)
     throw new Error("MASTER_PASSWORD not set; cannot encrypt/decrypt keys");
-  return crypto.createHash("sha256").update(String(pw)).digest();
+  // Use PBKDF2 for computational difficulty (slow hash)
+  return crypto.pbkdf2Sync(
+    String(pw),
+    PBKDF2_SALT,
+    PBKDF2_ITERATIONS,
+    PBKDF2_KEYLEN,
+    PBKDF2_DIGEST
+  );
 }
 
 // Get filename from Pinata metadata with caching
