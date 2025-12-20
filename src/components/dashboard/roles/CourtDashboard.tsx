@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import {
   Card,
@@ -22,6 +22,8 @@ import {
   LayoutGrid,
   FileLock2,
   Unlock,
+  Loader2,
+  RefreshCw,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
@@ -30,20 +32,122 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RecentActivityList from "../RecentActivityList";
 import StatCard from "../StatCard";
 import { useWeb3 } from "@/hooks/useWeb3";
-import web3Service from "@/services/web3Service";
+import web3Service, { Case as BlockchainCase } from "@/services/web3Service";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabaseClient";
+
+// Type for case management
+type ManagedCase = {
+  id: string;
+  title: string;
+  status: "active" | "sealed" | "closed";
+  description: string;
+};
 
 const CourtDashboard = () => {
   const { account } = useWeb3();
-  // Mock data - would come from API/blockchain in real implementation
-  const stats = {
-    totalCases: 32,
-    pendingApproval: 7,
-    totalUsers: 42,
-    activeUsers: 28,
-  };
 
+  // Real-time stats state
+  const [stats, setStats] = useState({
+    totalCases: 0,
+    pendingApproval: 0,
+    totalUsers: 0,
+    activeUsers: 0,
+  });
+  const [loading, setLoading] = useState(true);
   const [systemLocked, setSystemLocked] = useState(false);
+  const [casesForManagement, setCasesForManagement] = useState<ManagedCase[]>(
+    []
+  );
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  // Fetch dashboard data
+  const fetchDashboardData = useCallback(async () => {
+    setLoading(true);
+    try {
+      // Fetch total cases from Supabase
+      const { count: casesCount, error: casesError } = await supabase
+        .from("cases")
+        .select("*", { count: "exact", head: true });
+
+      // Fetch pending FIRs (pending approval)
+      const { count: pendingCount, error: pendingError } = await supabase
+        .from("fir")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending");
+
+      // Fetch total users from role_assignments
+      const { count: usersCount, error: usersError } = await supabase
+        .from("role_assignments")
+        .select("*", { count: "exact", head: true });
+
+      // Fetch active users (is_active = true)
+      const { count: activeUsersCount, error: activeError } = await supabase
+        .from("role_assignments")
+        .select("*", { count: "exact", head: true })
+        .eq("is_active", true);
+
+      // Get system lock status from blockchain
+      const isLocked = await web3Service.getSystemLockStatus();
+      setSystemLocked(isLocked);
+
+      setStats({
+        totalCases: casesCount || 0,
+        pendingApproval: pendingCount || 0,
+        totalUsers: usersCount || 0,
+        activeUsers: activeUsersCount || 0,
+      });
+
+      // Fetch cases for management with blockchain status
+      const { data: casesData, error: casesDataError } = await supabase
+        .from("cases")
+        .select("case_id, title, description, type")
+        .order("filed_date", { ascending: false })
+        .limit(20);
+
+      if (casesData && !casesDataError) {
+        // Get blockchain status for each case
+        const casesWithStatus: ManagedCase[] = await Promise.all(
+          casesData.map(async (c) => {
+            let status: "active" | "sealed" | "closed" = "active";
+            try {
+              const blockchainCase = await web3Service.getCase(c.case_id);
+              if (blockchainCase) {
+                if (blockchainCase.seal) {
+                  status = "sealed";
+                } else if (!blockchainCase.open) {
+                  status = "closed";
+                }
+              }
+            } catch {
+              // Default to active if blockchain fetch fails
+            }
+            return {
+              id: c.case_id,
+              title: c.title || "Untitled Case",
+              status,
+              description: c.description || "",
+            };
+          })
+        );
+        setCasesForManagement(casesWithStatus);
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load dashboard data",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch data on mount
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
   // Handler for toggling system lock
   const handleToggleSystem = async () => {
@@ -68,36 +172,137 @@ const CourtDashboard = () => {
     }
   };
 
-  // Cases that need case status management
-  const casesForManagement = [
-    { id: "CC-2023-056", status: "active", title: "State v. Johnson" },
-    {
-      id: "CC-2023-078",
-      status: "sealed",
-      title: "Evidence tampering investigation",
-    },
-    { id: "CC-2023-112", status: "closed", title: "Corporate data breach" },
-  ];
+  // Handler for sealing a case
+  const handleSealCase = async (caseId: string) => {
+    setActionLoading(caseId);
+    try {
+      const success = await web3Service.sealCase(caseId);
+      if (success) {
+        toast({
+          title: "Case Sealed",
+          description: `Case ${caseId} has been sealed successfully.`,
+        });
+        // Update local state
+        setCasesForManagement((prev) =>
+          prev.map((c) =>
+            c.id === caseId ? { ...c, status: "sealed" as const } : c
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Failed to seal case:", error);
+      toast({
+        title: "Operation Failed",
+        description: "Could not seal the case. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // Handler for closing a case
+  const handleCloseCase = async (caseId: string) => {
+    setActionLoading(caseId);
+    try {
+      const success = await web3Service.closeCase(caseId);
+      if (success) {
+        toast({
+          title: "Case Closed",
+          description: `Case ${caseId} has been closed successfully.`,
+        });
+        // Update local state
+        setCasesForManagement((prev) =>
+          prev.map((c) =>
+            c.id === caseId ? { ...c, status: "closed" as const } : c
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Failed to close case:", error);
+      toast({
+        title: "Operation Failed",
+        description: "Could not close the case. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // Handler for reopening a case
+  const handleReopenCase = async (caseId: string) => {
+    setActionLoading(caseId);
+    try {
+      const success = await web3Service.reopenCase(caseId);
+      if (success) {
+        toast({
+          title: "Case Reopened",
+          description: `Case ${caseId} has been reopened successfully.`,
+        });
+        // Update local state
+        setCasesForManagement((prev) =>
+          prev.map((c) =>
+            c.id === caseId ? { ...c, status: "active" as const } : c
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Failed to reopen case:", error);
+      toast({
+        title: "Operation Failed",
+        description: "Could not reopen the case. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // Filter cases by status
+  const activeCases = casesForManagement.filter((c) => c.status === "active");
+  const sealedCases = casesForManagement.filter((c) => c.status === "sealed");
+  const closedCases = casesForManagement.filter((c) => c.status === "closed");
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Header with refresh button */}
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-forensic-800">
+          Court Dashboard
+        </h2>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={fetchDashboardData}
+          disabled={loading}
+        >
+          {loading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCw className="h-4 w-4" />
+          )}
+          <span className="ml-2">Refresh</span>
+        </Button>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Total Cases"
-          value={stats.totalCases}
+          value={loading ? "..." : stats.totalCases}
           icon={<FolderKanban className="h-5 w-5 text-forensic-evidence" />}
           linkTo="/cases"
         />
         <StatCard
-          title="Pending Approval"
-          value={stats.pendingApproval}
+          title="Pending FIRs"
+          value={loading ? "..." : stats.pendingApproval}
           icon={<FolderKanban className="h-5 w-5 text-forensic-accent" />}
-          linkTo="/cases/approval"
+          linkTo="/fir"
           highlight={stats.pendingApproval > 0}
         />
         <StatCard
           title="Total Users"
-          value={stats.totalUsers}
+          value={loading ? "..." : stats.totalUsers}
           icon={<Users className="h-5 w-5 text-forensic-court" />}
           linkTo="/users/manage"
         />
@@ -110,7 +315,7 @@ const CourtDashboard = () => {
               <Unlock className="h-5 w-5 text-forensic-success" />
             )
           }
-          value={systemLocked ? "Locked" : "Unlocked"}
+          value={loading ? "..." : systemLocked ? "Locked" : "Unlocked"}
           className={
             systemLocked ? "bg-forensic-50 border-forensic-warning/50" : ""
           }
@@ -130,95 +335,152 @@ const CourtDashboard = () => {
           <CardDescription>Seal, reopen, or close cases</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Tabs defaultValue="active">
-            <TabsList className="mb-4">
-              <TabsTrigger value="active">Active Cases</TabsTrigger>
-              <TabsTrigger value="sealed">Sealed Cases</TabsTrigger>
-              <TabsTrigger value="closed">Closed Cases</TabsTrigger>
-            </TabsList>
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-forensic-accent" />
+              <span className="ml-2 text-forensic-500">Loading cases...</span>
+            </div>
+          ) : (
+            <Tabs defaultValue="active">
+              <TabsList className="mb-4">
+                <TabsTrigger value="active">
+                  Active Cases ({activeCases.length})
+                </TabsTrigger>
+                <TabsTrigger value="sealed">
+                  Sealed Cases ({sealedCases.length})
+                </TabsTrigger>
+                <TabsTrigger value="closed">
+                  Closed Cases ({closedCases.length})
+                </TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="active" className="space-y-4">
-              {casesForManagement
-                .filter((c) => c.status === "active")
-                .map((caseItem) => (
-                  <div
-                    key={caseItem.id}
-                    className="flex items-center justify-between p-3 bg-white rounded-lg border border-forensic-100"
-                  >
-                    <div>
-                      <p className="font-medium">{caseItem.title}</p>
-                      <p className="text-sm text-forensic-500">
-                        #{caseItem.id}
-                      </p>
+              <TabsContent value="active" className="space-y-4">
+                {activeCases.length === 0 ? (
+                  <p className="text-center text-forensic-500 py-4">
+                    No active cases found
+                  </p>
+                ) : (
+                  activeCases.map((caseItem) => (
+                    <div
+                      key={caseItem.id}
+                      className="flex items-center justify-between p-3 bg-white rounded-lg border border-forensic-100"
+                    >
+                      <div>
+                        <p className="font-medium">{caseItem.title}</p>
+                        <p className="text-sm text-forensic-500">
+                          #{caseItem.id}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-forensic-warning border-forensic-warning/30 hover:bg-forensic-warning/10"
+                          onClick={() => handleSealCase(caseItem.id)}
+                          disabled={actionLoading === caseItem.id}
+                        >
+                          {actionLoading === caseItem.id ? (
+                            <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                          ) : null}
+                          Seal Case
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-forensic-court border-forensic-court/30 hover:bg-forensic-court/10"
+                          onClick={() => handleCloseCase(caseItem.id)}
+                          disabled={actionLoading === caseItem.id}
+                        >
+                          {actionLoading === caseItem.id ? (
+                            <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                          ) : null}
+                          Close Case
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-forensic-warning border-forensic-warning/30 hover:bg-forensic-warning/10"
-                      >
-                        Seal Case
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-forensic-court border-forensic-court/30 hover:bg-forensic-court/10"
-                      >
-                        Close Case
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-            </TabsContent>
+                  ))
+                )}
+              </TabsContent>
 
-            <TabsContent value="sealed" className="space-y-4">
-              {casesForManagement
-                .filter((c) => c.status === "sealed")
-                .map((caseItem) => (
-                  <div
-                    key={caseItem.id}
-                    className="flex items-center justify-between p-3 bg-white rounded-lg border border-forensic-100"
-                  >
-                    <div>
-                      <p className="font-medium">{caseItem.title}</p>
-                      <p className="text-sm text-forensic-500">
-                        #{caseItem.id}
-                      </p>
+              <TabsContent value="sealed" className="space-y-4">
+                {sealedCases.length === 0 ? (
+                  <p className="text-center text-forensic-500 py-4">
+                    No sealed cases found
+                  </p>
+                ) : (
+                  sealedCases.map((caseItem) => (
+                    <div
+                      key={caseItem.id}
+                      className="flex items-center justify-between p-3 bg-white rounded-lg border border-forensic-100"
+                    >
+                      <div>
+                        <p className="font-medium">{caseItem.title}</p>
+                        <p className="text-sm text-forensic-500">
+                          #{caseItem.id}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-forensic-accent border-forensic-accent/30 hover:bg-forensic-accent/10"
+                          onClick={() => handleReopenCase(caseItem.id)}
+                          disabled={actionLoading === caseItem.id}
+                        >
+                          {actionLoading === caseItem.id ? (
+                            <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                          ) : null}
+                          Unseal Case
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-forensic-court border-forensic-court/30 hover:bg-forensic-court/10"
+                          onClick={() => handleCloseCase(caseItem.id)}
+                          disabled={actionLoading === caseItem.id}
+                        >
+                          {actionLoading === caseItem.id ? (
+                            <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                          ) : null}
+                          Close Case
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-forensic-accent border-forensic-accent/30 hover:bg-forensic-accent/10"
-                      >
-                        Reopen Case
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-            </TabsContent>
+                  ))
+                )}
+              </TabsContent>
 
-            <TabsContent value="closed" className="space-y-4">
-              {casesForManagement
-                .filter((c) => c.status === "closed")
-                .map((caseItem) => (
-                  <div
-                    key={caseItem.id}
-                    className="flex items-center justify-between p-3 bg-white rounded-lg border border-forensic-100"
-                  >
-                    <div>
-                      <p className="font-medium">{caseItem.title}</p>
-                      <p className="text-sm text-forensic-500">
-                        #{caseItem.id}
-                      </p>
+              <TabsContent value="closed" className="space-y-4">
+                {closedCases.length === 0 ? (
+                  <p className="text-center text-forensic-500 py-4">
+                    No closed cases found
+                  </p>
+                ) : (
+                  closedCases.map((caseItem) => (
+                    <div
+                      key={caseItem.id}
+                      className="flex items-center justify-between p-3 bg-white rounded-lg border border-forensic-100"
+                    >
+                      <div>
+                        <p className="font-medium">{caseItem.title}</p>
+                        <p className="text-sm text-forensic-500">
+                          #{caseItem.id}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Badge
+                          variant="outline"
+                          className="bg-forensic-50 text-forensic-500"
+                        >
+                          Permanently Closed
+                        </Badge>
+                      </div>
                     </div>
-                    <Badge variant="outline" className="bg-forensic-50">
-                      Closed
-                    </Badge>
-                  </div>
-                ))}
-            </TabsContent>
-          </Tabs>
+                  ))
+                )}
+              </TabsContent>
+            </Tabs>
+          )}
         </CardContent>
         <CardFooter>
           <Button asChild variant="outline" className="w-full">

@@ -137,7 +137,7 @@ class Web3Service {
             toast({
               title: "Connected",
               description: `Connected to account ${this.shortenAddress(
-                arr[0],
+                arr[0]
               )}`,
             });
           }
@@ -176,11 +176,11 @@ class Web3Service {
           this.contract = new ethers.Contract(
             contractAddress,
             CONTRACT_ABI,
-            signer as unknown as ethers.ContractRunner,
+            signer as unknown as ethers.ContractRunner
           );
           console.log(
             "Web3 initialized successfully with account:",
-            this.account,
+            this.account
           );
           console.log("Contract initialized at address:", contractAddress);
           return true;
@@ -188,7 +188,7 @@ class Web3Service {
       } catch (error) {
         console.error(
           "User denied account access or another error occurred:",
-          error,
+          error
         );
         toast({
           title: "Connection Failed",
@@ -220,7 +220,7 @@ class Web3Service {
           this.contract = new ethers.Contract(
             contractAddress,
             CONTRACT_ABI,
-            signer as unknown as ethers.ContractRunner,
+            signer as unknown as ethers.ContractRunner
           );
         })
         .catch(() => {
@@ -231,7 +231,7 @@ class Web3Service {
 
   private shortenAddress(address: string): string {
     return `${address.substring(0, 6)}...${address.substring(
-      address.length - 4,
+      address.length - 4
     )}`;
   }
 
@@ -268,8 +268,8 @@ class Web3Service {
         `getUserRole: Account ${
           this.account
         } has blockchain role ${this.getRoleString(
-          role,
-        )} (raw value: ${roleRaw})`,
+          role
+        )} (raw value: ${roleRaw})`
       );
 
       // Additional debugging
@@ -278,7 +278,7 @@ class Web3Service {
       console.log(
         `getUserRole: Current account is owner: ${
           owner.toLowerCase() === this.account.toLowerCase()
-        }`,
+        }`
       );
 
       return role;
@@ -396,7 +396,7 @@ class Web3Service {
     firId: string,
     title: string,
     description: string,
-    tags: string[],
+    tags: string[]
   ): Promise<boolean> {
     if (!this.contract) {
       console.error("Contract not initialized");
@@ -416,7 +416,7 @@ class Web3Service {
         firId,
         title,
         description,
-        tags,
+        tags
       );
       console.log("Transaction sent:", tx.hash);
       const receipt = await tx.wait();
@@ -472,7 +472,7 @@ class Web3Service {
   public async assignCaseRole(
     caseId: string,
     user: string,
-    role: Role,
+    role: Role
   ): Promise<boolean> {
     if (!this.contract) return false;
 
@@ -574,7 +574,7 @@ class Web3Service {
     hashEncrypted: string,
     hashOriginal: string,
     encryptionKeyHash: string,
-    evidenceType: EvidenceType,
+    evidenceType: EvidenceType
   ): Promise<boolean> {
     if (!this.contract) return false;
 
@@ -586,7 +586,7 @@ class Web3Service {
         hashEncrypted,
         hashOriginal,
         toUtf8Bytes(encryptionKeyHash),
-        evidenceType,
+        evidenceType
       );
       await tx.wait();
       return true;
@@ -608,7 +608,7 @@ class Web3Service {
     hashEncrypted: string,
     hashOriginal: string,
     encryptionKeyHash: string,
-    evidenceType: EvidenceType,
+    evidenceType: EvidenceType
   ): Promise<boolean> {
     if (!this.contract) return false;
 
@@ -620,7 +620,7 @@ class Web3Service {
         hashEncrypted,
         hashOriginal,
         toUtf8Bytes(encryptionKeyHash),
-        evidenceType,
+        evidenceType
       );
       await tx.wait();
       return true;
@@ -637,7 +637,7 @@ class Web3Service {
 
   public async confirmCaseEvidence(
     caseId: string,
-    index: number,
+    index: number
   ): Promise<boolean> {
     if (!this.contract) return false;
 
@@ -658,7 +658,7 @@ class Web3Service {
 
   public async accessEvidence(
     caseId: string,
-    index: number,
+    index: number
   ): Promise<string | null> {
     if (!this.contract) return null;
 
@@ -679,7 +679,7 @@ class Web3Service {
   public async verifyEvidence(
     caseId: string,
     index: number,
-    providedHash: string,
+    providedHash: string
   ): Promise<boolean> {
     if (!this.contract) return false;
 
@@ -687,7 +687,7 @@ class Web3Service {
       const isValid = await this.contract.verifyEvidence(
         caseId,
         index,
-        providedHash,
+        providedHash
       );
       return isValid;
     } catch (error) {
@@ -703,7 +703,7 @@ class Web3Service {
 
   public async getEvidence(
     caseId: string,
-    index: number,
+    index: number
   ): Promise<Evidence | null> {
     if (!this.contract) return null;
 
@@ -748,6 +748,18 @@ class Web3Service {
     }
   }
 
+  public async getSystemLockStatus(): Promise<boolean> {
+    if (!this.contract) return false;
+
+    try {
+      const isLocked = await this.contract.isSystemLocked();
+      return Boolean(isLocked);
+    } catch (error) {
+      console.error("Error getting system lock status:", error);
+      return false;
+    }
+  }
+
   public async setGlobalRole(user: string, role: Role): Promise<boolean> {
     if (!this.contract) {
       console.log("setGlobalRole: No contract available");
@@ -757,16 +769,16 @@ class Web3Service {
     try {
       console.log(
         `setGlobalRole: Setting role ${this.getRoleString(
-          role,
-        )} for user ${user}`,
+          role
+        )} for user ${user}`
       );
       const tx = await this.contract.setGlobalRole(user, role);
       console.log(`setGlobalRole: Transaction sent, hash: ${tx.hash}`);
       await tx.wait();
       console.log(
         `setGlobalRole: Transaction confirmed for ${user} -> ${this.getRoleString(
-          role,
-        )}`,
+          role
+        )}`
       );
 
       // Verify the role was set correctly
@@ -774,8 +786,8 @@ class Web3Service {
       const verifiedRole = this.toNumber(verifyRole) as Role;
       console.log(
         `setGlobalRole: Verified role for ${user}: ${this.getRoleString(
-          verifiedRole,
-        )}`,
+          verifiedRole
+        )}`
       );
 
       return true;
@@ -823,7 +835,7 @@ class Web3Service {
       const isLocked = await this.contract.isSystemLocked();
       console.log(
         "Contract connection test successful. System locked:",
-        isLocked,
+        isLocked
       );
       return true;
     } catch (error) {
@@ -833,7 +845,7 @@ class Web3Service {
       if (error instanceof Error) {
         if (error.message.includes("network")) {
           console.error(
-            "Network error - check if you're connected to the correct network",
+            "Network error - check if you're connected to the correct network"
           );
         } else if (error.message.includes("revert")) {
           console.error("Contract reverted - contract may not be deployed");
@@ -870,7 +882,7 @@ class Web3Service {
 
     try {
       console.log(
-        "initializeAdminRole: Checking if user can initialize admin role...",
+        "initializeAdminRole: Checking if user can initialize admin role..."
       );
 
       // Check if the current user is the contract owner
@@ -879,7 +891,7 @@ class Web3Service {
 
       if (!isOwner) {
         console.log(
-          "initializeAdminRole: User is not the contract owner, cannot initialize admin role",
+          "initializeAdminRole: User is not the contract owner, cannot initialize admin role"
         );
         return false;
       }
@@ -888,18 +900,18 @@ class Web3Service {
       const currentRole = await this.getUserRole();
       console.log(
         `initializeAdminRole: Current role is ${this.getRoleString(
-          currentRole,
-        )}`,
+          currentRole
+        )}`
       );
 
       if (currentRole === Role.None) {
         console.log(
-          "initializeAdminRole: Contract owner detected, setting up Court role...",
+          "initializeAdminRole: Contract owner detected, setting up Court role..."
         );
         const success = await this.setGlobalRole(this.account, Role.Court);
         if (success) {
           console.log(
-            "initializeAdminRole: Admin role initialized successfully",
+            "initializeAdminRole: Admin role initialized successfully"
           );
           return true;
         } else {
@@ -909,14 +921,14 @@ class Web3Service {
       } else {
         console.log(
           "initializeAdminRole: User already has a role:",
-          this.getRoleString(currentRole),
+          this.getRoleString(currentRole)
         );
         return true;
       }
     } catch (error) {
       console.error(
         "initializeAdminRole: Error initializing admin role:",
-        error,
+        error
       );
       return false;
     }
@@ -940,7 +952,7 @@ class Web3Service {
       const success = await this.setGlobalRole(targetAddress, Role.None);
       if (success) {
         console.log(
-          `resetUserRole: Successfully reset role for ${targetAddress}`,
+          `resetUserRole: Successfully reset role for ${targetAddress}`
         );
         return true;
       } else {
@@ -956,7 +968,7 @@ class Web3Service {
   // Method to synchronize database role with blockchain role
   public async syncUserRole(
     userAddress?: string,
-    desiredRole?: Role,
+    desiredRole?: Role
   ): Promise<boolean> {
     if (!this.contract || !this.account) return false;
 
@@ -970,7 +982,7 @@ class Web3Service {
 
       if (!isOwner && currentUserRole !== Role.Court) {
         console.log(
-          "syncUserRole: Only contract owner or Court can sync roles",
+          "syncUserRole: Only contract owner or Court can sync roles"
         );
         return false;
       }
@@ -979,10 +991,12 @@ class Web3Service {
       let targetRole = desiredRole;
       if (!targetRole) {
         try {
-          const { roleManagementService } =
-            await import("@/services/roleManagementService");
-          targetRole =
-            await roleManagementService.getRoleForWallet(targetAddress);
+          const { roleManagementService } = await import(
+            "@/services/roleManagementService"
+          );
+          targetRole = await roleManagementService.getRoleForWallet(
+            targetAddress
+          );
         } catch (error) {
           console.error("syncUserRole: Error getting database role:", error);
           return false;
@@ -1000,11 +1014,11 @@ class Web3Service {
 
       console.log(
         `syncUserRole: Current blockchain role: ${this.getRoleString(
-          currentBlockchainRole,
-        )}`,
+          currentBlockchainRole
+        )}`
       );
       console.log(
-        `syncUserRole: Target role: ${this.getRoleString(targetRole)}`,
+        `syncUserRole: Target role: ${this.getRoleString(targetRole)}`
       );
 
       if (currentBlockchainRole === targetRole) {
@@ -1017,8 +1031,8 @@ class Web3Service {
       if (success) {
         console.log(
           `syncUserRole: Successfully synced role for ${targetAddress} to ${this.getRoleString(
-            targetRole,
-          )}`,
+            targetRole
+          )}`
         );
         return true;
       } else {
