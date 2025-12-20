@@ -57,14 +57,22 @@ const Evidence = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const initialCaseId = queryParams.get("caseId") || "all";
-
+  
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [caseFilter, setCaseFilter] = useState(initialCaseId);
   const [sortOrder, setSortOrder] = useState("newest");
+  const [loading, setLoading] = useState(false);
+  const [recentActivity, setRecentActivity] = useState<
+    {
+      action: "upload" | "verify" | "view";
+      evidenceId: string;
+      timestamp: string;
+    }[]
+  >([]);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { evidence, loading, refreshEvidence, downloadEvidence } =
+  const { evidence, refreshEvidence, downloadEvidence } =
     useEvidenceManager();
 
   // Get unique case IDs for the filter dropdown
@@ -127,183 +135,69 @@ const Evidence = () => {
       description: `Viewing ${evidence.name}`,
     });
   };
+// Add a function to track activity
+  const trackActivity = (
+    action: "upload" | "verify" | "view",
+    evidenceId: string,
+  ) => {
+    const newActivity = {
+      action,
+      evidenceId,
+      timestamp: new Date().toISOString(),
+    };
 
-  const handleVerify = async (evidence: EvidenceItem) => {
-    // Show loading toast
-    // toast({
-    //   title: "Verifying Evidence",
-    //   description: `Checking integrity for ${evidence.name}...`,
-    //   className: "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[350px] max-w-full"
-    // });
-
-    try {
-      // Fetch key_encrypted, iv_encrypted, and hash_original from Supabase
-      const { data, error } = await supabase
-        .from("evidence1")
-        .select("key_encrypted, iv_encrypted, hash_original, cid")
-        .eq("container_id", evidence.caseId)
-        .eq("evidence_id", evidence.id)
-        .single();
-
-      if (error || !data) {
-        toast({
-          title: "Verification Failed",
-          description: "Failed to fetch evidence keys from database.",
-          variant: "destructive",
-          className:
-            "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[350px] max-w-full",
-        });
-        return;
-      }
-
-      // Download encrypted file from IPFS
-      const pinataGatewayUrl = `https://gateway.pinata.cloud/ipfs/${data.cid}`;
-      const response = await fetch(pinataGatewayUrl);
-      if (!response.ok) {
-        toast({
-          title: "Verification Failed",
-          description: `Failed to download evidence: ${response.statusText}`,
-          variant: "destructive",
-          className:
-            "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[350px] max-w-full",
-        });
-        return;
-      }
-      const encryptedBlob = await response.blob();
-      const encryptedArrayBuffer = await encryptedBlob.arrayBuffer();
-
-      // Use master password from Vite environment variable only (frontend)
-      const masterPassword = import.meta.env.VITE_MASTER_PASSWORD;
-      if (!masterPassword) {
-        toast({
-          title: "Verification Failed",
-          description: "VITE_MASTER_PASSWORD not set in environment.",
-          variant: "destructive",
-          className:
-            "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[350px] max-w-full",
-        });
-        return;
-      }
-
-      // Helper: hex to Uint8Array
-      function hexToBytes(hex) {
-        const bytes = new Uint8Array(hex.length / 2);
-        for (let i = 0; i < bytes.length; i++) {
-          bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
-        }
-        return bytes;
-      }
-
-      // 1. Hash master password to get key (SHA-256, matches backend)
-      async function sha256(message) {
-        const msgBuffer = new TextEncoder().encode(message);
-        const hashBuffer = await window.crypto.subtle.digest(
-          "SHA-256",
-          msgBuffer,
-        );
-        return new Uint8Array(hashBuffer);
-      }
-      const masterKeyBytes = await sha256(masterPassword);
-      const iv = hexToBytes(data.iv_encrypted);
-      const keyEncrypted = hexToBytes(data.key_encrypted);
-
-      // 2. Decrypt AES key
-      const masterKey = await window.crypto.subtle.importKey(
-        "raw",
-        masterKeyBytes,
-        { name: "AES-CBC", length: 256 },
-        false,
-        ["decrypt"],
-      );
-      let decryptedKeyBuffer;
-      try {
-        decryptedKeyBuffer = await window.crypto.subtle.decrypt(
-          { name: "AES-CBC", iv },
-          masterKey,
-          keyEncrypted,
-        );
-      } catch (err) {
-        toast({
-          title: "Verification Failed",
-          description:
-            "Failed to decrypt AES key. Check master password and key/iv values.",
-          variant: "destructive",
-          className:
-            "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[350px] max-w-full",
-        });
-        return;
-      }
-      const aesKey = await window.crypto.subtle.importKey(
-        "raw",
-        decryptedKeyBuffer,
-        { name: "AES-CBC", length: 256 },
-        false,
-        ["decrypt"],
-      );
-
-      // 3. Decrypt file
-      let decryptedFileBuffer;
-      try {
-        decryptedFileBuffer = await window.crypto.subtle.decrypt(
-          { name: "AES-CBC", iv },
-          aesKey,
-          encryptedArrayBuffer,
-        );
-      } catch (err) {
-        toast({
-          title: "Verification Failed",
-          description:
-            "Failed to decrypt evidence file. Key/IV may be incorrect.",
-          variant: "destructive",
-          className:
-            "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[350px] max-w-full",
-        });
-        return;
-      }
-
-      // 4. Integrity verification: compute SHA-256 hash and compare
-      async function sha256Hex(buffer) {
-        const hashBuffer = await window.crypto.subtle.digest("SHA-256", buffer);
-        // Convert ArrayBuffer to hex string
-        return Array.from(new Uint8Array(hashBuffer))
-          .map((b) => b.toString(16).padStart(2, "0"))
-          .join("");
-      }
-      const computedHash = await sha256Hex(decryptedFileBuffer);
-      if (computedHash !== data.hash_original) {
-        toast({
-          title: "Integrity Check Failed",
-          description:
-            "Evidence file hash does not match. Integrity verification failed.",
-          variant: "destructive",
-          className:
-            "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[350px] max-w-full",
-        });
-        return;
-      } else {
-        console.log(
-          "Evidence integrity verified: hash matches Database record.",
-        );
-        toast({
-          title: "Integrity Verified",
-          description: `Evidence ${evidence.name} integrity is verified!`,
-          className:
-            "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[350px] max-w-full",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Verification Error",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Unknown error during verification.",
-        variant: "destructive",
-        className:
-          "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[350px] max-w-full",
-      });
-    }
+    setRecentActivity((prev) => {
+      const updated = [newActivity, ...prev].slice(0, 10); // Keep only 10 most recent activities
+      localStorage.setItem("evidenceActivity", JSON.stringify(updated));
+      return updated;
+    });
   };
+  const handleVerify = async (evidence: EvidenceItem) => {
+  setLoading(true);
+  try {
+    const response = await fetch(
+      `http://localhost:4000/verify/${evidence.caseId}/${evidence.id}`,
+      { method: "GET", credentials: "include" }
+    );
+    console.log(response)
+    if (!response.ok) {
+      throw new Error("Verification request failed");
+    }
+
+    const result = await response.json();
+    console.log(result);
+    if (result.status !== "valid") {
+      toast({
+        title: "Evidence Verification Failed",
+        description: `Status: ${result.status}`,
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    trackActivity("verify", evidence.id);
+    refreshEvidence();
+
+    toast({
+      title: "Evidence Verified",
+      description: `Evidence ${evidence.id} is valid and untampered`,
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Verification failed:", error);
+    toast({
+      title: "Verification Failed",
+      description:
+        error instanceof Error ? error.message : "Verification failed",
+      variant: "destructive",
+    });
+    return false;
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleDownload = (evidence: EvidenceItem) => {
     downloadEvidence(evidence);
@@ -458,7 +352,7 @@ const Evidence = () => {
                       {formatBytes(evidence.size)}
                     </div> */}
 
-                    <Button
+                    {/* <Button
                       size="sm"
                       variant="outline"
                       className="h-8"
@@ -466,7 +360,7 @@ const Evidence = () => {
                     >
                       <FileLock2 className="h-4 w-4 mr-1" />
                       Chain
-                    </Button>
+                    </Button> */}
 
                     <Button
                       size="sm"
