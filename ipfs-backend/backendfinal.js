@@ -943,6 +943,81 @@ app.get("/sync", async (req, res) => {
   }
 });
 
+// 8. Verify single evidence
+app.get("/verify/:containerId/:evidenceId", async (req, res) => {
+  try {
+    let { containerId, evidenceId } = req.params;
+    containerId = containerId.trim();
+    evidenceId = evidenceId.trim();
+
+    // 1. Fetch record from Supabase
+    const { data, error } = await supabase
+      .from("evidence1")
+      .select("*")
+      .eq("container_id", containerId)
+      .eq("evidence_id", evidenceId)
+      .single();
+
+    if (error || !data) {
+      return res.status(404).json({ error: "Evidence not found" });
+    }
+
+    // 2. Decrypt AES key
+    const iv = Buffer.from(data.iv_encrypted, "hex");
+    const masterKey = getMasterKeyOrThrow();
+    const decipher = crypto.createDecipheriv("aes-256-cbc", masterKey, iv);
+
+    const keyBuffer = Buffer.concat([
+      decipher.update(Buffer.from(data.key_encrypted, "hex")),
+      decipher.final(),
+    ]);
+
+    // 3. Get blockchain record
+    const onChain = await contract.getEvidenceById(containerId, evidenceId);
+    const cid = onChain.cid;
+    const hashOriginal = onChain.hashOriginal;
+
+    // 4. Fetch encrypted file
+    const fileResp = await axios.get(
+      `https://gateway.pinata.cloud/ipfs/${cid}`,
+      { responseType: "arraybuffer" }
+    );
+
+    // 5. Decrypt file
+    const fileDecipher = crypto.createDecipheriv("aes-256-cbc", keyBuffer, iv);
+    const decrypted = Buffer.concat([
+      fileDecipher.update(Buffer.from(fileResp.data)),
+      fileDecipher.final(),
+    ]);
+
+    // 6. Verify hash
+    const computedHash = crypto
+      .createHash("sha256")
+      .update(decrypted)
+      .digest("hex");
+
+    if (computedHash !== hashOriginal) {
+      return res.json({
+        evidence_id: evidenceId,
+        status: "hash_mismatch",
+      });
+    }
+
+    return res.json({
+      evidence_id: evidenceId,
+      status: "valid",
+    });
+  } catch (err) {
+    console.error("Verify error:", err);
+    return res.status(500).json({
+      evidence_id: req.params.evidenceId,
+      status: "error",
+      error: err.message,
+    });
+  }
+});
+
+
 // Start server
 const PORT = process.env.PORT || 4000;
 const server = app

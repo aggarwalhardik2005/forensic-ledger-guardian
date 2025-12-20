@@ -148,7 +148,7 @@ export const SharedRoutes = () => (
         </Layout>
       }
     />
-    <Route
+    {/* <Route
       path="/verify"
       element={
         <Layout>
@@ -157,7 +157,7 @@ export const SharedRoutes = () => (
           </SecureRoute>
         </Layout>
       }
-    />
+    /> */}
 
     {/* FIR Routes - accessible to all but functionality varies by role */}
     <Route

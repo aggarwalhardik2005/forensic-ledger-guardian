@@ -30,9 +30,7 @@ const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const { user } = useAuth();
-
-  // Sidebar is closed on mobile, open on desktop
-  const isOpen = !isMobile;
+  const [isOpen, setIsOpen] = useState(false);
 
   // Get role-specific navigation items
   const roleNavigation = user ? getRoleNavigation(user.role) : [];
@@ -64,14 +62,14 @@ const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
         baseLinks.push(
           { to: "/evidence", label: "Evidence", icon: FileDigit },
           { to: "/upload", label: "Upload", icon: Upload },
-          { to: "/verify", label: "Verify", icon: CheckCircle },
+          // { to: "/verify", label: "Verify", icon: CheckCircle },
         );
         break;
       default:
         // Default case for other roles
         baseLinks.push(
           { to: "/evidence", label: "Evidence", icon: FileDigit },
-          { to: "/verify", label: "Verify", icon: CheckCircle },
+          // { to: "/verify", label: "Verify", icon: CheckCircle },
         );
     }
 
@@ -151,7 +149,7 @@ const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
                       }
                       onClick={() => isMobile && setIsOpen(false)}
                     >
-                      <span className="mr-3">{link.icon}</span>
+                      <span className="mr-3"><link.icon size={18} /></span>
                       <span>{link.label}</span>
                     </NavLink>
                   ))}

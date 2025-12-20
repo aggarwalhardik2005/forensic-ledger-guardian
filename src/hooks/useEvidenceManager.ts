@@ -179,35 +179,78 @@ export const useEvidenceManager = (caseId?: string) => {
   };
 
   const verifyEvidence = async (evidenceId: string) => {
-    setLoading(true);
-    try {
-      // In a real implementation, this would verify on the blockchain
-      // For now, we're marking it as verified locally
+  setLoading(true);
+  try {
+    const response = await fetch("http://localhost:4000/sync", {
+      method: "GET",
+      credentials: "include",
+    });
 
-      // Track the verify activity
-      trackActivity("verify", evidenceId);
+    if (!response.ok) {
+      throw new Error("Failed to sync evidence with blockchain");
+    }
 
-      // Refresh evidence to update the UI
-      refreshEvidence();
+    const result = await response.json();
 
+    /*
+      result = {
+        summary: { total, valid, corrupted, missing_on_chain, errors },
+        details: [
+          {
+            container_id,
+            evidence_id,
+            cid,
+            status: "valid" | "hash_mismatch" | "missing_on_chain" | "error"
+          }
+        ]
+      }
+    */
+
+    const evidenceResult = result.details.find(
+      (item: any) => item.evidence_id === evidenceId
+    );
+    
+    if (!evidenceResult) {
+      throw new Error("Evidence not found during verification");
+    }
+
+    if (evidenceResult.status !== "valid") {
       toast({
-        title: "Evidence Verified",
-        description: `Evidence ${evidenceId} has been verified successfully`,
-      });
-
-      return true;
-    } catch (error) {
-      console.error("Failed to verify evidence:", error);
-      toast({
-        title: "Verification Failed",
-        description: "Failed to verify evidence",
+        title: "Evidence Verification Failed",
+        description: `Status: ${evidenceResult.status}`,
         variant: "destructive",
       });
       return false;
-    } finally {
-      setLoading(false);
     }
-  };
+
+    // Verification success
+    trackActivity("verify", evidenceId);
+    refreshEvidence();
+
+    toast({
+      title: "Evidence Verified",
+      description: `Evidence ${evidenceId} is valid and untampered`,
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Failed to verify evidence:", error);
+
+    toast({
+      title: "Verification Failed",
+      description:
+        error instanceof Error
+          ? error.message
+          : "Failed to verify evidence integrity",
+      variant: "destructive",
+    });
+
+    return false;
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // Function to view evidence (for tracking purposes)
   const viewEvidence = (evidenceId: string) => {
@@ -216,157 +259,63 @@ export const useEvidenceManager = (caseId?: string) => {
   };
 
   // Function to download evidence from IPFS via Pinata gateway
-  const downloadEvidence = async (evidence: EvidenceItem) => {
-    try {
-      if (!evidence.cidEncrypted) {
-        throw new Error("CID not available for this evidence");
-      }
-
-      // Fetch key_encrypted, iv_encrypted, and hash_original from Supabase
-      const { data, error } = await supabase
-        .from("evidence1")
-        .select("key_encrypted, iv_encrypted, hash_original")
-        .eq("container_id", evidence.caseId)
-        .eq("evidence_id", evidence.id)
-        .single();
-
-      if (error || !data) {
-        throw new Error("Failed to fetch decryption keys from Supabase");
-      }
-
-      // Download encrypted file from IPFS
-      const pinataGatewayUrl = `https://gateway.pinata.cloud/ipfs/${evidence.cidEncrypted}`;
-      const response = await fetch(pinataGatewayUrl);
-      if (!response.ok) {
-        throw new Error(`Failed to download evidence: ${response.statusText}`);
-      }
-      const encryptedBlob = await response.blob();
-      const encryptedArrayBuffer = await encryptedBlob.arrayBuffer();
-
-      // Use master password from Vite environment variable only (frontend)
-      const masterPassword = import.meta.env.VITE_MASTER_PASSWORD;
-      if (!masterPassword) {
-        throw new Error("VITE_MASTER_PASSWORD not set in environment");
-      }
-
-      // Helper: hex to Uint8Array
-      function hexToBytes(hex) {
-        const bytes = new Uint8Array(hex.length / 2);
-        for (let i = 0; i < bytes.length; i++) {
-          bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
-        }
-        return bytes;
-      }
-
-      // 1. Hash master password to get key (SHA-256, matches backend)
-      async function sha256(message) {
-        const msgBuffer = new TextEncoder().encode(message);
-        const hashBuffer = await window.crypto.subtle.digest(
-          "SHA-256",
-          msgBuffer,
-        );
-        return new Uint8Array(hashBuffer);
-      }
-      const masterKeyBytes = await sha256(masterPassword);
-      const iv = hexToBytes(data.iv_encrypted);
-      const keyEncrypted = hexToBytes(data.key_encrypted);
-
-      // 2. Decrypt AES key
-      const masterKey = await window.crypto.subtle.importKey(
-        "raw",
-        masterKeyBytes,
-        { name: "AES-CBC", length: 256 },
-        false,
-        ["decrypt"],
-      );
-      let decryptedKeyBuffer;
-      try {
-        decryptedKeyBuffer = await window.crypto.subtle.decrypt(
-          { name: "AES-CBC", iv },
-          masterKey,
-          keyEncrypted,
-        );
-      } catch (err) {
-        throw new Error(
-          "Failed to decrypt AES key. Check master password and key/iv values.",
-        );
-      }
-      const aesKey = await window.crypto.subtle.importKey(
-        "raw",
-        decryptedKeyBuffer,
-        { name: "AES-CBC", length: 256 },
-        false,
-        ["decrypt"],
-      );
-
-      // 3. Decrypt file
-      let decryptedFileBuffer;
-      try {
-        decryptedFileBuffer = await window.crypto.subtle.decrypt(
-          { name: "AES-CBC", iv },
-          aesKey,
-          encryptedArrayBuffer,
-        );
-      } catch (err) {
-        throw new Error(
-          "Failed to decrypt evidence file. Key/IV may be incorrect.",
-        );
-      }
-
-      // 4. Integrity verification: compute SHA-256 hash and compare
-      async function sha256Hex(buffer) {
-        const hashBuffer = await window.crypto.subtle.digest("SHA-256", buffer);
-        // Convert ArrayBuffer to hex string
-        return Array.from(new Uint8Array(hashBuffer))
-          .map((b) => b.toString(16).padStart(2, "0"))
-          .join("");
-      }
-      const computedHash = await sha256Hex(decryptedFileBuffer);
-      if (computedHash !== data.hash_original) {
-        toast({
-          title: "Integrity Check Failed",
-          description: "Evidence file hash does not match. Download blocked.",
-          variant: "destructive",
-        });
-        return false;
-      } else {
-        console.log(
-          "Evidence integrity verified: hash matches Database record.",
-        );
-      }
-
-      // Download decrypted file
-      const decryptedBlob = new Blob([decryptedFileBuffer], {
-        type: encryptedBlob.type,
-      });
-      const url = window.URL.createObjectURL(decryptedBlob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = evidence.name || `${evidence.id}.bin`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      trackActivity("view", evidence.id);
-      toast({
-        title: "Integrity verified and Evidence Downloaded",
-        description: `${evidence.name} has been downloaded and decrypted successfully`,
-      });
-      return true;
-    } catch (error) {
-      console.error("Failed to download evidence:", error);
-      toast({
-        title: "Download Failed",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Failed to download evidence file",
-        variant: "destructive",
-      });
-      return false;
+ const downloadEvidence = async (evidence: EvidenceItem) => {
+  try {
+    if (!evidence.caseId || !evidence.id) {
+      throw new Error("Invalid evidence identifiers");
     }
-  };
+
+    const response = await fetch(
+      `http://localhost:4000/retrieve/${evidence.caseId}/${evidence.id}`,
+      {
+        method: "GET",
+        credentials: "include",
+      }
+    );
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text || "Failed to download evidence");
+    }
+
+    // Backend already returns decrypted & verified file
+    const blob = await response.blob();
+
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = evidence.name || `${evidence.id}`;
+    document.body.appendChild(link);
+    link.click();
+
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+    trackActivity("view", evidence.id);
+
+    toast({
+      title: "Evidence Downloaded",
+      description: `${evidence.name} downloaded successfully`,
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Failed to download evidence:", error);
+
+    toast({
+      title: "Download Failed",
+      description:
+        error instanceof Error
+          ? error.message
+          : "Failed to download evidence",
+      variant: "destructive",
+    });
+
+    return false;
+  }
+};
+
 
   return {
     evidence,
