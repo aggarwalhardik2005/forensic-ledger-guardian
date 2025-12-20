@@ -36,11 +36,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <Shield className="h-3 w-3 text-white" />
               </div>
               <span className="font-medium text-xs md:text-sm text-forensic-800">
-                ForensicChain
+                ChainSEAL
               </span>
             </div>
             <div className="text-xs text-forensic-500">
-              © {new Date().getFullYear()} ForensicChain. All rights reserved.
+              © {new Date().getFullYear()} ChainSEAL. All rights reserved.
             </div>
           </div>
         </footer>

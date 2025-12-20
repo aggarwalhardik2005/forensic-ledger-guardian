@@ -589,6 +589,13 @@ app.post("/fir/:firId/promote", async (req, res) => {
       ],
       { onConflict: ["case_id"] },
     );
+    const {error: supaFirUpdateError} = await supabase.from("fir").update(
+      { status: "promoted" }
+    ).eq("fir_id", firId);
+
+    if(supaFirUpdateError){
+      console.error("Supabase FIR status update failed:", supaFirUpdateError.message);
+    }
 
     if (error) {
       console.error("Supabase Case upsert failed:", error.message);
