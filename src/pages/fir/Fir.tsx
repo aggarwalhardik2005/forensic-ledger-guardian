@@ -85,7 +85,8 @@ const FIR = () => {
       const { data, error } = await supabase.from("fir").select(`
           *,
           suspect ( name ),
-          complainant ( name )
+          complainant ( name ),
+          status
         `);
 
       if (error) {
