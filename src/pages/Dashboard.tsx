@@ -31,9 +31,9 @@ const Dashboard = () => {
           <TabsTrigger value="help">Help & Documentation</TabsTrigger>
         </TabsList> */}
 
-        <TabsContent value="verify">
+        {/* <TabsContent value="verify">
           <EvidenceVerifier />
-        </TabsContent>
+        </TabsContent> */}
 
         <TabsContent value="help">
           <RoleGuides role={user?.role} />

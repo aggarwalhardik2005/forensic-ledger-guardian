@@ -490,7 +490,7 @@ const CourtDashboard = () => {
       </Card>
 
       {/* Quick Actions - Court-specific actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="border border-forensic-200 hover:border-forensic-300 transition-colors">
           <CardHeader className="pb-2 bg-gradient-to-r from-forensic-50 to-transparent">
             <CardTitle className="text-lg flex items-center">
@@ -518,9 +518,9 @@ const CourtDashboard = () => {
               </Link>
             </Button>
           </CardFooter>
-        </Card>
+        </Card> */}
 
-        <Card className="border border-forensic-200 hover:border-forensic-300 transition-colors">
+        {/* <Card className="border border-forensic-200 hover:border-forensic-300 transition-colors">
           <CardHeader className="pb-2 bg-gradient-to-r from-forensic-50 to-transparent">
             <CardTitle className="text-lg flex items-center">
               <KeySquare className="h-5 w-5 mr-2 text-forensic-accent" />
@@ -547,8 +547,8 @@ const CourtDashboard = () => {
               </Link>
             </Button>
           </CardFooter>
-        </Card>
-      </div>
+        </Card> */}
+      {/* </div> */}
 
       {/* System Security Toggle */}
       <Card className="border border-forensic-200 hover:border-forensic-300 transition-colors">
