@@ -390,10 +390,10 @@ const CaseDetail = () => {
               View Evidence ({evidenceItems.length})
             </Link>
           </Button>
-          <Button variant="outline" size="sm" className="text-forensic-court">
+          {/* <Button variant="outline" size="sm" className="text-forensic-court">
             <Scale className="h-4 w-4 mr-2" />
             Legal Documents
-          </Button>
+          </Button> */}
         </div>
       </div>
 
@@ -624,7 +624,7 @@ const CaseDetail = () => {
                           className="bg-forensic-accent"
                           asChild
                         >
-                          <Link to={`/evidence/${item.id}?case=${caseData.id}`}>
+                          <Link to={`/evidence?case=${caseData.id}`}>
                             <span>View</span>
                             <ArrowUpRight className="ml-1 h-3 w-3" />
                           </Link>
@@ -635,14 +635,14 @@ const CaseDetail = () => {
                 </div>
               )}
             </CardContent>
-            <CardFooter>
+            {/* <CardFooter>
               <div className="w-full flex justify-between">
                 <Button variant="outline" asChild>
                   <Link to={`/upload?case=${caseData.id}`}>Add Evidence</Link>
                 </Button>
                 <Button variant="outline">Export List</Button>
               </div>
-            </CardFooter>
+            </CardFooter> */}
           </Card>
         </TabsContent>
 
