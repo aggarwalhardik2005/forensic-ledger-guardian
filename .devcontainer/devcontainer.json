@@ -14,30 +14,48 @@
         "dsznajder.es7-react-js-snippets",
         "bradlc.vscode-tailwindcss",
         "NomicFoundation.hardhat-solidity",
-        "ms-azuretools.vscode-docker",
-        "GitHub.copilot",
-        "GitHub.copilot-chat"
+        "GitHub.copilot"
       ],
       "settings": {
-        "typescript.tsdk": "node_modules/typescript/lib",
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "editor.codeActionsOnSave": {
           "source.fixAll.eslint": "explicit"
         },
+        "eslint.run": "onSave",
         "eslint.validate": [
           "javascript",
           "javascriptreact",
           "typescript",
           "typescriptreact"
         ],
+        "eslint.format.enable": false,
+        "typescript.tsdk": "node_modules/typescript/lib",
+        "typescript.tsserver.maxTsServerMemory": 1024,
+        "typescript.disableAutomaticTypeAcquisition": true,
+        "typescript.enablePromptUseWorkspaceTsdk": false,
+        "files.watcherExclude": {
+          "**/node_modules/**": true,
+          "**/dist/**": true,
+          "**/build/**": true,
+          "**/artifacts/**": true,
+          "**/cache/**": true,
+          "**/.git/**": true
+        },
+        "search.exclude": {
+          "**/node_modules/**": true,
+          "**/dist/**": true,
+          "**/build/**": true,
+          "**/artifacts/**": true
+        },
         "files.associations": {
           "*.sol": "solidity"
         },
         "solidity.defaultCompiler": "localNodeModule",
         "solidity.compileUsingRemoteVersion": "v0.8.29",
-        "terminal.integrated.defaultProfile.linux": "bash",
-        "git.path": "/usr/bin/git"
+        "git.autorefresh": false,
+        "git.path": "/usr/bin/git",
+        "terminal.integrated.defaultProfile.linux": "bash"
       }
     }
   },
@@ -53,6 +71,10 @@
       "version": "latest"
     }
   },
-  "mounts": [],
-  "runArgs": ["--init"]
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
+  ],
+  "runArgs": [
+    "--init"
+  ]
 }
