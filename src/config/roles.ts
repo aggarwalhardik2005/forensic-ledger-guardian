@@ -222,13 +222,13 @@ export const ROLE_NAVIGATION: Record<Role, NavigationItem[]> = {
       roles: [Role.Court],
       description: "Assign roles and manage user permissions",
     },
-    {
-      to: "/settings/security",
-      label: "System Configuration",
-      icon: Settings,
-      roles: [Role.Court],
-      description: "Configure system security settings",
-    },
+    // {
+    //   to: "/settings/security",
+    //   label: "System Configuration",
+    //   icon: Settings,
+    //   roles: [Role.Court],
+    //   description: "Configure system security settings",
+    // },
     {
       to: "/activity",
       label: "Audit Logs",

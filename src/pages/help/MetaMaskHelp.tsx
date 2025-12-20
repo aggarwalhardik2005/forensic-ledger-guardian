@@ -106,7 +106,7 @@ const MetaMaskHelp: React.FC = () => {
       <div>
         <h1 className="text-3xl font-bold mb-2">MetaMask Integration Help</h1>
         <p className="text-muted-foreground">
-          Complete guide to setting up and using MetaMask with ForensicChain
+          Complete guide to setting up and using MetaMask with ChainSEAL
         </p>
       </div>
 
