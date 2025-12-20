@@ -104,7 +104,7 @@ const OfficerDashboard = () => {
       </div>
 
       {/* Evidence Confirmation Panel */}
-      <Card className="border border-forensic-200 hover:border-forensic-300 transition-colors">
+      {/* <Card className="border border-forensic-200 hover:border-forensic-300 transition-colors">
         <CardHeader className="bg-gradient-to-r from-forensic-50 to-transparent">
           <CardTitle className="text-lg flex items-center">
             <CheckCircle className="h-5 w-5 mr-2 text-forensic-accent" />
@@ -223,7 +223,7 @@ const OfficerDashboard = () => {
             <Link to="/evidence/confirm">View All Pending Confirmation</Link>
           </Button>
         </CardFooter>
-      </Card>
+      </Card> */}
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -362,7 +362,7 @@ const OfficerDashboard = () => {
       </div>
 
       {/* Reports */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="border border-forensic-200 hover:border-forensic-300 transition-colors">
           <CardHeader className="pb-2 bg-gradient-to-r from-forensic-50 to-transparent">
             <CardTitle className="text-lg flex items-center">
@@ -391,7 +391,7 @@ const OfficerDashboard = () => {
             </Button>
           </CardFooter>
         </Card>
-      </div>
+      </div> */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2 border border-forensic-200 hover:border-forensic-300 transition-colors">
           <CardHeader className="bg-gradient-to-r from-forensic-50 to-transparent">
