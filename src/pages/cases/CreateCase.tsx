@@ -61,15 +61,11 @@ const CreateCase = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("basic");
   const [showRoleManager, setShowRoleManager] = useState(false);
-  const [caseTitle, setCaseTitle] = useState(
-    "Default Case Title - Cyberbullying Incident",
-  );
-  const [caseType, setCaseType] = useState("criminal");
-  const [priority, setPriority] = useState("high");
-  const [jurisdiction, setJurisdiction] = useState("district");
-  const [description, setDescription] = useState(
-    "This is a default description for a cyberbullying case. The suspect is accused of sending harassing messages.",
-  );
+  const [caseTitle, setCaseTitle] = useState("");
+  const [caseType, setCaseType] = useState("");
+  const [priority, setPriority] = useState("");
+  const [jurisdiction, setJurisdiction] = useState("");
+  const [description, setDescription] = useState("");
 
   // FIR IDs from Supabase
   const [firIds, setFirIds] = useState<string[]>([]);
@@ -114,34 +110,28 @@ const CreateCase = () => {
   }, []);
 
   // Complainant information
-  const [complainantName, setComplainantName] = useState("Jane Doe");
-  const [complainantContact, setComplainantContact] = useState("555-1234");
-  const [complainantAddress, setComplainantAddress] = useState(
-    "123 Main St, Anytown, USA",
-  );
+  const [complainantName, setComplainantName] = useState("");
+  const [complainantContact, setComplainantContact] = useState("");
+  const [complainantAddress, setComplainantAddress] = useState("");
 
   // Suspect information
-  const [suspectName, setSuspectName] = useState("John Smith");
-  const [suspectContact, setSuspectContact] = useState("555-5678");
-  const [suspectAddress, setSuspectAddress] = useState(
-    "456 Oak Ave, Anytown, USA",
-  );
-  const [suspectDescription, setSuspectDescription] = useState(
-    'The suspect is known to use the online alias "TrollMaster99".',
-  );
+  const [suspectName, setSuspectName] = useState("");
+  const [suspectContact, setSuspectContact] = useState("");
+  const [suspectAddress, setSuspectAddress] = useState("");
+  const [suspectDescription, setSuspectDescription] = useState("");
 
   // Assignments
-  const [leadOfficer, setLeadOfficer] = useState("john.smith");
+  const [leadOfficer, setLeadOfficer] = useState("");
   const [assistingOfficers, setAssistingOfficers] =
     useState<string>("officer2");
-  const [leadForensic, setLeadForensic] = useState("emily.chen");
+  const [leadForensic, setLeadForensic] = useState("");
   const [assistingForensics, setAssistingForensics] =
     useState<string>("forensic1");
   const [forensicSpecialities, setForensicSpecialities] =
     useState<string>("digital");
-  const [prosecutor, setProsecutor] = useState("sarah.lee");
+  const [prosecutor, setProsecutor] = useState("");
   const [defenseAttorney, setDefenseAttorney] = useState<string>("lawyer2");
-  const [judge, setJudge] = useState("michael.wong");
+  const [judge, setJudge] = useState("");
 
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -149,9 +139,9 @@ const CreateCase = () => {
   const handleReset = () => {
     setCaseTitle("");
     setDescription("");
-    setPriority("medium");
-    setCaseType("criminal");
-    setJurisdiction("district");
+    setPriority("");
+    setCaseType("");
+    setJurisdiction("");
     setComplainantName("");
     setComplainantContact("");
     setComplainantAddress("");
@@ -159,14 +149,14 @@ const CreateCase = () => {
     setSuspectContact("");
     setSuspectAddress("");
     setSuspectDescription("");
-    setLeadOfficer("john.smith");
+    setLeadOfficer("");
     setAssistingOfficers("");
-    setLeadForensic("emily.chen");
+    setLeadForensic("");
     setAssistingForensics("");
     setForensicSpecialities("");
-    setProsecutor("sarah.lee");
+    setProsecutor("");
     setDefenseAttorney("");
-    setJudge("michael.wong");
+    setJudge("");
     setCreatedCaseId("");
     setIsCaseCreated(false);
     setSelectedOfficer("");

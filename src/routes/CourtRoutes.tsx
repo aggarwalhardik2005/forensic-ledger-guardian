@@ -56,7 +56,7 @@ export const CourtRoutes = () => (
     />
 
     {/* System Configuration */}
-    <Route
+    {/* <Route
       path="/settings/security"
       element={
         <Layout>
@@ -65,7 +65,7 @@ export const CourtRoutes = () => (
           </SecureRoute>
         </Layout>
       }
-    />
+    /> */}
 
     {/* Reports and Analytics */}
     <Route

@@ -88,7 +88,7 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
                 <Shield className="h-4 w-4 text-white" />
               </div>
               <span className="ml-1 font-semibold text-sm md:text-base">
-                ForensicChain
+                ChainSEAL
               </span>
             </div>
           )}

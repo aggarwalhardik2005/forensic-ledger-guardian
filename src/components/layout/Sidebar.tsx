@@ -109,7 +109,7 @@ const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
                 <div className="flex items-center justify-center w-6 h-6 bg-gradient-to-r from-forensic-accent to-forensic-evidence rounded-md overflow-hidden">
                   <Shield className="h-4 w-4 text-white" />
                 </div>
-                <span className="ml-2 font-bold text-lg">ForensicChain</span>
+                <span className="ml-2 font-bold text-lg">ChainSEAL</span>
               </div>
               <Button
                 variant="ghost"
@@ -235,7 +235,7 @@ const Sidebar = ({ collapsed, toggleCollapsed }: SidebarProps) => {
               <div className="flex items-center justify-center w-6 h-6 bg-gradient-to-r from-forensic-accent to-forensic-evidence rounded-md overflow-hidden">
                 <Shield className="h-4 w-4 text-white" />
               </div>
-              <span className="ml-2 font-bold text-lg">ForensicChain</span>
+              <span className="ml-2 font-bold text-lg">ChainSEAL</span>
             </div>
           )}
           <Button

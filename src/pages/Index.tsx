@@ -65,7 +65,7 @@ const Index = () => {
               <Shield className="h-5 w-5 text-white" />
             </div>
             <span className="font-bold text-xl text-white tracking-tight">
-              ForensicChain
+              ChainSEAL
             </span>
           </div>
           <nav className="hidden md:flex space-x-8 items-center">
@@ -566,7 +566,7 @@ const Index = () => {
               </h2>
               <p className="text-forensic-300 mb-8">
                 Join the growing network of law enforcement agencies, forensic
-                labs, and legal professionals using ForensicChain.
+                labs, and legal professionals using ChainSEAL.
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <Button
@@ -602,7 +602,7 @@ const Index = () => {
                   <Shield className="h-4 w-4 text-white" />
                 </div>
                 <span className="font-bold text-lg text-white">
-                  ForensicChain
+                  ChainSEAL
                 </span>
               </div>
               <p className="text-forensic-400 text-sm">
@@ -645,7 +645,7 @@ const Index = () => {
               <h4 className="font-semibold text-white mb-4">Contact</h4>
               <ul className="space-y-2">
                 <li className="text-forensic-400 text-sm">
-                  support@forensicchain.com
+                  support@chainseal.com
                 </li>
                 <li className="text-forensic-400 text-sm">+1 (555) 123-4567</li>
               </ul>
@@ -654,7 +654,7 @@ const Index = () => {
 
           <div className="pt-8 border-t border-forensic-800 flex flex-col md:flex-row justify-between items-center">
             <div className="text-sm text-forensic-400 mb-4 md:mb-0">
-              © {new Date().getFullYear()} ForensicChain. All rights reserved.
+              © {new Date().getFullYear()} ChainSEAL. All rights reserved.
             </div>
             <div className="flex space-x-6">
               <Link
