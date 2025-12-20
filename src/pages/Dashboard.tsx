@@ -26,10 +26,10 @@ const Dashboard = () => {
 
       {/* Common tools for all roles */}
       <Tabs defaultValue="verify" className="w-full">
-        <TabsList className="mb-4 w-full sm:w-auto grid grid-cols-2 sm:inline-flex">
+        {/* <TabsList className="mb-4 w-full sm:w-auto grid grid-cols-2 sm:inline-flex">
           <TabsTrigger value="verify">Evidence Verification</TabsTrigger>
           <TabsTrigger value="help">Help & Documentation</TabsTrigger>
-        </TabsList>
+        </TabsList> */}
 
         <TabsContent value="verify">
           <EvidenceVerifier />
