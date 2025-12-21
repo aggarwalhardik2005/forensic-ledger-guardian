@@ -252,13 +252,13 @@ export const ROLE_NAVIGATION: Record<Role, NavigationItem[]> = {
       roles: [Role.Officer],
       description: "Manage First Information Reports",
     },
-    {
-      to: "/cases/update",
-      label: "Update Cases",
-      icon: FileText,
-      roles: [Role.Officer],
-      description: "Update case information and status",
-    },
+    // {
+    //   to: "/cases/update",
+    //   label: "Update Cases",
+    //   icon: FileText,
+    //   roles: [Role.Officer],
+    //   description: "Update case information and status",
+    // },
     {
       to: "/evidence/confirm",
       label: "Confirm Evidence",

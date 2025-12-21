@@ -472,7 +472,24 @@ app.post("/fir/:firId/upload", upload.single("file"), async (req, res) => {
     ]).toString("hex");
     const ivEncrypted = iv.toString("hex");
 
-    // Store key/IV off-chain
+    
+
+    // console.log("FIR ID used in submit:", firId);
+    // console.log(
+    //   "Raw FIR ID string (chars):",
+    //   Array.from(firId).map((c) => c.charCodeAt(0)),
+    // );
+    // Store CID & hash on-chain
+    try {
+      const tx = await contract.submitFIREvidence(
+        firId,
+        evidenceId,
+        cid,
+        hashOriginal,
+        evidenceTypeNum,
+      );
+      await tx.wait();
+      // Store key/IV off-chain
     const { error } = await supabase.from("evidence1").insert([
       {
         container_id: firId,
@@ -488,24 +505,7 @@ app.post("/fir/:firId/upload", upload.single("file"), async (req, res) => {
         collection_location: location || null,
       },
     ]);
-
-    if (error) return res.status(500).json({ error: error.message });
-
-    console.log("FIR ID used in submit:", firId);
-    console.log(
-      "Raw FIR ID string (chars):",
-      Array.from(firId).map((c) => c.charCodeAt(0)),
-    );
-    // Store CID & hash on-chain
-    try {
-      const tx = await contract.submitFIREvidence(
-        firId,
-        evidenceId,
-        cid,
-        hashOriginal,
-        evidenceTypeNum,
-      );
-      await tx.wait();
+    // if (error) return res.status(500).json({ error: error.message });
     } catch (err) {
       console.error("SUBMISSION ERROR:", err);
       return res.status(500).json({ error: err.reason || err.message });
